@@ -1,0 +1,4914 @@
+#!/usr/bin/env bash
+###############################################################################
+###          |                       !                                 |    ###
+##           |                       .                                 |     ##
+#            !                       _                                 !      #
+#            .               S P A C E `..                             .      #
+#            .         IoT automation - By.Blockie                     .      #
+#                                         .                                   #
+##           .                            .                                 .##
+###                                                                        !###
+##           .                                                             . ##
+#            .                                                                #
+#          __ሴ__                                                              #
+###############################################################################
+
+#
+# Copyright:
+#   Blockie AB 2016 (blockie.org)
+#
+# Authors:
+#   Thomas Backlund (blund@blockie.org).
+#   Maicon Filippsen (filippsen@blockie.org).
+#
+# Copying:
+#   This program is free software: you can redistribute it and/or modify
+#   it under the terms of the GNU General Public License as published by
+#   the Free Software Foundation version 3 of the License.
+#
+#   This program is distributed in the hope that it will be useful,
+#   but WITHOUT ANY WARRANTY; without even the implied warranty of
+#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#   GNU General Public License for more details.
+#
+#   You should have received a copy of the GNU General Public License
+#   along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+# Hackers Guide:
+# See the man page and https://space.sh for more details.
+#
+# WHAT IS SpaceGal:
+# SpaceGal is a suite of tools and services for automating the Internet of Things (IoT),
+# aimed to provide small footprint automation for IoT devices,
+# servers and life in general.
+#
+# The SpaceGal shell is this Bash script, referred to as "Space" below.
+# The SpaceGal shell's site is found at https://space.sh.
+#
+# Bash compatibility:
+# Space is made to work with Bash version 3.2 and upwards.
+# It has been tested using Bash 3.2.57 and several Bash 4 versions.
+#
+# EXTERNAL programs:
+# Space uses some external programs for certain tasks,
+# mostly coupled to tasks that involve disk and/or network access.
+# These external programs are not all POSIX 1003.1 compliant but have been
+# tested to work with GNU/Linux, BusyBox, OSX and Windows?
+# Search for the word EXTERNAL to see where and how they are used.
+#
+# HOW DOES Space work?
+# Space is a tool to load and run YAML and Bash files.
+# A YAML file is parsed and may refer to Bash functions loaded from a Bash file.
+# The YAML structure is referred to as "nodes", and a "node" could have Bash
+# variables associated to it.
+# A node could be executed if it has the environment variable CMD set. The CMD variable
+# typically refers to a Bash function, or is a Bash snippet in it self.
+# A node could have many environment variables attached to it.
+# When executing a node that has many levels such as "/a/b/c/", all Bash
+# variables in each level will be loaded, where the deeper levels override
+# their parent levels.
+#
+# So, in short, the YAML structure sets up the environment and then execution
+# is passed on to a Bash function that executes the actual task.
+#
+# But, Space is ridiculously more powerful than just that.
+#
+# Space has the concept of "Modules". A Space Module is a Git repository which
+# contains at least the file Spacefile.yaml, and most often also Spacefile.sh/.bash.
+# A user creating a YAML structure could clone and include modules into the
+# YAML file, reusing them.
+#
+# YAML has a preprocessing stage, which is quite powerful, but not really
+# something we recommend using too much, because YAML files tend to grow
+# quite large when iteratively including other YAML structures into it.
+# Instead we use the concept of "Dimensions".
+#
+# Space Dimensions:
+# Space can handle up to three dimensions. This is a cuboid: X*Y*Z.
+# Where X, Y and Z are one or many nodes that will get run in combination.
+# An example of that is X could be a list of "things" to operate on,
+# Y could be one or more "operations" to apply to each thing and
+# Z could be one or more "hosts" to where these things exist.
+#
+# The Z dimension nodes will typically provide an environment variable named
+# CMDWRAP that would wrap the CMD inside another CMD, for example to run the
+# given CMD on another host over SSH.
+#
+# Each Dimension could have it's own Namespace, or share Namespaces.
+# A Namespace is a loaded YAML structure.
+# Space could from a given first and optional second dimension fetch
+# the second or third dimension.
+#
+# When running Space three things happen:
+#   Fetching of 2:nd and 3:d node dimensions, if applicable.
+#   Combining 1,2,3 dimensions for combo nodes.
+#   YAML processing.
+#   Environment variable setup.
+#   Bash execution.
+#
+# The YAML processing is divided into two steps: preprocessing and parsing.
+# The preprocessing stage handles @-directives.
+# The parsing stage parses Bash environment variables for the "Environment variable setup" stage.
+# The Bash execution stage looks at the CMD environment variable and gets the executable string
+# from the given Bash function.
+#
+# Preprocessing variable assignments, usage and directives:
+#   @{DIR} the current processed YAML files directory.
+#   @{CWD} the directory from where Space was invoked.
+#   @{PARENT} The current parent node name.
+#   @{PARENTPATH} The full current parent node path.
+#   @var1: value Set preprocess variable "var1".
+#   @var1: no value nor trailing space will unset variable "var1".
+#   @var1:- value Set preprocess variable "var1" only if "var1" lacks value or is unset.
+#   @var1:+ value Set preprocess variable "var1" only if "var1" has value.
+#   Use ${varname} anywhere to have that substituted with the value of the variable.
+#   ${varname-default value if unset}  # Default value could be another pp variable as @{var2} or @var2.
+#   ${varname:-default value if empty}
+#   Values of preprocessed variables are evaluated, meaning that you could use
+#   Bash variables and commands as ${USER}, $(cat value.txt), etc.
+#
+#   The following keywords are functions and cannot be used as preprocess variables:
+#   @assert: nonempty $variable|@variable
+#       Do nonempty assertion of Bash environment variable or space preprocess variable.
+#   @prompt: var1 Text to prompt user with
+#       Will output the text and read input from stdin which will be stored in preprocess variable "var1".
+#       Use @prompt:- to only prompt if var1 is unset or empty.
+#   @clone: space-sh/ssh space-sh/docker  # Clone those modules
+#   @debug: varname is: ${varname}  # output using _debug during preprocess stage.
+#   @include: path/ssh.yaml|/some/node/(arg1 arg2)
+#       Include the ssh.yaml file and filter on /some/node, also assign the preprocess
+#       variables @{1} and @{2} to values arg1 resp arg2. The arguments are space separated and optional.
+#       The filter is also optional.
+#       To include from within the same file leave out the filename, as: @include |/filter/.
+#       Absolute paths are also allowed.
+#       Anything that is indented below the @include is treated as a subdoc that will get injected
+#       below every direct child node from the @include. Like a for loop.
+#       For each server, include all services:
+#       @include: servers.yaml
+#           server: This is server @{PARENT}
+#           @include: services.yaml
+#   @include:- file.yaml
+#       Adding the dash will ignore a missing YAML file. Also it's subdoc will be ignored.
+#   @include: [username/]repo
+#       Instead of including filenames you could name a module then
+#       Space will search for the right module and YAML file to include.
+#
+#   Internal variables:
+#   CWD         # The directory from where the user invoked space.
+#   DIR         # The directory of where the sourced Bash file is located.
+#               # Use this as "_source ${DIR}/somefile.bash" in the module bash
+#               # file header.
+#
+#   These are set from the YAML structure and modules Bash files or with command line switches:
+#   They are NOT inherited from the Bash environment and are initially unset.
+#   CMD         # Function/binary arg1 arg2 -- replaceable_arg3 replaceable_arg4
+#               # CMD is always cleared for every node being evaluated, meaning it is not inherited downwards.
+#               # To use more complicated CMD's always use a Bash function for that, since
+#               # A=1 B=1 echo something
+#               # will treat A=1 as the command and the rest as arguments.
+#               # Set in YAML or using -c switch.
+#   CMDARGS     # Positional arguments to be added to the end of the CMD arguments list,
+#               # but before any command line arguments.
+#               # Set in YAML or using -eARGS= switch.
+#   ALIAS       # If set to a node name space will reinvoke running that node instead.
+#               # arguments will get passed on just like the would on command line using --.
+#               # Not inherited between nodes, just as CMD.
+#               # ALIAS shadows CMD.
+#   CMDREDIR    # If set in modules Bash function or YAML will be appended to the final generated Bash string for redirection purposes.
+#               # Not inherited between nodes, just as ALIAS and CMD.
+#   CMDOUTER    # Use to have $CMD wrapped inside a for loop or similar. $CMD is substituted with _CMD_.
+#               # Set from modules Bash functions.
+#               # Not inherited.
+#   CMDWRAP     # Set to FUNC that takes $CMD as argument, often used for ssh wrapping.
+#               # Will be inherited downwards on nodes.
+#   CMDENV      # Space separated list of variable names to export with the CMD function.
+#               #
+#   CMDEXIT     # If this is set in YAML (or using -e) to "1", then the return
+#               # status of CMD must be equal to CMDEXIT or else it's
+#               # regarded as an error and will return 1.
+#               #
+#   CMDSILENT   # If this is set in YAML (or using -e) to "1", then the return
+#               # status of CMD will be ignored.
+#
+#
+# When CMD points to a function name, that function will be parsed for Space header
+# variables, which are on the format "SPACE_xyz=value". Header variables must be
+# at the absolute top of the function to be considered header variables.
+# These are the header variables available to be put at the top of your module
+# functions to which CMD refers to.
+#
+#     SPACE_SIGNATURE="arg1 arg2 [optarg1 optarg2]"
+#       Describes the number of arguments that the function is expecting. Space
+#       will exit with error if not fulfilled. Bracketed arguments are optional.
+#
+#     SPACE_CMDDEP="FUNC2 PRINT"
+#       A space separated list of names of other function that this function depends
+#       on. All those functions will be exported together with the referring function.
+#       Those function modules must have been cloned (and automatically included)
+#       by issuing "clone mod1 mod2" in the referrings modules script file.
+#       PRINT is a function that is provided by Space for export for outputting text.
+#       Always overwritten by the space header if present, and each function that
+#       is dependant on other functions should always set their own SPACE_CMDDEP.
+#       All dependency functions and their dependencies will be exported, also their
+#       SPACE_CMDENV will get added to the first functions SPACE_CMDENV.
+#
+#     SPACE_CMDENV="SUDO var1=\${othervar-} var2"
+#       A space separated list of variables to export out together with the functions.
+#       These variables will be evaluated at build time to reflect values set in
+#       the YAML or present for other reasons. "var=\${var-defaultvalue}" means
+#       Default value taken from CMDENV variable. Which could be set in the YAML.
+#       Always overwritten by the space header if present, and each function that
+#       is dependant on environment variables should always set their own SPACE_CMDENV.
+#       It is important not to introduce spaces in values inside the SPACE_CMDENV
+#       variable, because it will result in syntax error. Always escape default
+#       value variable names so that there not evaluated too early.
+#
+#     SPACE_CMDREDIR
+#       Default value taken from CMDREDIR variable. Which could be set in the YAML.
+#       Only read from space header if not already set in the environment when building.
+#       Only settable from the first level function (not from the wrappers).
+#
+#     SPACE_CMDOUTER
+#       Default value taken from CMDOUTER variable. Which could be set in the YAML.
+#       Only read from space header if not already set in the environment when building.
+#       Only settable from the first level function (not from the wrappers).
+#
+#     SPACE_CMDARGS
+#       Default value taken from CMDARGS variable. Which could be set in the YAML.
+#       Always overwritten by the space header if present.
+#
+#     SPACE_CMD
+#       If this variable is set, the function that it refers to will replace the
+#       current function as being the CMD.
+#       The referring CMD functions body will be run at this point giving the
+#       function very powerful ways of altering the environment variables and space
+#       header variables.
+#       For example the function body of the chaining command could do "SPACE_CMDREDIR=..."
+#       to override a value that is already set, but which could not have been overwritten
+#       simply using the space header variables, since SPACE_CMDREDIR is not allowed
+#       to be overwritten in that manner.
+#       A chained function could chain to another function, etc. All the above variable
+#       extraction rules apply.
+#       The body of a chaining function is run in Space's own context, meaning that
+#       it has access to all included modules and all environment variables, meaning
+#       that SPACE_CMDENV and SPACE_CMDDEP headers must *not* be used in a chaining
+#       function.
+#
+#     SPACE_CMDWRAP="WRAPFN1 WRAPFN2"
+#       A space separated list of function names that will wrap this function.
+#       Typical use case is to wrap a command in SSH to run it on a remote server,
+#       or to wrap it in a "docker exec" to run it inside a Docker container, or both together
+#       to run the command over SSH inside a Docker container.
+#       The first name in the list is the innermost wrapper and the last name is
+#       the outermost wrapper.
+#       Default value taken from CMDWRAP variable. Which could be set in the YAML.
+#       Always prepended by the space header if present, meaning that each function
+#       could define a wrapper and all wrappers will be used.
+#
+#       A function that is a wrapper uses a limited set of the space headers.
+#       Good to know is that wrapper functions do not get the arguments that the
+#       original function gets, meaning that a wrapper function should not use the
+#       SPACE_SIGNATURE header. However the wrapper function often refers to another
+#       function by SPACE_CMD header which is the function to run. For example SSH_WRAP
+#       chains to the SSH function, and the SSH function does have a SPACE_SIGNATURE header
+#       because it could be used for direct purposes, not only wrapping.
+#       So the first wrapper function (the referer) must then appropiately set up the
+#       SPACE_CMDARGS header to match the SPACE_CMD functions SPACE_SIGNATURE that it
+#       is referring to. The values that make up the SPACE_ARGS will typically be
+#       derived from environment variables defined in SPACE_ENV.
+#       SPACE_CMDDEP and SPACE_CMDENV headers are extracted and exported together with the
+#       wrapper function.
+#       If a function refers to another function using SPACE_CMD then the function
+#       body is evaluated giving the oppurtunity to manipulate environment variables.
+#       The wrappers are evaluated from outermost to innermost, then the actual CMD's
+#       SPACE_ENV's are evaluated, so that wrappers could have a way of affecting
+#       those variables.
+#
+#
+# YAML data:
+#   Nodes without any value are ignored.
+#
+#   To set a node to an empty string do:
+#       varname: ""
+#   To unset an _env variable use "!unset" (without quotes), as:
+#       _env:
+#           - varname: !unset
+#   This will have Bash unset the varname variable.
+#
+#   Node values that are wrapped in single quotes will not be Bash evaluated at the parse stage.
+#   The quotes are automatically removed.
+#
+#   Node values that are wrapped in double quotes will be Bash evaluated at the parse stage,
+#   just as values that are unquoted.
+#   The quotes are automatically removed.
+#
+#   When arguments and cmds are wrapped inside other commands, their escape levels of double quotes
+#   and dollar signs are automatically increased.
+#
+#   When using variables in YAML always use the full variable notation of ${var},
+#   not the shorthand $var, because Space expects the full notation to be able to
+#   detect and automatically escape variables for you.
+#
+# Modules are referenced as protocol://user@domain/username/reponame:commit, for example https://gitlab.com/space-sh/os:master
+# The required parts are 'domain/username/reponame'. Protocol and user have default values set.
+# When referring to Space provided Modules, simply reponame is enough.
+
+# Exit when trying to access undeclared variables.
+set -o nounset
+
+#==========
+# GLOBALS
+#==========
+
+
+#
+# Program
+#
+
+# Version
+readonly _VERSION="0.9.0"
+# Full path the space script it self.
+readonly _SPACEBIN=$0
+# Absolute path to the directory where space is located.
+readonly _BASEDIR=$( cd "${_SPACEBIN%/*}" 2>/dev/null && pwd )
+# The $TERM used for tput.
+_TERM=${_TERM:-${TERM:-dumb}}
+
+
+#
+# Output configuration
+#
+
+# The verbosity level: 0-4 [none-everything]
+_VERBOSITY=3
+# Set to 1 to output the preprocessed YAML result.
+_DEBUG_OUTPUT_PREPROCESSED=0
+# Set to 1 to output the parsed YAML to Bash
+_DEBUG_OUTPUT_PARSED=0
+# Set to 1 to output the re-transformed YAML, back from Bash
+_DEBUG_OUTPUT_TRANSFORMED_YAML=0
+# Set to 1 to output all _loadnode eval code.
+_DEBUG_OUTPUT_ENV=0
+
+
+#
+# Modules settings
+#
+
+# Shared directory for cloning modules into.
+_MODULES_SHARED=${SPACE_MODULES_SHARED:-~/.space/space_modules}
+
+#
+# Modules parsing and processing
+#
+
+# This must always be underscore prefixed.
+# Should not be changed during runtime.
+_YAML_PREFIX="_sg"
+# This should be changed when loading and working on different YAML documents.
+_YAML_NAMESPACE=1
+# Tag we use for here documents.
+readonly _SPACEGAL_EOF_TAG="_SPACEGAL_SAYS_END_OF_FINITY_"
+# Use caching. 0 = no, 1 = yes (default), 2 = regenerate cache.
+_CACHE_LEVEL=1
+# Internal identifier of the cache files current format.
+readonly _CACHE_FORMAT="2.1"
+
+# Array of files that will get sourced before executing.
+# Added using _source function.
+_SOURCE_FILES=()
+# A complete and unique list of all sh/bash files sourced using _source,
+# including space itself.
+_SOURCE_FILES_TOTAL=("${0}")
+# Internal variable automatically set when Bash completion is performed.
+_BASH_COMPLETION=0
+readonly _COLOR_RED="1"
+readonly _COLOR_GREEN="2"
+readonly _COLOR_YELLOW="3"
+readonly _COLOR_CYAN="6"
+readonly _COLOR_PURPLE="5"
+readonly _COLOR_DARK_GRAY="7"
+
+# Override column position for print function
+_PRINT_COLUMN_POSITION="0"
+
+# These are environment variables to be overwritten in the YAML or by CMD functions.
+# They are intentionally not inherited from the Bash environment.
+unset CMDARGS
+unset ALIAS
+unset CMD
+unset CMDEXIT
+unset CMDSILENT
+unset CMDOUTER
+unset CMDREDIR
+unset CMDWRAP # CMDWRAP is the only environment variable allowed to be inherited downwards in node structures.
+unset CMDOVERRIDE
+
+# Define a tput function if it is lacking.
+if ! command -v tput >/dev/null; then
+tput()
+{
+    echo -n ""
+}
+fi
+
+# Figure out if there's a shasum executable in the OS.
+# We use this for caching purposes, so not required.
+# EXTERNAL: sha256sum, sha1sum, shasum.
+if command -v sha256sum >/dev/null; then
+    readonly _SHASUMBIN=sha256sum
+elif command -v sha1sum >/dev/null; then
+    readonly _SHASUMBIN=sha1sum
+elif command -v shasum >/dev/null; then
+    readonly _SHASUMBIN="shasum -a 256"
+else
+    readonly _SHASUMBIN=
+fi
+
+# Figure out if curl or wget is installed in the OS.
+# We use this for checking modules against banlists
+# and also as fallback for downloading modules if Git
+# is not installed.
+# EXTERNAL: curl, wget
+if command -v curl >/dev/null; then
+    readonly _HTTPBIN=curl
+elif command -v wget >/dev/null; then
+    readonly _HTTPBIN=wget
+else
+    readonly _HTTPBIN=
+fi
+
+# Find out if uname is available
+# EXTERNAL: uname
+if command -v uname >/dev/null; then
+    readonly _UNAMEBIN="uname"
+    readonly _UNAME="$_UNAMEBIN -srvm"
+else
+    readonly _UNAMEBIN=""
+    readonly _UNAME=""
+fi
+
+# The server we consult to check if a module is banned.
+readonly _SECURITY_BAN_SERVER="https://get.space.sh/verify_module"
+
+# Check the Git url to clone or update against the banlist.
+#  0=do not check at all
+#  1=check and accept "unknown" and "non banned" modules.
+#  2=check and require "trusted" status for module.
+_SECURITY_CHECK_BANNED=1
+
+# Verify the modules Git commit signature against web-of-trust.
+#  0=do not very signature at all.
+#  1=accept marginal trust.
+#  2=only accept full trust.
+_SECURITY_GPG_VERIFY_SIGNATURE=0
+
+# If Git is not installed try to download tarball using curl/wget.
+_SECURITY_ALLOW_HTTPS_FALLBACK=0
+
+# Stack
+_STACK_POINTER=0
+_STACK_PREFIX="_stack_"
+
+# Set to "1" to force to run export in Bash.
+# Will autoamtically be set to "1" if any module
+# loaded with a .bash file.
+_FORCE_BASH="0"
+
+# Set to "1" to enable GUI
+_ENABLE_GUI="0"
+
+# Set to "1" to allow Space to use
+# external OS tools to speed things up.
+# Like awk, sore, etc.
+_ALLOW_EXTERNAL="1"
+
+#==========
+# _helpusage
+#
+# Outputs help and usage text
+#==========
+_helpusage()
+{
+    local _s=
+    IFS= read -d '' -r _s << _EOF
+Space. (C) Blockie AB 2016, blockie.org. GPL version 3 licensed.
+
+See man pages and https://space.sh for more info.
+
+Usage:
+    space [-f/-m namespace [node] [-a]], etc [options] [-- further args to Bash function]
+          -f  YAML file to load, relative or absolute path, defaults to: ./Spacefile.yaml.
+              -f and -m options define namespaces in where to look for nodes, for a given dimension of nodes.
+              There can be maximum three namespaces and three dimensions. One namespace can have more than one dimension.
+              Dimension two and three could be found from namespace one below the node in dimension 1.
+              If only one dimension is given Space looks below "node/_friends/second" for a space separated set of lists that makes up the second dimension.
+              The second dimension then uses second namespace if defined else first namespace.
+              If two dimensions are given Space looks below "node/_friends/third" for a space separated list, each list object's "match" node is matched
+              against the node in the second dimension, if match then the list below "nodes" makes up the third dimension.
+              The third dimension then uses third namespace if defined else first namespace.
+          -m  [giturl/][username]/reponame module to run.
+              Direct access to run nodes in a module.
+              Only the Space specific user gitlab.com/space-sh could be denoted using
+              only reponame, then username is defaulted to space-sh and giturl is
+              defaulted to https://gitlab.com/.
+              All other users must specify domainname/username/reponame, for example
+              ssh://gitlab.com/filippsen/somemodule.
+              The protocol defaults to https.
+          -M  [giturl/][username]/reponame module to load. (e.g. \"gitlab.com/blockie-org/amodule\")
+              Clone and load modules. Separate multiple by space within quotes,
+              or use multiple -M switches, one for each module.
+              Usually used together with '-m' option to load a needed module for use
+              with CMDWRAP environment variable.
+              Example: space -m dropalot -M ssh -e CMDWRAP=SSH_WRAP -e sshhost=1.2.3.4
+          -e  environment variable to forcefully apply/overwrite before parsing the YAML.
+              -e var1="value1".
+              Use one -e for each variable.
+              To unset a variable use -evar1='!unset'
+          -p  preprocess variable to set before preprocessing.
+              -p inventory=staging.
+              Use one -p for each variable.
+          -c  Set the CMD environment variable just before running the cmd.
+              Overwrites the CMD variable set in YAML.
+              Could be used together with -m to run a Bash function in the module,
+              or to use the environment of a target but swap out the CMD being run.
+          -v  verbosity level, 0 = off, 1 = error, 2 = warning, 3 = info, 4 = debug.
+              Default is 2. Outputs to stderr.
+          -d  dry run. Will echo the Bash command line computed instead of running it.
+          -l  list nodes. Do not run anything, only output the nodes matched.
+          -k  Check modules against the ban list. 0 = off, 1 = accept unknown modules
+              but not banned modules, 2 = require module to be known and not banned.
+              Default = 1.
+          -K  Verify module Git HEAD signature using GPG. 0 = off,
+              1 = accept moderate trust, 2 = only accept full trust signatures.
+              Default = 1.
+          -h  help, show usage.
+          -H  help on node(s) referred.
+          node(s) Pattern of one or many nodes to run.
+              If no node path is given the root node "/" is implied.
+              If node path(s) are given but none matches then Space aborts.
+              A node pattern is defined after a namespace (-f/-m) and then belongs to that namespace.
+              Nodes support regular expressions to run multiple nodes in sequence.
+              Ex: "/west/.*" will match all nodes below /west/,
+                  "/we.*/ will match /west/ and /web/ nodes.
+                  When using asterisk make sure you use quotes so that
+                  Bash will not expand that before passing it to Space as arguments.
+                  /we{st,b}/ without quotes will get expanded by Bash as two arguments
+                  /west/ and /web/ that are passed to Space, which is cool of that is what you meant.
+          -a All. Adds a ".*" to the node it suffixes, to match all it's nodes below.
+          -C caching level, 0 = off, 1 = on (default), 2 = regenerate cache.
+          -B Set to force to run modules in Bash. Normally Bash dependency depends
+             on module script files ending in .bash instead of .sh.
+          -U Update module(s). Performs a Git pull on matched module(s) then quit.
+             Space will update repositories both in local space_modules and also in shared space_modules directories.
+             -U ""    means update all modules.
+             -U "ssh" means update gitlab.com/space-sh/ssh.
+             -U "gitlab.com/blockie-org/ssh" means update gitlab.com/blockie-org/ssh repository.
+             -U "space-sh/.*" means update every module for the space-sh user on gitlab.com.
+          -g Enable graphical user interface. Defaults to 0, disabled.
+Examples:
+
+_EOF
+    printf "%s" "$_s" >&2
+}
+
+#==========
+# _helpversion
+#
+# Outputs version information
+#
+# Expects:
+#   _VERSION
+#
+#==========
+_helpversion()
+{
+    local _s=
+    IFS= read -d '' -r _s << _EOF
+space $_VERSION
+_EOF
+    printf "%s" "$_s" >&2
+}
+
+#==========
+# _helpnode
+#
+# Outputs help on a node.
+#
+# Parameters:
+#   $1: slash-separated path of node to show help for. The path must end with a slash. E.g. "/parent_node/node1/node2/"
+#
+# Expects:
+#   nodes must be loaded prior to calling this function because copy and list operations rely on node variables already being defined
+#
+#==========
+_helpnode()
+{
+    local _path=$1
+    shift
+
+    _print "$_path"
+
+    local _str=
+    _copy "_str" "${_path}_info/title"
+    _print $'\t'"${_str//$'\n'/$'\n'$'\t'}"$'\n'
+    _copy "_str" "${_path}_info/desc"
+    if [ -n "$_str" ]; then
+        _print $'\t'"${_str//$'\n'/$'\n'$'\t'}"$'\n'
+    fi
+
+    local _listItems=()
+    _list "_listItems" "${_path}"
+    local _item=
+    if [ "${#_listItems[@]}" -gt 0 ]; then
+        for _item in "${_listItems[@]}"; do
+            _print "+ $_item"
+        done
+    fi
+}
+
+#========
+# _transform_to_yaml
+#
+# Go thru the whole parsed and evaluated YAML structure and output it in YAML format.
+#
+# Parameters:
+#   $1: slash-separated path to start at. Does NOT end with a slash.
+#   $2: last node of given path
+#   $3: indent spaces
+#
+# Expects:
+#   nodes must be loaded prior to calling this function because copy and list operations rely on node variables already being defined
+#
+#========
+_transform_to_yaml()
+{
+    local _path=${1-}
+    shift || :
+    local _node=${1-}
+    shift || :
+    local _indent=${1-}
+    shift || :
+
+    local _value=
+    _copy "_value" "$_path"
+    if [ -z "$_value" ]; then
+        # No leaf, recurse it.
+        if [ -n "$_node" ]; then
+            printf "%s%s%s\n" "$_indent" "$_node" ":"
+        fi
+        local _keys=()
+        _path="$_path/"
+        _list "_keys" "$_path" "1" "1"
+        local _key=
+        if [ "${#_keys[@]}" -gt 0 ]; then
+            for _key in "${_keys[@]}"; do
+                if [ "$_path" = "/" ]; then
+                    local _indent2=$_indent
+                else
+                    local _indent2="$_indent    "
+                fi
+                _transform_to_yaml "$_path$_key" "$_key" "$_indent2"
+            done
+        fi
+    else
+        # Is leaf.
+        printf "%s%s%s%s\n" "$_indent" "$_node" ": " "${_value//$'\n'/\\n}"
+    fi
+}
+
+#========
+# _list
+#
+# List all nodes below a given node.
+#
+# Parameters:
+#   $1: name of output array to append to
+#   $2: slash-separated path, starts and ends with slash.
+#   $3: include_hidden, set to "1" to include leaf nodes beginning with underscore.
+#   $4: include leaf node, set to "1" to include leaf nodes.
+#
+# Expects:
+#   _parsedyamlnodelist*
+#   _YAML_NAMESPACE
+#   _YAML_PREFIX
+#
+#========
+_list()
+{
+    local _output=$1
+    shift
+
+    local _path=$1
+    shift
+
+    local _includehidden=${1:-0}
+    shift || :
+
+    local _includeleafs=${1:-0}
+    shift || :
+
+    if [[ ! $_path =~ (^/.+/$)|(^/$) ]]; then
+        _error "Malformed path ($_path) as argument to _list. Must start and end with a slash. Lonesome cowboy slashes are OK dough."
+        return 1
+    fi
+
+    local _nodes=()
+    _match_node "_parsedyamlnodelist${_YAML_PREFIX}${_YAML_NAMESPACE}" "${_path}.*/" "${_includehidden}" "1" "${_includeleafs}"
+    if [ "${#_nodes[@]}" -eq 0 ]; then
+        eval "${_output}=()"
+    else
+        eval "${_output}=(\"\${_nodes[@]}\")"
+    fi
+}
+
+
+#==========
+# _copy
+#
+# Copy a YAML variable (leaf) to another variable by assignment.
+#
+# Parameters:
+#   $1: the name of the variable to copy to.
+#   $2: the slash-separated _path of the variable to copy. Does NOT end with slash.
+#
+# Expects:
+#   _YAML_PREFIX
+#   _YAML_NAMESPACE
+#
+#==========
+_copy()
+{
+    local _var=$1
+    shift
+
+    local _path=$1
+    shift
+
+    _path=${_path//_/0a95}
+    _path="${_YAML_PREFIX}${_YAML_NAMESPACE}${_path//\//_}"
+    eval "$_var=\${$_path-}"
+}
+
+#==========
+# _quicksort
+#
+# Quick sort an array of string and return output
+#
+# Integral parts of each line will be padded with zeroes
+# for 10 digits. This is so that integral comparison
+# makes sense in an ASCII comparable way. Otherwise
+# "2 is greater than "10", etc, which is not what we want.
+# However "0000000002" < "10", which gives us what we expect.
+#
+# Parameters:
+#   $1: name of array of strings to sort
+#   _quicksort_output: array where results are stored. This is expected to be defined by the caller
+#
+#==========
+_quicksort()
+{
+    _quicksort_output=()
+
+    # Early return and stop condition
+    if [ $# -eq 0 ]; then
+        return 0
+    fi
+
+    local str=''
+    local _line1padded=''
+
+    if [ "${_ALLOW_EXTERNAL}" = "1" ]; then
+        local _arr=()
+        for str in "$@"; do
+            _sort_pad "_line1padded" "$str"
+            _arr+=("$_line1padded $str")
+        done
+        while IFS=$'\n' read -r _line; do
+            _quicksort_output+=("$_line")
+        done < <(printf "%s\n" "${_arr[@]}" | sort | awk '{print $3" "$4}')
+        return
+    fi
+
+    local _partition_a=()
+    local _partition_b=()
+    local _line2padded=''
+    local _pivot=$1
+    shift
+
+    # A/B split
+    for str in "$@"; do
+        _sort_pad "_line1padded" "$str"
+        _sort_pad "_line2padded" "$_pivot"
+
+        if [[ "$_line1padded" > "$_line2padded" ]]; then
+            _partition_b+=("$str")
+        else
+            _partition_a+=("$str")
+        fi
+    done
+
+    # Recursion on A side
+    if [ "${#_partition_a[@]}" -gt 0 ]; then
+        _quicksort "${_partition_a[@]}"
+        _partition_a=("${_quicksort_output[@]}")
+    fi
+
+    # Recursion on B side
+    if [ "${#_partition_b[@]}" -gt 0 ]; then
+        _quicksort "${_partition_b[@]}"
+        _partition_b=("${_quicksort_output[@]}")
+    fi
+
+    # Merge results
+    _quicksort_output=()
+    if [ "${#_partition_a[@]}" -gt 0 ]; then
+        _quicksort_output+=("${_partition_a[@]}")
+    fi
+    _quicksort_output+=("$_pivot")
+    if [ "${#_partition_b[@]}" -gt 0 ]; then
+        _quicksort_output+=("${_partition_b[@]}")
+    fi
+}
+
+
+#==========
+# _sort_pad
+#
+# Helper function for comparison routines to pad number parts of string to 10 digits.
+# Example: "1" padded turns into "0000000001"
+#
+# Parameters:
+#   $1: name of variable to store result in.
+#   $2: string to zero pad to 10 digits.
+#
+#==========
+_sort_pad()
+{
+    local _output=$1
+    shift
+
+    local _s=$1
+    shift
+
+    local _s2="" _tmp=""
+    while [[ $_s =~ ([^0-9.]*)([0-9]+)(.*) ]]; do
+        _tmp=$(printf "%010d" "${BASH_REMATCH[2]}")
+        _s2=$_s2${BASH_REMATCH[1]}$_tmp
+        _s=${BASH_REMATCH[3]}
+    done
+    _s2=$_s2$_s
+    eval "$_output=\$_s2"
+}
+
+#=============
+# _source_added
+#
+# Source all sh/bash files added so far with _source and then resets the list.
+#
+# Expects:
+#   _SOURCE_FILES
+#
+#=============
+_source_added()
+{
+    local _file=''
+    local _i=0
+    while [ "$_i" -lt "${#_SOURCE_FILES[@]}" ]; do
+        _file=${_SOURCE_FILES[$_i]}
+        _source_file "${_file}"
+        [ "$?" -gt 0 ] && return 1
+        _i=$(( _i + 1 ))
+    done
+    unset _file _i
+    _SOURCE_FILES=()    # Reset the list.
+}
+
+#=============
+# _source
+#
+# Add a file to be sourced later, before execution.
+#
+# Parameters:
+#   $1: file name
+#
+# Expects:
+#   _SOURCE_FILES
+#
+#=============
+_source()
+{
+    local _filename=$1
+    shift
+
+    if [ "${_filename##*.}" = "bash" ]; then
+        _FORCE_BASH="1"
+    fi
+
+    _SOURCE_FILES+=("$_filename")
+}
+
+#==========
+# _source_file
+#
+# Source a file
+#
+# Parameters:
+#   $1: file path(s), relative or absolute.
+#
+# Expects:
+#   _SOURCE_FILES_TOTAL
+#
+#==========
+_source_file()
+{
+    local _filepaths=$1
+    shift
+
+    local _filepath=''
+    for _filepath in $_filepaths; do
+        if [ ! -f "$_filepath" ]; then
+            _error "Could not source file \"$_filepath\". Try to run space using -C0 flag to invalidate the cache and have modules cloned again if they were removed."
+            return 1
+        fi
+        local _i=
+        for ((_i=0; _i<${#_SOURCE_FILES_TOTAL[@]}; _i+=1 )); do
+            if [[ $_filepath == "${_SOURCE_FILES_TOTAL[$_i]}" ]]; then
+                continue 2
+            fi
+        done
+        unset _i
+        _debug "Source file \"$_filepath\""
+        local _status=0
+        trap '_status=$?; return 0;' ERR
+        # DIR is a "global" variable which could be used to get the directory
+        # for the current file being sourced.
+        # shellcheck disable=2034
+        local DIR=${_filepath%/*}
+        # shellcheck disable=1090
+        . "$_filepath"
+        unset DIR
+        trap - ERR
+        [ "$_status" -gt 0 ] && { _error "Could not source script ${_filepath}. Syntax error?"; return 1; }
+        _SOURCE_FILES_TOTAL+=("${_filepath}")
+    done
+}
+
+#==========
+# _parse_yaml
+#
+# Parse well formatted YAML document into Bash variables.
+#
+# Parameters:
+#   $1: name of variable to read YAML from.
+#   $2: name of array variable to append to.
+#   $3: name of array to use as completion array.
+#
+# Expects:
+#   _SPACEGAL_EOF_TAG
+#   array items must be indented at least one space from its parents
+#
+#==========
+_parse_yaml()
+{
+    local _invarname=$1
+    shift
+    local _outvarname=$1
+    shift
+    local _outcompletionvarname=$1
+    shift
+
+    local _allrows=()
+    eval "_allrows=(\"\${${_invarname}[@]}\")"
+
+    local _numrows=${#_allrows[@]}
+    local _rowindex=0
+    local _lastindent=0 _nodes=("/") _lastkey="" _prefix="/"
+    local _indent=0 _rowtype='' _key='' _readahead=() _nextindent=0
+    local _arrayextraindent=0
+    local _output=''
+
+    while _yaml_get_next 0;
+    do
+        # Set node prefix for changed indentation level.
+        if [ "$_indent" -gt "$_lastindent" ]; then
+            # Increasing indentation level, add to prefix.
+            _prefix="$_prefix$_lastkey/"
+            _nodes[$_indent]=$_prefix
+        elif [ "$_indent" -lt "$_lastindent" ]; then
+            # Decreasing indentation level, fallback to earlier prefix.
+            _prefix=${_nodes[$_indent]}
+        fi
+        _lastindent=$_indent
+        case "${_rowtype}" in
+            leaf) # A regular key value row.
+                local _varname=$_prefix$_key
+
+                # Add to node name completion list.
+                local _completionname="${_varname}/"
+                local _item=
+                # Break down the path and add each sub path as completion name, early quit when
+                # a path is found since we are guaranteed all the remaining sub paths are already added.
+                while :; do
+                    eval '
+                    for _item in "${'$_outcompletionvarname'[@]-}"; do
+                        if [[ $_item == "${_completionname} 0" || $_item == "${_completionname} 1" ]]; then
+                            break 2
+                        fi
+                    done
+                    '
+                    if [ "$_completionname" = "${_varname}/" ]; then
+                        # The leaf node
+                        eval "$_outcompletionvarname+=(\"${_completionname} 1\")"
+                    else
+                        eval "$_outcompletionvarname+=(\"${_completionname} 0\")"
+                    fi
+                    if [ $_completionname = "/" ]; then
+                        break
+                    fi
+                    _completionname=${_completionname%/*/}/
+                done
+                unset _item
+                unset _completionname
+
+                _varname=${_varname//_/0a95}
+                _varname=${_varname//\//_}
+                if ((${#_readahead[@]} == 0)); then
+                    # Simulate multiline value for the single line
+                    if [[ ${value//\ } != "" ]]; then
+                        _readahead[0]="$value"
+                    else
+                        _readahead[0]=""
+                    fi
+                else
+                    # Check if to collapse new lines.
+                    if [[ ${value:0:1} == ">" ]]; then
+                        local _s=${_readahead[@]}
+                        _readahead=("$_s")
+                    fi
+                fi
+                eval "$_outvarname+=(\"\$_varname\")"
+                local _line=
+                for _line in "${_readahead[@]}"; do
+                    _output=$(printf "%s" "$_line")
+                    eval "$_outvarname+=(\"\$_output\")"
+                done
+                eval "$_outvarname+=(\"\$_SPACEGAL_EOF_TAG\")"
+                _lastkey=$_key
+                ;;
+            object) # Start of new object
+                _lastkey=$_key
+                ;;
+            arrayobject)
+                # New array object begins
+                # Output key index at given indent
+                local _i=$(($_indent+$_arrayextraindent))
+                local _varname="_index_count${_prefix//\//_}"
+                local _count=${!_varname-0}
+                eval "local $_varname=$(($_count+1))"
+                local _subrows=()
+                # Reinsert the key value of first line to have it handled as a normal leaf.
+                if [ -z "$_key" ]; then
+                    _output=$(printf "%*s%s" $_i "" "$_count: $value")
+                else
+                    _output=$(printf "%*s%s" $_i "" "$_key: $value")
+                fi
+                _subrows+=("$_output")
+                if ((${#_readahead[@]} > 0)); then
+                    _i=$(( _i + 4 ))
+                    local _line=
+                    for _line in "${_readahead[@]}"; do
+                        _output=$(printf "%*s%s" $_i "" "$_line")
+                        _subrows+=("$_output")
+                    done
+                fi
+                _allrows=("${_allrows[@]:0:$_rowindex}" "${_subrows[@]}" \
+                    "${_allrows[@]:$_rowindex:$_numrows-$_rowindex}")
+                ((_numrows+=${#_subrows[@]}))
+                _lastkey=$_count
+                ;;
+        esac
+    done
+}
+
+#==========
+# _pp_yaml
+#
+# Preprocess YAML
+#
+# Parameters:
+#   $1: name of variable to store result in.
+#   $2: filepath to read YAML from.
+#   $3: filter
+#   $4: subdoc
+#   $5-x: preprocess variable value assigned to @1, etc.
+#
+# Expects:
+#   _yamlfilelist
+#   _SPACEGAL_EOF_TAG
+#   _CACHE_LEVEL
+#
+# Returns:
+#   1 if YAML file not found.
+#   2 if recursion error occurred.
+#   3 if failed to clone modules 
+#   4 if assertion failure was triggered.
+#
+#==========
+_pp_yaml()
+{
+    local _varname=$1
+    shift
+    local _filepath=$1
+    shift
+    local _filter=${1:-/}
+    shift || :
+    local _inheritedindent=${1:-0}
+    shift || :
+    local _inheritedprefix=${1-/}
+    shift || :
+    # Read preprocess variables
+    local _count=1
+    while [ ${#@} -gt 0 ]; do
+        eval "local _PP_$_count=\$1"
+        shift
+        _count=$(( _count + 1 ))
+    done
+    if [[ ${_filter:0:1} != "/" ]]; then
+        _filter="/$_filter"
+    fi
+    if [[ ${_filter: -1} != "/" ]]; then
+        _filter="$_filter/"
+    fi
+    local _subdoc=()
+    if [[ -n ${_readahead[@]-} && (( ${#_readahead[@]} > 0 )) ]]; then
+        _subdoc=("${_readahead[@]}")  # Inherited from recursive parent.
+    fi
+
+    # Look at the filepath if it's relative
+    # and search through paths to find the file.
+    if [[ ${_filepath:0:1} != "/" ]]; then
+        local _dir=
+        while :; do
+            # Check path relative to current YAML file's dir _PP_DIR.
+            if [ -f "$_PP_DIR/$_filepath" ]; then
+                _filepath=$_PP_DIR/$_filepath
+                break
+            fi
+            for _dir in ${_INCLUDEPATH[@]}; do
+                if [ -f "$_dir/$_filepath" ]; then
+                    _filepath=$_dir/$_filepath
+                    break
+                fi
+            done
+            break
+        done
+    fi
+
+    # Check so that the YAML file exists.
+    if [ ! -e "$_filepath" ]; then
+        return 1
+    fi
+
+    # Preprocess variable that points to the dir of the YAML file being processed.
+    local _PP_DIR=${_filepath%/*}
+
+    local _allrows=() _rowindex=0
+    IFS=$'\n' read -d '' -r -a _allrows < "$_filepath"
+    local _numrows=${#_allrows[@]}
+
+    if [[ ! $_yamlfilelist =~ "$_filepath " ]]; then
+        _yamlfilelist="${_yamlfilelist}$_filepath "
+    fi
+
+    local _lastindent=0 _filterindent=-1 _nodes=("/") _lastkey="" _prefix="/"
+    local _indent=0 _rowtype='' _key='' _readahead=() _nextindent=0
+    local _includefile='' _includefilter='' _includevariables=''
+    local _arrayextraindent=0 _output=''
+    while _yaml_get_next 1;
+    do
+        if [ "$_rowtype" = "" ]; then
+            continue;
+        fi
+
+        # Set node prefix for changed indentation level.
+        if [ "$_indent" -gt "$_lastindent" ]; then
+            # Increasing indentation level, add to prefix.
+            _prefix=$_prefix$_lastkey\/
+            _nodes[$_indent]=$_prefix
+        elif [ "$_indent" -lt "$_lastindent" ]; then
+            # Decreasing indentation level, fallback to earlier prefix.
+            _prefix=${_nodes[$_indent]}
+        fi
+        _lastkey=$_key
+        _lastindent=$_indent
+
+        # We use this to recognize @includes as immediate child nodes to get the
+        # subdoc insertion correctly done for multiple includes.
+        local _immediatechild=0
+
+        # Check if filtering wants this.
+        if [[ "$_prefix$_key" =~ ^$_filter ]]; then
+            # Filter matched, if first time save indent as the base level indent.
+            if [ "$_filterindent" -eq -1 ]; then
+                _filterindent=$_indent
+            fi
+            if [[ $_rowtype != "assign" && $_rowtype != "debug" && $_rowtype != "clone" && ${_key:0:1} != "_" && "$_prefix$_key/" =~ ^${_filter}([a-zA-Z0-9_])+/$ ]]; then
+                _immediatechild=1
+            fi
+            if [[ $_rowtype == "include" && "$_prefix$_key/" =~ ^${_filter}/$ ]]; then
+                _immediatechild=2
+
+            fi
+            # Check if we are on an immediate child to the filtered match and
+            # that it is an object node, if so inject subdoc if given.
+            if [[ $_immediatechild == 1 && ${#_subdoc[@]} -gt 0 ]]; then
+                local _subrow= _subrows=()
+                for _subrow in "${_subdoc[@]}"; do
+                    local _i=$(($_indent+$_nextindent))
+                    _subrow=$(printf "%*s%s" $_i "" "$_subrow")
+                    _subrows+=("$_subrow")
+                done
+                _allrows=("${_allrows[@]:0:$_rowindex}" "${_subrows[@]}" \
+                    "${_allrows[@]:$_rowindex:$_numrows-$_rowindex}")
+                ((_numrows+=${#_subrows[@]}))
+            fi
+        else
+            _filterindent=-1
+            continue
+        fi
+
+        local _actualindent=$(($_indent-$_filterindent+$_inheritedindent))
+        # Here we need to do the postponed preprocess variable substitution of @{parent}.
+        local _parentpath=
+        _parentpath=$_inheritedprefix${_prefix#$_filter}
+        _key=${_key//_PP_PARENTPATH/$_parentpath}
+        value=${value//_PP_PARENTPATH/$_parentpath}
+
+        local _s=${_parents[$_actualindent]-}  # Get preprocess variable "parent".
+        _key=${_key//_PP_PARENT/$_s}
+        value=${value//_PP_PARENT/$_s}
+        unset _s
+
+        case "${_rowtype}" in
+            assign) # Assign a preprocess variable
+                local _ppkey=_PP_$_key
+                local _s="local ${_ppkey} ; read -d '' -r ${_ppkey} << $_SPACEGAL_EOF_TAG"$'\n'"${value}"$'\n'"$_SPACEGAL_EOF_TAG"$'\n'":"$'\n'
+                eval "$_s"
+                unset _s _ppkey
+                ;;
+            prompt) # Prompt a value for a pp variable.
+                local _ppkey=_PP_$_key
+                local _s=$(prompt "$value")
+                eval "$_ppkey=\$_s"
+                unset _s _ppkey
+                ;;
+            include) # Do an include of a file
+                local _i=$(($_indent-$_filterindent+$_inheritedindent))
+                if [[ $_immediatechild == 2 && ${#_readahead[@]} == 0 ]]; then
+                    if (( ${#_subdoc[@]} > 0 )); then
+                        _readahead=("${_subdoc[@]}")
+                    fi
+                fi
+                _pp_yaml "$_varname" "${_includefile:-$_filepath}" "$_includefilter" $_i "${_parentpath}" $_includevariables
+                local _status=$?
+                if [ $_status -eq 1 ]; then
+                    _error "[$_filepath: $(($_rowindex))] Could not find file \"$_includefile\"."
+                    return 2
+                elif [ $_status -gt 1 ]; then
+                    return $_status
+                fi
+                ;;
+            clone) # Clone module(s)
+                local _i=$(($_indent-$_filterindent+$_inheritedindent))
+                # _retrepo variable is populated by _module_clone
+                local _retrepo='' _repos="" _v=
+                for _v in $value; do
+                    _module_clone "_retrepo" "$_v"
+                    local _status=$?
+                    if [ $_status -gt 0 ]; then
+                        _error "[$_filepath: $(($_rowindex))] Could not clone module repository \"$value\"."
+                        return 3
+                    fi
+                    if [ -n "$_retrepo" ]; then
+                        _repos="$_repos $_retrepo"
+                    fi
+                done
+                if [ -n "$_repos" ]; then
+                    _output=$(printf "%*s%s" $_i "" "_source: $_repos")
+                    eval "$_varname+=(\"\$_output\")"
+                fi
+                ;;
+            debug) # Output debug info
+                _debug "@debug: $value"
+                ;;
+            assert) # Do assertion
+                _debug "@assert: $value"
+                if [[ $value =~ (.*)\ (.*) ]]; then
+                    local _fn=${BASH_REMATCH[1]}
+                    local _val=${BASH_REMATCH[2]}
+                    if [[ ${_val:0:1} == "@" ]]; then
+                        eval "_val=\${_PP_${_val:1}-}"
+                    elif [[ ${_val:0:1} == "$" ]]; then
+                        eval "_val=\${${_val:1}-}"
+                    fi
+                    if [ "$_fn" = "nonempty" ] && [ -z "$_val" ]; then
+                        _error "Assertion failed: $value: $_filepath:$_rowindex"
+                        return 4
+                    fi
+                fi
+                ;;
+            cache) # Change cache behaviour
+                _debug "@cache: $value"
+                _CACHE_LEVEL=$value
+                ;;
+            leaf) # A regular key value row.
+                local _i=$(($_indent-$_filterindent+$_inheritedindent))
+                if [ "${#value}" -eq 0 ]; then
+                    _output=$(printf "%*s%s" $_i "" "$_key:")
+                else
+                    _output=$(printf "%*s%s" $_i "" "$_key: $value")
+                fi
+                eval "$_varname+=(\"\$_output\")"
+                if ((${#_readahead[@]} > 0)); then
+                    _i=$(( _i + 4 ))
+                    local _line=
+                    for _line in "${_readahead[@]}"; do
+                        _output=$(printf "%*s%s" $_i "" "$_line")
+                        eval "$_varname+=(\"\$_output\")"
+                    done
+                fi
+                ;;
+            object) # Start of new object
+                local _i=$(($_indent-$_filterindent+$_inheritedindent))
+                local _i2=$(($_i+$_nextindent))
+                _output=$(printf "%*s%s" $_i "" "$_key:")
+                eval "$_varname+=(\"\$_output\")"
+                # Set the parent node for the sub nodes following
+                _parents[$_i2]=$_key
+                ;;
+            arrayobject) # Array item object start
+                # Output key index at given indent, also readahead.
+                local _i2=$(($_indent-$_filterindent+$_inheritedindent))
+                local _i3=$(($_arrayextraindent-1))
+                local _i4=$(($_i2+$_i3+4))
+                if [ -z "$_key" ]; then
+                    # index item
+                    _output=$(printf "%*s-%*s%s" $_i2 "" $_i3 "" "$value")
+                elif [ -n "$value" ]; then
+                    _output=$(printf "%*s-%*s%s" $_i2 "" $_i3 "" "$_key: $value")
+                else
+                    _output=$(printf "%*s-%*s%s" $_i2 "" $_i3 "" "$_key:")
+                fi
+                eval "$_varname+=(\"\$_output\")"
+                if ((${#_readahead[@]} > 0)); then
+                    local _line=
+                    for _line in "${_readahead[@]}"; do
+                        _output=$(printf "%*s%s" $_i4 "" "$_line")
+                        eval "$_varname+=(\"\$_output\")"
+                    done
+                fi
+                ;;
+        esac
+        unset _parentpath
+    done
+}
+
+#==========
+# _yaml_get_row
+#
+# MACRO helper to get a single row from the feed
+# and substitute preprocess variables in that row.
+# It relies on caller-defined local variables.
+#
+# Parameters:
+#   $1: row index
+#   $2: preprocessing switch
+#
+# Expects:
+#   _allrows
+#   _PP_${value}
+#
+#==========
+_yaml_get_row()
+{
+    local _index=$1
+    shift
+    local _dopreprocess=$1
+    shift
+
+    _row=${_allrows[$_index]}
+    while [[ $_dopreprocess == "1" && $_row =~ ^(.*)\@\{([\ @a-zA-Z0-9_:-]+)\}(.*)$ ]]; do
+        # Substitute preprocessed variable
+        local _left=${BASH_REMATCH[1]}
+        local _s=${BASH_REMATCH[2]}
+        local _right=${BASH_REMATCH[3]}
+        if [[ $_s =~ ([a-zA-Z0-9_]+)(:?\-)(.+) ]]; then
+            local _substvar=_PP_${BASH_REMATCH[1]}
+            local _op=${BASH_REMATCH[2]}
+            local _substvar2=${BASH_REMATCH[3]}
+            if [[ ${_substvar2:0:1} == "@" ]]; then
+                _substvar2=_PP_${_substvar2:1}
+                local _substvalue2=${!_substvar2-}
+            else
+                local _substvalue2=$_substvar2
+            fi
+            local _substvalue=
+            if [ "$_op" = "-" ]; then
+                _substvalue=${!_substvar-$_substvalue2}
+            else
+                _substvalue=${!_substvar:-$_substvalue2}
+            fi
+        else
+            local _substvar=_PP_$_s
+            local _substvalue=${!_substvar-}
+        fi
+
+        _row=${_left}${_substvalue}${_right}
+    done
+}
+
+#==========
+# _yaml_get_next
+#
+# MACRO helper to _pp_yaml and _parse_yaml.
+# It relies on caller-defined local variables.
+#
+# Parameters:
+#   $1: preprocessing switch
+#
+# Expects:
+#   _rowindex
+#   _numrows
+#
+# Returns:
+#   0: if there are more rows to process
+#   1: no more rows to process
+#
+#==========
+_yaml_get_next()
+{
+    if [ "$_rowindex" -ge "$_numrows" ]; then
+        return 1
+    fi
+
+    local _dopreprocess=${1}
+    shift
+
+    # This particular preprocess value will have its substitution postponed because
+    # we do not know the correct parent node already.
+    local _PP_PARENT=_PP_PARENT
+    local _PP_PARENTPATH=_PP_PARENTPATH
+
+    local _row=
+    _yaml_get_row "$_rowindex" "$_dopreprocess"
+    _rowindex=$(( _rowindex + 1 ))
+
+    _key=""
+    value=""
+    _rowtype=""
+    _readahead=()
+
+    if [[ $_row =~ ^([\ ]*)(\@include)[\ ]*:(-?)[\ ]+(.*) ]]; then
+        _indent=${#BASH_REMATCH[1]}
+        _key=
+        local _op=${BASH_REMATCH[3]}
+        value=${BASH_REMATCH[4]}
+        _includevariables=
+        if [[ $value =~ ^(.*)[\ ]*\|[\ ]*(.*) ]]; then
+            _includefile=${BASH_REMATCH[1]}
+            local _s=${BASH_REMATCH[2]}
+            if [[ $_s =~ (.*)\((.*)\)$ ]]; then
+                _includefilter=${BASH_REMATCH[1]}
+                _includevariables=${BASH_REMATCH[2]}
+            else
+                _includefilter=$_s
+            fi
+        else
+            _includefile=$value
+            _includefilter=""
+        fi
+        _yaml_get_multiline 0
+        # Check if $_includefile is a module
+        if [[ -n $_includefile && ! $_includefile =~ \.yaml$ ]]; then
+            _module_find_yaml "$_includefile" "_includefile"
+        fi
+        if [ "$_op" = "-" ] && [ ! -f "$_includefile" ]; then
+             # Ignore missing yaml file.
+            _rowtype=""
+        else
+            _rowtype="include"
+        fi
+    elif [[ $_row =~ ^([\ ]*)(\@clone)[\ ]*:[\ ]+(.*) ]]; then
+        _indent=${#BASH_REMATCH[1]}
+        _key=
+        value=${BASH_REMATCH[3]}
+        _rowtype="clone"
+    elif [[ $_row =~ ^([\ ]*)(\@debug)[\ ]*:[\ ]+(.*) ]]; then
+        _indent=${#BASH_REMATCH[1]}
+        _key=
+        value=${BASH_REMATCH[3]}
+        _rowtype="debug"
+    elif [[ $_row =~ ^([\ ]*)(\@assert)[\ ]*:[\ ]+(.*) ]]; then
+        _indent=${#BASH_REMATCH[1]}
+        _key=
+        value=${BASH_REMATCH[3]}
+        _rowtype="assert"
+    elif [[ $_row =~ ^([\ ]*)(\@cache)[\ ]*:[\ ]+(.*) ]]; then
+        _indent=${#BASH_REMATCH[1]}
+        _key=
+        value=${BASH_REMATCH[3]}
+        _rowtype="cache"
+    elif [[ $_row =~ ^([\ ]*)(\@prompt)[\ ]*:(-?)[\ ]+([^\ ]+)[\ ](.*) ]]; then
+        _indent=${#BASH_REMATCH[1]}
+        local _op=${BASH_REMATCH[3]}
+        _key=${BASH_REMATCH[4]}
+        value=${BASH_REMATCH[5]}
+        if [ "$_op" = "-" ]; then
+            # @prompt:- means only prompt on variable if it lacks a value or is unset.
+            local _pp_varname="_PP_$_key"
+            if [[ -n ${!_pp_varname-} ]]; then
+                return 0
+            fi
+        fi
+        _rowtype="prompt"
+    elif [[ $_row =~ ^([\ ]*)\@([a-zA-Z0-9_]+)[\ ]*(:|:-|:\+)\ (.*) ]]; then
+        # Assign preprocess variable.
+        _indent=${#BASH_REMATCH[1]}
+        _key=${BASH_REMATCH[2]}
+        local _op=${BASH_REMATCH[3]}
+        if [ "$_op" = ":-" ]; then
+            # @var:- means only assign variable if it lacks a value or is unset.
+            local _pp_varname="_PP_$_key"
+            if [[ -n ${!_pp_varname-} ]]; then
+                return 0
+            fi
+        elif [ "$_op" = ":+" ]; then
+            # @var:+ means only assign variable if it already has a value.
+            local _pp_varname="_PP_$_key"
+            if [[ -z ${!_pp_varname-} ]]; then
+                return 0
+            fi
+        elif [ "$_op" = ":" ]; then
+            # @var: means always assign to variable.
+            # Fall through.
+            :
+        fi
+        value=${BASH_REMATCH[4]}
+        _rowtype="assign"
+    elif [[ $_row =~ ^([\ ]*)\@([a-zA-Z0-9_]+)[\ ]*(:|:-|:\+)$ ]]; then
+        # Unset a preprocess variable.
+        _indent=${#BASH_REMATCH[1]}
+        _key=${BASH_REMATCH[2]}
+        local _op=${BASH_REMATCH[3]}
+        if [ "$_op" = ":-" ]; then
+            # @var:- means only unset variable if it lacks a value or is unset.
+            local _pp_varname="_PP_$_key"
+            if [[ -n ${!_pp_varname-} ]]; then
+                return 0
+            fi
+        elif [ "$_op" = ":+" ]; then
+            # @var:+ means only unset variable if it has a value.
+            local _pp_varname="_PP_$_key"
+            if [[ -z ${!_pp_varname-} ]]; then
+                return 0
+            fi
+        elif [ "$_op" = ":" ]; then
+            # @var: means always unset variable.
+            # Fall through.
+            :
+        fi
+        eval "unset _PP_$_key"
+    elif [[ $_row =~ ^([\ ]*)([a-zA-Z0-9_]+)[\ ]*:[\ ]?(.*) ]]; then
+        # Key value or new object/array row
+        _indent=${#BASH_REMATCH[1]}
+        _key=${BASH_REMATCH[2]}
+        value=${BASH_REMATCH[3]}
+        if [[ ${value//\ } != "" ]]; then
+            # This row has a value (other than spaces)
+            _rowtype="leaf"
+            # Check if we should do a read ahead.
+            if [[ ${value:0:1} == "|" || ${value:0:1} == ">" ]]; then
+                _yaml_get_multiline "$_dopreprocess"
+            fi
+        else
+            value=""
+            # This node has no value, we must figure out if it's
+            # an empty leaf or an object.
+
+            # Find out the nextindent level for an object row.
+            local _yamlindent=0
+            _yaml_find_nextindent
+            if [ "$_yamlindent" -gt "$_indent" ]; then
+                _rowtype="object"
+            else
+                _rowtype="leaf"
+            fi
+            unset _yamlindent
+        fi
+    elif [[ $_row =~ ^([\ ]*)\-([\ ]+)([a-zA-Z0-9_]+)[\ ]*:[\ ]+(.*) ||
+             $_row =~ ^([\ ]*)\-([\ ]+)([a-zA-Z0-9_]+)[\ ]*:($) ]]; then
+        # Array item with child object.
+        _indent=${#BASH_REMATCH[1]}
+        _arrayextraindent=$((${#BASH_REMATCH[2]}+1))
+        _key=${BASH_REMATCH[3]}
+        value=${BASH_REMATCH[4]}
+        _rowtype="arrayobject"
+        if [[ ${value//\ } != "" ]]; then
+            # This row has a value (other than spaces)
+            # Check if we should do a read ahead.
+            if [[ ${value:0:1} == "|" || ${value:0:1} == ">" ]]; then
+                _yaml_get_multiline "$_dopreprocess"
+            fi
+        fi
+    elif [[ $_row =~ ^([\ ]*)\-[\ ]+(.*) || $_row =~ ^([\ ]*)\-($) ]]; then
+        # Array index item with only value.
+        _indent=${#BASH_REMATCH[1]}
+        _arrayextraindent=0
+        _key=
+        value=${BASH_REMATCH[2]}
+        _rowtype="arrayobject"
+        if [[ ${value//\ } != "" ]]; then
+            # This row has a value (other than spaces)
+            # Check if we should do a read ahead.
+            if [[ ${value:0:1} == "|" || ${value:0:1} == ">" ]]; then
+                _yaml_get_multiline "$_dopreprocess"
+            fi
+        fi
+    else
+        # Unknown row
+        :
+    fi
+    return 0
+}
+
+#==========
+# _yaml_find_nextindent
+#
+# Peek into object for the given indentation level.
+# It relies on caller-defined local variables.
+#
+# Expects:
+#   _allrows
+#   _indent
+#   _numrows
+#   _rowindex
+#
+#==========
+_yaml_find_nextindent()
+{
+    local _i=$_rowindex
+    _nextindent=4  # Default value
+    _yamlindent=0
+
+    while :; do
+        if [ "$_i" -ge "$_numrows" ]; then
+            return
+        fi
+        local _peekrow=${_allrows[$_i]}
+        #_error PEEK $_peekrow
+        _i=$(( _i + 1 ))
+        if [[ $_peekrow =~ ^([\ ]*)\-([\ ]+)[a-zA-Z0-9_]+[\ ]*:[\ ]*.* ]]; then
+            _yamlindent=$((${#BASH_REMATCH[1]}+${#BASH_REMATCH[2]}+1))
+            break
+        elif [[ $_peekrow =~ ^([\ ]*)([a-zA-Z0-9_@]+)[\ ]*:[\ ]*(.*) ]]; then
+            _yamlindent=${#BASH_REMATCH[1]}
+            break
+        elif [[ $_peekrow =~ ^([\ ]*)\-[\ ]*$ ]]; then
+            _yamlindent=$((${#BASH_REMATCH[1]}))
+            break
+        fi
+    done
+    if [ "$_yamlindent" -gt "$_indent" ]; then
+        _nextindent=$(($_yamlindent-$_indent))
+    fi
+}
+
+#==========
+# _yaml_get_multiline
+#
+# MACRO helper function.
+# It relies on caller-defined local variables.
+#
+# Parameters:
+#   $1: preprocessing switch
+#
+# Expects:
+#   _indent
+#   _numrows
+#   _rowindex
+#
+#==========
+_yaml_get_multiline()
+{
+    local _dopreprocess=$1
+    shift
+
+    if [ "$_rowindex" -ge "$_numrows" ]; then
+        return
+    fi
+    local _row=
+    _yaml_get_row "$_rowindex" "$_dopreprocess"
+    if [[ $_row =~ ^([\ ]+)([^\ ].*) ]]; then
+        local _subindent=${#BASH_REMATCH[1]}
+        local _subvalue=${BASH_REMATCH[2]}
+        if [ "$_subindent" -gt "$_indent" ]; then
+            _readahead+=("$_subvalue")
+            while :; do
+                _rowindex=$(( _rowindex + 1 ))
+                if [ "$_rowindex" -ge "$_numrows" ]; then
+                    break
+                fi
+                _yaml_get_row "$_rowindex" "$_dopreprocess"
+                if [[ $_row =~ ^([\ ]+)([^\ ].*) || $_row =~ ^([\ ]{$_subindent})(.*) ]]; then
+                    local _subindent2=${#BASH_REMATCH[1]}
+                    if [ "$_subindent2" -lt "$_subindent" ]; then
+                        break
+                    fi
+                    _subvalue=$(printf "%*s%s" $(($_subindent2-$_subindent)) "" \
+                        "${BASH_REMATCH[2]}")
+                    _readahead+=("$_subvalue")
+                else
+                    break
+                fi
+            done
+        fi
+    fi
+}
+
+#==================
+# clone
+#
+# Clone modules repositories,
+# and add the sh/bash file for sourcing.
+#
+# Parameters:
+#   $@: module name(s) to clone
+#
+# Expects:
+#   CWD
+#   _MODULES_SHARED
+#
+# Returns:
+#   0: success
+#   1: failure
+#
+#==================
+clone()
+{
+    local _modules="${@}"
+    shift
+
+    # Cloning will always be to $_INCLUDEPATH[1],
+    # so here we set that to be in the shared area.
+    local _INCLUDEPATH=($CWD/space_modules $_MODULES_SHARED $CWD)
+    local _loadmod=
+    for _loadmod in ${_modules}; do
+        local _sourcefile= _rf=
+        _module_clone "_sourcefile" "$_loadmod"
+        local _status=$?
+        if [ $_status -gt 0 ]; then
+            _error "Could not clone module repository \"$_loadmod\"."
+            return 1
+        fi
+        unset _status
+        if [[ -n $_sourcefile ]]; then
+            _source "$_sourcefile"
+        else
+            _debug "No sh/bash file found when loading module $_loadmod"
+        fi
+        unset _sourcefile
+    done
+    return 0
+}
+
+#==========
+# _module_clone
+#
+# Clone a module Git repository.
+#
+# Parameters:
+#   $1: variable name to put the module name which is to be "_sourced".
+#   $2: modulename inclusive optional Git commit: [https://[gitlab.com/]][username/]repo[:v1.1]
+#
+# Returns:
+#   0 on success, non-zero otherwise
+#
+#==========
+_module_clone()
+{
+    local _repo=$1
+    shift
+
+    local _mod=$1
+    shift
+
+    local _protocol=
+    local _domain=
+    local _domainuser=
+    local _username=
+    local _reponame=""
+    local _commit=
+    local _str_commit=
+    local _repofullname=
+    _extract_repo_parts "${_mod}"
+    (( $? > 0 )) && return 1
+
+    local _repodir=$_domain/$_username/$_reponame$_str_commit
+
+    # Check to see of the repo is already existing.
+    local _dir=
+    for _dir in ${_INCLUDEPATH[@]}; do
+        if [[ -d $_dir/$_repodir ]]; then
+            break
+        fi
+        _dir=
+    done
+
+    if [[ -z $_dir ]]; then
+        # Directory does not exist
+
+        # Check so that we are not bash auto completing
+        if [[ $_BASH_COMPLETION != "0" ]]; then
+            return 1
+        fi
+
+        _dir=${_INCLUDEPATH[1]}/$_repodir
+        if [[ ! -z $_domainuser ]]; then
+            _domainuser="$_domainuser@"
+        elif [[ $(_to_lower $_protocol) == "ssh" ]]; then
+            _domainuser="git@"
+        fi
+        local _giturl=$_protocol://$_domainuser$_domain/$_repofullname
+
+        # Check the module banlist.
+        _module_check_banlist "$_giturl"
+        (( $? > 0 )) && return 1
+
+        if ! command -v git >/dev/null; then
+            # Git is not installed, check if we could use fallback.
+            local _d=$(_to_lower $_domain)
+            local _p=$(_to_lower $_protocol)
+            if [[ $_p != "https" ]]; then
+                _error "Could not clone module since Git is not installed."
+                return 1
+            fi
+            if [[ $_HTTPBIN == "" ]]; then
+                _error "Could not clone module since Git is not installed. Nor curl or wget is available as fallback."
+                return 1
+            fi
+            if [[ $_d == "github.com" || $_d == "gitlab.com" || $_d == "bitbucket.org" ]]; then
+                if [[ $_SECURITY_ALLOW_HTTPS_FALLBACK != "1" ]]; then
+                    _error "Git is not installed. We could however try to download the module Git repository over HTTPS if you provide the -S switch."$'\n'"Note that this module will not then be possible to update, so only use this for special cases when you cannot install and use Git."
+                    return 1
+                else
+                    # Fetch tarball from Git host into /tmp, unpack it and move it to the right place.
+                    _info "Downloading tarball \"$_giturl\" over HTTPS using: $_HTTPBIN."
+                    # EXTERNAL: mktemp, tar, curl/wget
+                    local _tmpdir=$(mktemp -d 2>/dev/null || mktemp -d -t 'sometmpdir')
+                    (( $? > 0 )) && { _error "Could not mktemp."; return 1; }
+                    if [[ $_d == "github.com" ]]; then
+                        local _durl="$_giturl/archive/${_commit}.tar.gz"
+                    elif [[ $_d == "gitlab.com" ]]; then
+                        local _durl="$_giturl/repository/archive.tar.gz?ref=${_commit}"
+                    elif [[ $_d == "bitbucket.org" ]]; then
+                        local _durl="$_giturl/get/${_commit}.tar.gz"
+                    fi
+                    {
+                        if [[ $_HTTPBIN == "curl" ]]; then
+                            $_HTTPBIN -sL $_durl
+                        elif [[ $_HTTPBIN == "wget" ]]; then
+                            $_HTTPBIN -q -O- $_durl
+                        fi
+                    } | tar -xvzf - -C $_tmpdir
+                    (( $? > 0 )) && { _error "Could not fetch and unpack tarball for $_giturl."; return 1; }
+                    # EXTERNAL: find
+                    local _tmpdir2=$(find $_tmpdir -maxdepth 1 -mindepth 1)
+                    # EXTERNAL: mkdir
+                    mkdir -p ${_dir%/*}
+                    # EXTERNAL: mv
+                    mv $_tmpdir2 $_dir
+                fi
+            else
+                _error "Could not clone module since Git is not installed. Only gitlab.com/github.com/bitbucket.org work with curl/wget fallback."
+                return  1
+            fi
+        else
+            # EXTERNAL: git, rm
+            _info "Git clone $_giturl into $_dir (commit: $_commit)"
+            git clone -q "$_giturl" "$_dir" 2>&1
+            if [[ $? != "0" ]]; then
+                _error "Could not Git clone $_giturl."
+                return 1
+            fi
+            ( cd "$_dir" && git checkout "$_commit" >&2 )
+            if [[ $? != "0" ]]; then
+                _error "Could not Git checkout $_commit of $_repofullname. Will delete directory."
+                ( rm -rf "$_dir" >&2 )
+                return 1
+            fi
+            if [[ -f ${_dir}/.gitmodules ]]; then
+                ( cd "$_dir" && git submodule init >&2 && git submodule update >&2 )
+                if [[ $? != "0" ]]; then
+                    _error "Could not perform Git submodule init && update. Is Perl installed?"
+                    ( rm -rf "$_dir" >&2 )
+                    return 1
+                fi
+            fi
+            # Check the signature of the commit, if applicable.
+            # TODO How should we actually do this?
+            if [[ $_SECURITY_GPG_VERIFY_SIGNATURE != "0" ]]; then
+                ( cd "$_dir" && git verify-commit HEAD >&2 )
+                if [[ $? != "0" ]]; then
+                    _security "Could not verify signature of Git repository: $_giturl."
+                    ( rm -rf "$_dir" >&2 )
+                    return 1
+                fi
+            fi
+        fi
+    else
+        _dir=${_dir}/$_repodir
+    fi
+
+    # Check if sh/bash file to source does exist.
+    local _f=""
+    eval "$_repo="
+    for _f in "$_dir/Spacefile.yaml"; do
+        if [[ -f $_f ]]; then
+            _f=${_f%.yaml}
+            if [[ -f "${_f}.sh" ]]; then
+                eval "$_repo=\${_f}.sh"
+            elif [[ -f "${_f}.bash" ]]; then
+                eval "$_repo=\${_f}.bash"
+            fi
+            break
+        fi
+    done
+
+    return 0
+}
+
+#=============
+# _extract_repo_parts
+#
+# Populate env variables
+#
+# $1: the module name
+#
+# env:
+#   _domain
+#   _domainuser
+#   _username
+#   _reponame
+#   _commit
+#   _str_commit
+#   _repofullname
+#
+#=============
+_extract_repo_parts()
+{
+    local _mod="${1}"
+    shift
+
+    _protocol="https"
+    # Domain is only defaulted for the "space-sh" user.
+    _domain=
+    _domainuser=
+    _username="space-sh"
+    _reponame=""
+    _commit="master"
+    _str_commit=
+    _repofullname=
+
+    # Extract protocol if given.
+    if [[ $_mod =~ (.+):// ]]; then
+        _protocol=${BASH_REMATCH[1]}
+    fi
+
+    # Extract "user@domain", if given, and the repo name.
+    if [[ $_mod =~ .+[.].+ && $_mod =~ (.+://)?([-@:A-Za-z0-9.]+) ]]; then
+        # Domain provided
+        _domain=${BASH_REMATCH[2]}
+        # Extract domainuser, if provided
+        if [[ $_domain =~ (.+)[@](.+) ]]; then
+            _domainuser=${BASH_REMATCH[1]}
+            _domain=${BASH_REMATCH[2]}
+        fi
+
+        # Expect both username and reponame to have been provided
+        if [[ $_mod =~ (.*://)?(.*)/([-A-Za-z0-9_]+)/([-A-Za-z0-9_:]+) ]]; then
+            _username=${BASH_REMATCH[3]}
+            _reponame=${BASH_REMATCH[4]}
+        fi
+    else
+        # Domain not provided, expect username and/or reponame[:commit]
+        if [[ $_mod =~ ([-A-Za-z0-9_]+)/([-A-Za-z0-9_:]+) ]]; then
+            _username=${BASH_REMATCH[1]}
+            _reponame=${BASH_REMATCH[2]}
+        elif [[ $_mod =~ ^([-A-Za-z0-9_:]*) ]]; then
+            _reponame=${BASH_REMATCH[1]}
+        fi
+
+        if [[ $_username == "space-sh" ]]; then
+            _domain="gitlab.com"
+        else
+            _error "_extract_repo_parts : No domain provided for git url: $_mod."
+            return 1
+        fi
+    fi
+
+    # Extract :commit from reponame
+    if [[ $_reponame =~ (.+)[:](.+) ]]; then
+        _reponame=${BASH_REMATCH[1]}
+        _commit=${BASH_REMATCH[2]}
+    fi
+    if [[ $_protocol == "" || $_domain == "" || $_username == "" || $_reponame == "" || $_commit == "" ]]; then
+        _error "_extract_repo_parts : Malformed import name."
+        return 1
+    fi
+    if [[ $_commit == "master" ]]; then
+        # We skip commit name if it is master.
+        _str_commit=""
+    else
+        _str_commit=":$_commit"
+    fi
+    _repofullname=$_username/$_reponame$_str_commit
+}
+
+#=============
+#
+#
+#
+#=============
+_module_check_banlist()
+{
+    local _giturl=$1
+    shift
+
+    if [[ $_SECURITY_CHECK_BANNED != "0" ]]; then
+        local _response=
+        # We want the Bash version and OS info to check if the module is broken
+        # for some specific combination.
+        if [[ $_HTTPBIN == "curl" ]]; then
+            _response=$($_HTTPBIN $_SECURITY_BAN_SERVER -s -X POST --data-urlencode "git_url=${_giturl}" --data-urlencode "bash=${BASH_VERSION}" --data-urlencode "os=$(${_UNAME})")
+            _debug "Ban server response, curl: ${_response}."
+        elif [[ $_HTTPBIN == "wget" ]]; then
+            _response=$($_HTTPBIN $_SECURITY_BAN_SERVER -q -O- --post-data="git_url=${_giturl}&bash=${BASH_VERSION}&os=$(${_UNAME})")
+            _debug "Ban server response, wget: ${_response}."
+        else
+            _error "No curl/wget found in OS. Cannot check module banlist."
+            return 1
+        fi
+
+        if [[ $_SECURITY_CHECK_BANNED == "1" ]]; then
+            if [[ $_response == '{"status":"banned"}' ]]; then
+                _security "The module $_giturl IS BANNED!"
+                return 1
+            elif [[ $_response == '{"status":"broken"}' ]]; then
+                _debug "The module $_giturl is BROKEN!"
+                return 1
+            elif [[ $_response == '{"status":"unknown"}' ]]; then
+                _debug "The module $_giturl is unknown, but is allowed by user."
+                return 0
+            elif [[ $_response == '{"status":"trusted"}' ]]; then
+                _debug "The module $_giturl is trusted."
+                return 0
+            else
+                _security "Could not communicate with banserver."
+                return 1
+            fi
+        elif [[ $_SECURITY_CHECK_BANNED == "2" ]]; then
+            if [[ $_response == '{"status":"banned"}' ]]; then
+                _security "The module $_giturl IS BANNED!"
+                return 1
+            elif [[ $_response == '{"status":"broken"}' ]]; then
+                _debug "The module $_giturl is BROKEN!"
+                return 1
+            elif [[ $_response == '{"status":"unknown"}' ]]; then
+                _security "The module $_giturl is unknown!"
+                return 1
+            elif [[ $_response == '{"status":"trusted"}' ]]; then
+                _debug "The module $_giturl is trusted."
+                return 0
+            else
+                _security "Could not communicate with the security server."
+                return 1
+            fi
+        else
+            _error "Bad SECURITY model."
+            return 1
+        fi
+    fi
+
+    return 0
+}
+
+
+#=============
+#
+# Search for a modules YAML file using defaults and
+# trying all the different YAML file name variants.
+#
+# $1: module name: [username/]reponame
+# $2: variable name to assign found YAML file path to.
+#
+#=============
+_module_find_yaml()
+{
+    local _module=$1
+    shift
+
+    local _outvarname=$1
+    shift
+
+    local _domainname=""
+    local _username="space-sh"
+    local _reponame=$_module
+    if [[ $_module =~ (.+)/(.+)/(.+) ]]; then
+        _domainname=${BASH_REMATCH[1]}
+        _username=${BASH_REMATCH[2]}
+        _reponame=${BASH_REMATCH[3]}
+    elif [[ $_module =~ (.+)/(.+) ]]; then
+        _username=${BASH_REMATCH[1]}
+        _reponame=${BASH_REMATCH[2]}
+    fi
+    #[[ $_reponame =~ ([^:]+) ]]
+    #local _reponameclean=${BASH_REMATCH[1]}
+    unset _module
+
+    if [ "${_domainname}" = "" ]; then
+        if [ "${_username}" = "space-sh" ]; then
+            _domainname="gitlab.com"
+        fi
+    fi
+
+    local _dir= _f=
+    for _dir in ${_INCLUDEPATH[@]}; do
+        for _f in "$_dir/$_domainname/$_username/$_reponame/Spacefile.yaml"; do
+            if [[ -f $_f ]]; then
+                _debug "Found module $_f"
+                eval "$_outvarname=\$_f"
+                return
+            fi
+        done
+    done
+}
+
+#================
+# _enter_gui_mode
+#
+# Enters graphical user interface mode
+#
+#================
+_enter_gui_mode()
+{
+    _debug "Entering GUI mode"
+    source "./gui/astroui.sh"
+    source "./gui/sg.sh"
+    _sg_entrypoint
+    return 0
+}
+
+#=====
+# PRINT
+#
+# Redirects a message to a file descriptor.
+# Defaults to option PRINT_LEVEL=4, which can be configured to behave differently by setting a value in the interval [0,5] before calling this function.
+# In the occasion SPACE_FNNAME is set, its value gets prefixed to the final message output.
+# This function is meant to be exported.
+#
+# Parameters:
+#   $1: output message
+#   $2: level type (error, warning, debug, ...). Defaults to "info"
+#   $3: file descriptor where the message will be redirected to. Defaults to "2"
+#
+# Expects:
+#   PRINT_LEVEL
+#   SPACE_FNNAME
+#
+#=====
+PRINT()
+{
+    SPACE_CMDENV="PRINT_LEVEL=\${PRINT_LEVEL-4} _PRINT_COLUMN_POSITION"
+    local color=0 header=''
+    [ "${2-info}" = "error" ] && [ "${PRINT_LEVEL-4}" -gt 0 ] && header="[ERROR] " && color=1
+    [ "${2-info}" = "security" ] && [ "${PRINT_LEVEL-4}" -gt 0 ] && header="[SECUR] " && color=5;
+    [ "${2-info}" = "warning" ] && [ "${PRINT_LEVEL-4}" -gt 1 ] && header="[WARN]  " && color=3
+    [ "${2-info}" = "success" ] && [ "${PRINT_LEVEL-4}" -gt 2 ] && header="[SUCCE] " && color=2
+    [ "${2-info}" = "info" ] && [ "${PRINT_LEVEL-4}" -gt 3 ] && header="[INFO]  " && color=7
+    [ "${2-info}" = "debug" ] && [ "${PRINT_LEVEL-4}" -gt 4 ] && header="[DBG ]  " && color=7
+    [ -z "${header}" ] && return 0
+    [ "${SPACE_FNNAME-}" != "" ] && ( [ $(command -v tput) > /dev/null ] && printf "\033[${_PRINT_COLUMN_POSITION}G%s\n" "$(tput -T"${TERM-dumb}" setaf ${color})${header}${SPACE_FNNAME}: ${1}$(tput -T"${TERM-dumb}" sgr0)" >&${3-2}) || ( [ $(command -v tput) > /dev/null ] && printf "\033[${_PRINT_COLUMN_POSITION}G%s\n" "$(tput -T"${TERM-dumb}" setaf ${color})${header}${1}$(tput -T"${TERM-dumb}" sgr0)" >&${3-2} )
+    [ "${SPACE_FNNAME-}" != "" ] && ( [ ! $(command -v tput) > /dev/null ] && printf "\033[${_PRINT_COLUMN_POSITION}G%s\n" "${header}${SPACE_FNNAME}: ${1}" >&${3-2} ) || ( [ ! $(command -v tput) > /dev/null ] && printf "\033[${_PRINT_COLUMN_POSITION}G%s\n" "${header}${1}" >&${3-2} )
+    :
+}
+
+#===========
+# SUBST
+#
+# Substitute text in place.
+# $1 variable name to substitute in.
+# $2 text to substitute.
+# $3 text to insert.
+#
+#===========
+SUBST()
+{
+    eval "${1}=\${${1}//\${2}/\${3}}"
+}
+
+_print()
+{
+    printf "%s\n" "$*" >&2
+}
+
+_security()
+{
+    local _msg=
+    IFS= read -d '' -r _msg << _EOF
+    $@
+               *****************************************************************
+               *  Do not take too lightly on this security error.              *
+               *  Before disabling any security checks, please head over       *
+               *  to the Space.sh site to see that everything else is OK.      *
+               *****************************************************************
+_EOF
+    _print "$(tput -T${_TERM} setaf "$_COLOR_PURPLE")[security] $_msg$(tput -T${_TERM} sgr0)"
+}
+
+_error()
+{
+    if (( $_VERBOSITY >= 1 )); then
+        _print "$(tput -T${_TERM} setaf "$_COLOR_RED")[error] $@$(tput -T${_TERM} sgr0)"
+    fi
+}
+
+_warning()
+{
+    if (( $_VERBOSITY >= 2 )); then
+        _print "$(tput -T${_TERM} setaf "$_COLOR_YELLOW")[warn]  $@$(tput -T${_TERM} sgr0)"
+    fi
+}
+
+_info()
+{
+    if (( $_VERBOSITY >= 3 )); then
+        _print "$(tput -T${_TERM} setaf "$_COLOR_DARK_GRAY")[info]  $@$(tput -T${_TERM} sgr0)"
+    fi
+}
+
+_runinfo()
+{
+    if (( $_VERBOSITY >= 3 )); then
+        local _msg=$1
+        shift
+        local _color=${1-2}
+        shift || :
+        _print "$(tput -T${_TERM} setaf $_color)[run]   $_msg$(tput -T${_TERM} sgr0)"
+    fi
+}
+
+_debug()
+{
+    if (( $_VERBOSITY >= 4 )); then
+        _print "[debug] $@"
+    fi
+}
+
+#==========
+# prompt
+#
+# Use this in YAML _env variable values to prompt the user for input.
+# node:
+#   _env:
+#       - name: $(prompt 'what is your name? ')
+#
+# Parameters:
+#   $1: string to echo as prompt
+#
+# Returns:
+#   echoes on stdout the answer, so your capture the output to a variable.
+#
+#==========
+prompt()
+{
+    _print "$1"
+    local _s
+    read -r _s
+    printf "%s\n" "$_s"
+}
+
+#==========
+# _main
+#==========
+_main()
+{
+    local _loadmodules="" # -M
+    local _envE=()        # -e
+    local _envP=()        # -p
+    local _dry=""         # -d
+    local _help=""        # -h/-H
+    local _listnodes=0    # -l
+    local _updatemodules=  #-U
+    local _bash_completion_current= # -L
+
+    local _o=
+
+    local _namespaces=()
+    local _dimensions=()
+    local _strip_args=0
+
+    # Parse nodes and switches in any order.
+    while (( $# > 0 )); do
+        if [[ ${1} == '--' ]]; then
+            # End of options
+            shift
+            # Save the remaining of "$@" as is, because we will use Bash's special treatment of "$@" when forwarding the arguments.
+            _strip_args="1" # This will strip of the -- args from CMD in YAML.
+            break
+        elif [[ ${1:0:1} == '-' ]]; then
+            # A normal switch, let getopts handle it.
+            OPTIND=1
+            getopts ":f:m:aM:c:e:dp:v:k:K:ShHVlC:BU:X:13:g" "_o"
+            case "${_o}" in
+                f)
+                    if (( ${#_namespaces[@]} == 3 )); then
+                        _error "Too many namespaces defined using (-f/-m). Maximum three allowed."
+                        return 1
+                    fi
+                    _namespaces+=("file=${OPTARG}")
+                    (return 1)
+                    ;;
+                m)
+                    if (( ${#_namespaces[@]} == 3 )); then
+                        _error "Too many namespaces defined using (-f/-m). Maximum three allowed."
+                        return 1
+                    fi
+                    _namespaces+=("module=${OPTARG}")
+                    (return 1)
+                    ;;
+                a)
+                    if (( ${#_dimensions[@]} == 0 )); then
+                        _error "-a flag must come after node."
+                        return 1
+                    fi
+                    local _s=${_dimensions[$((${#_dimensions[@]}-1))]}
+                    _s="${_s}.*/"
+                    _dimensions[$((${#_dimensions[@]}-1))]=$_s
+                    (return 1)
+                    ;;
+                M)
+                    _loadmodules="$_loadmodules ${OPTARG}"
+                    (return 1)
+                    ;;
+                c)
+                    readonly CMDOVERRIDE=${OPTARG}
+                    (return 1)
+                    ;;
+                e)
+                    if [[ ! $OPTARG =~ ^[a-zA-Z0-9_]+\=.*$ ]]; then
+                        _error "Malformed -e switch not on format [a-ZA-Z0-9_]+=.*: $OPTARG"
+                        return 1
+                    fi
+                    _envE+=("${OPTARG}")
+                    (return 1)
+                    ;;
+                d)
+                    _dry=1
+                    (return 1)
+                    ;;
+                p)
+                    if [[ ! $OPTARG =~ ^[a-zA-Z0-9_]+\=[.a-zA-Z0-9_-]*$ ]]; then
+                        #if [[ $_BASH_COMPLETION != "2" ]]; then
+                            #_error "Malformed -p switch not on format [a-ZA-Z0-9_]+=[a-ZA-Z0-9_-.]*: $OPTARG"
+                            #return 1
+                        #fi
+                        :
+                    else
+                        _envP+=("${OPTARG}")
+                    fi
+                    (return 1)
+                    ;;
+                v)
+                    case "${OPTARG}" in
+                        0)
+                            _VERBOSITY=0
+                            (return 1)
+                            ;;
+                        1)
+                            _VERBOSITY=1
+                            (return 1)
+                            ;;
+                        2)
+                            _VERBOSITY=2
+                            (return 1)
+                            ;;
+                        3)
+                            _VERBOSITY=3
+                            (return 1)
+                            ;;
+                        4)
+                            _VERBOSITY=4
+                            (return 1)
+                            ;;
+                    esac
+                    if (($? == 0)); then
+                        _error "Unknown -v argument $OPTARG."
+                        return 1
+                    fi
+                    (return 1)
+                    ;;
+                k)
+                    case "${OPTARG}" in
+                        0)
+                            _SECURITY_CHECK_BANNED=0
+                            (return 1)
+                            ;;
+                        1)
+                            _SECURITY_CHECK_BANNED=1
+                            (return 1)
+                            ;;
+                        2)
+                            _SECURITY_CHECK_BANNED=2
+                            (return 1)
+                            ;;
+                    esac
+                    if (($? == 0)); then
+                        _error "Unknown -k argument $OPTARG."
+                        return 1
+                    fi
+                    (return 1)
+                    ;;
+                K)
+                    case "${OPTARG}" in
+                        0)
+                            _SECURITY_GPG_VERIFY_SIGNATURE=0
+                            (return 1)
+                            ;;
+                        1)
+                            _SECURITY_GPG_VERIFY_SIGNATURE=1
+                            (return 1)
+                            ;;
+                        2)
+                            _SECURITY_GPG_VERIFY_SIGNATURE=2
+                            (return 1)
+                            ;;
+                    esac
+                    if (($? == 0)); then
+                        _error "Unknown -K argument $OPTARG."
+                        return 1
+                    fi
+                    (return 1)
+                    ;;
+                S)
+                    _SECURITY_ALLOW_HTTPS_FALLBACK=1
+                    (return 1)
+                    ;;
+                h)
+                    _help="general"
+                    (return 1)
+                    ;;
+                H)
+                    _help="node"
+                    (return 1)
+                    ;;
+                V)
+                    _help="version"
+                    (return 1)
+                    ;;
+                l)
+                    _listnodes=1
+                    (return 1)
+                    ;;
+                C)
+                    case "${OPTARG}" in
+                        0)
+                            _CACHE_LEVEL=0
+                            (return 1)
+                            ;;
+                        1)
+                            _CACHE_LEVEL=1
+                            (return 1)
+                            ;;
+                        2)
+                            _CACHE_LEVEL=2
+                            (return 1)
+                            ;;
+                    esac
+                    if (($? == 0)); then
+                        _error "Unknown -C argument $OPTARG."
+                        return 1
+                    fi
+                    (return 1)
+                    ;;
+                B)
+                    _FORCE_BASH="1"
+                    (return 1)
+                    ;;
+                U)
+                    _updatemodules=${OPTARG:-*}
+                    (return 1)
+                    ;;
+                X)
+                    case "${OPTARG}" in
+                        1)
+                            _DEBUG_OUTPUT_PREPROCESSED=1
+                            (return 2)
+                            ;;
+                        2)
+                            _DEBUG_OUTPUT_PARSED=1
+                            (return 1)
+                            ;;
+                        3)
+                            _DEBUG_OUTPUT_TRANSFORMED_YAML=1
+                            (return 1)
+                            ;;
+                        4)
+                            _DEBUG_OUTPUT_ENV=1
+                            (return 1)
+                            ;;
+                    esac
+                    if (($? == 0)); then
+                        _error "Unknown -X argument ${OPTARG-}."
+                        return 1
+                    fi
+                    (return 1)
+                    ;;
+                1)
+                    # Bash completion on nodes.
+                    _BASH_COMPLETION=1
+                    _bash_completion_current=${#_dimensions[@]}
+                    (return 1)
+                    ;;
+                2)
+                    # Bash completion on preprocess variable names
+                    #_bash_completion_current=${OPTARG}
+                    #_BASH_COMPLETION=2
+                    _error "Not implemented."
+                    (return 1)
+                    ;;
+                3)
+                    # Bash completion on installed modules
+                    _bash_completion_current=${OPTARG}
+                    _BASH_COMPLETION=3
+                    (return 1)
+                    ;;
+                g)
+                    _ENABLE_GUI="1"
+                    (return 1)
+                    ;;
+                \?)
+                    _error "Unknown option -${OPTARG-}."
+                    return 1
+                    ;;
+                :)
+                    if [[ $_BASH_COMPLETION == "0" ]]; then
+                        _error "Option -${OPTARG-} requires an argument."
+                        return 1
+                    fi
+                    (return 1)
+                    ;;
+            esac
+            if (($? == 0)); then
+                _error "Unknown option $1."
+                return 1
+            elif (($OPTIND == 1)); then
+                # This happens when doing for example: -al
+                _error "Unknown option $1."
+                return 1
+            fi
+            shift $((OPTIND-1))
+        else
+            # A node name
+            local _node=${1}
+            # We strip these because they are no longer wanted,
+            # they can come here with the auto completion script.
+            local _node=${_node//\"}
+            local _node=${_node//\\}
+            if [[ ${_node:0:1} != "/" ]]; then
+                _error "Node name must begin with slash. Cowboy slash is OK."
+                return 1
+            fi
+            if [[ $_node =~ [\ ] ]]; then
+                _error "Invalid node name: $_node"
+                return 1
+            fi
+            _dimensions+=("$_node")
+            unset _node
+            if (( ${#_dimensions[@]} > 3 )); then
+                _error "Dimensions (node collections) cannot exceed three in total."
+                return 1
+            fi
+            shift
+        fi
+    done
+    unset _o
+
+    if [[ $_BASH_COMPLETION != "0" ]]; then
+        # Reset some switches that will get in our way when auto completing.
+        _help=""
+        _DEBUG_OUTPUT_PREPROCESSED=0
+        _DEBUG_OUTPUT_PARSED=0
+        _DEBUG_OUTPUT_TRANSFORMED_YAML=0
+        _DEBUG_OUTPUT_ENV=0
+        _updatemodules=
+        _CACHE_LEVEL=1
+        _listnodes=0
+        _VERBOSITY=0
+        _dry=0
+        _loadmodules=
+        _envE=()
+    fi
+
+    local CWD=$(pwd)  # Set as global environment variable.
+
+    if [[ $_help == "general" ]]; then
+        _helpusage
+        return 0
+    fi
+
+    if [[ $_help == "version" ]]; then
+        _helpversion
+        return 0
+    fi
+
+    if [[ -n ${_updatemodules-} ]]; then
+        _update_modules "$_updatemodules"
+        return
+    fi
+
+    if [[ $_BASH_COMPLETION == "3" ]]; then
+        _completion_modules "$_bash_completion_current"
+        return
+    fi
+
+    # Check so that at least one namespace exists.
+    if (( ${#_namespaces[@]} == 0 )); then
+        # This means look for default file names for the first namespace.
+        _namespaces+=("file=")
+    fi
+
+    # Check so that at least one dimension exists.
+    if (( ${#_dimensions[@]} == 0 )); then
+        _dimensions+=("/")
+    fi
+
+    # Set command line -e envs, if provided.
+    eval $(_apply_cmd_env)
+    if [ "$?" != "0" ]; then
+        _error "Problem when evaluating -e environment variables. Look for unbound variable or syntax error."
+        return 1
+    fi
+
+    # Set any preprocess variables given on command line.
+    local _envPs=""
+    local _ev=
+    for _ev in "${_envP[@]-}"; do
+        _envPs=${_envPs}$_ev" "
+        if [[ $_ev =~ ([_a-zA-Z0-9]+)=(.*) ]]; then
+            eval "_PP_${BASH_REMATCH[1]}=\${BASH_REMATCH[2]}"
+        fi
+    done
+    unset _ev
+
+    if [[ -n $_loadmodules ]]; then
+        _debug "Load modules $_loadmodules"
+        clone "${_loadmodules}"
+        (( $? > 0 )) && return 1
+    fi
+
+    # Load all YAML files into respective namespace.
+    local _counter=0
+    while (( _counter < ${#_namespaces[@]} )); do
+        local _namespace=${_namespaces[$_counter]}
+        (( _counter+=1 ))
+        _debug "Loading namespace ${_counter}:${_namespace}."
+        [[ $_namespace =~ (.+)=(.*) ]]
+        local _t=${BASH_REMATCH[1]}
+        local _path=${BASH_REMATCH[2]}
+        local _yamlfile=
+        local _cachefile=
+        local _INCLUDEPATH=
+        if [[ $_t == "file" ]]; then
+            # Load file.
+            if [[ -z $_path ]]; then
+                # No -f give, try the defaults.
+                local _cwddir=${CWD##*/}
+                local _f=
+                for _f in "./Spacefile.yaml"; do
+                    if [[ -f $_f ]]; then
+                        _path=$_f
+                        break
+                    fi
+                done
+                unset _f _cwddir
+
+                if [[ -z $_path ]]; then
+                    _error "No Spacefile.yaml file found."
+                    return 1
+                fi
+                _debug "Found file $_path."
+            elif [[ ! -f $_path ]]; then
+                _error "YAML file $_path does not exist."
+                return 1
+            fi
+
+            # Figure out the absolute path of $_path
+            # to load the accompanying sh/bash file, if present.
+            local _dir=${_path%/*}
+            local _file=${_path##*/}
+            if [[ -z $_dir || $_dir == "$_path" ]]; then
+                _path=$CWD/$_path
+                _dir=${_path%/*}
+            else
+                # Convert relative path to absolute.
+                _dir=$( cd "$_dir" && pwd )
+            fi
+            _path="$_dir/$_file"
+            _yamlfile=$_path
+            # Try to load the accompanying sh/bash file
+            # clone and source will always be to $_INCLUDEPATH[1],
+            # so here we set that to be in $CWD.
+            _INCLUDEPATH=($CWD $CWD/space_modules $_MODULES_SHARED)
+            _debug "Includepath: ${_INCLUDEPATH[@]}"
+            local _sourcefile="${_path%.*}"
+            if [[ -f "${_sourcefile}.sh" ]]; then
+                _source "${_sourcefile}.sh"
+            elif [[ -f "${_sourcefile}.bash" ]]; then
+                _source "${_sourcefile}.bash"
+            fi
+            unset _sourcefile _dir _file
+            # Disabling cachefile to be put in $CWD.
+            #_cachefile=$CWD"/."${_yamlfile##*/}".cache"
+            # Put cache file along side yaml file.
+            _cachefile=${_yamlfile%/*}
+            _cachefile=$_cachefile"/."${_yamlfile##*/}".cache"
+        else
+            # Load module.
+            local _module=$_path
+            [[ $_module =~ ([^:]+):master$ ]] && _module=${BASH_REMATCH[1]}
+            _debug "Include module $_module"
+            clone "${_module}"
+            (( $? > 0 )) && return 1
+
+            local _protocol= _domain= _domainuser= _username= _reponame="" _commit= _str_commit= _repofullname=
+            _extract_repo_parts "${_module}"
+            (( $? > 0 )) && return 1
+
+            _INCLUDEPATH=($CWD/space_modules $_MODULES_SHARED $CWD)
+            _debug "Includepath: ${_INCLUDEPATH[@]}"
+            _module_find_yaml "$_domain/$_repofullname" "_yamlfile"
+            if [[ -z $_yamlfile ]]; then
+                _error "Could not find YAML file in module ${_module}."
+                return 1
+            fi
+            # Disabling cachefile to be put in $CWD.
+            #_cachefile=$CWD"/."${_yamlfile##*/}".${_repofullname//\//.}.cache"
+            # Put cache file along side yaml file.
+            _cachefile=${_yamlfile%/*}
+            _cachefile=$_cachefile"/."${_yamlfile##*/}".cache"
+            unset _module _protocol _domain _domainuser _username _reponame _commit _str_commit _repofullname
+        fi
+
+        ## Parse and load YAML file(s).
+        _YAML_NAMESPACE=${_counter}
+        local _parsedyaml=()
+        local _parsedyamlcompletion=()
+
+        _load_yaml
+        local _status=$?
+        if (( _status > 0 )); then
+            return $_status
+        fi
+        unset _status
+
+        eval "local _parsedyamlnodelist${_YAML_PREFIX}${_YAML_NAMESPACE}=(\"\${_parsedyamlcompletion[@]}\")"
+
+        if (( ${#_parsedyaml[@]} > 0 )); then
+            # Translate all parsed into Bash variables
+            local _evals=() _line= _status=0
+            _parsed_yaml_to_bash "_parsedyaml" "_evals"
+            if (( ${#_evals[@]} == 0 )); then
+                _warning "There are no lines parsed, is the cache old? Try -C0."
+            fi
+            for _line in "${_evals[@]-}"; do
+                eval "$_line" || _status=$?
+                if (($_status != 0)); then
+                    [[ $_line =~ local\ ([^\=]+) ]]
+                    local _varname=${BASH_REMATCH[1]}
+                    _error "Could not evaluate YAML Bash translation for variable: $_varname. Likely some syntax error in the yaml."
+                    unset _varname
+                    return 1
+                fi
+                if [[ $_DEBUG_OUTPUT_PARSED == "1" ]]; then
+                    [[ $_line =~ local\ ([^\=]+) ]]
+                    local _varname=${BASH_REMATCH[1]}
+                    eval "printf \"%s=%s\n\" $_varname \"\$$_varname\""
+                    unset _varname
+                fi
+
+            done
+            unset _status _line _evals
+
+        fi
+        unset _parsedyaml
+        unset _yamlrows
+        unset _parsedyamlcompletion
+
+        if [[ $_DEBUG_OUTPUT_TRANSFORMED_YAML == "1" ]]; then
+            _transform_to_yaml
+        fi
+
+        # NOTE: The preprocessing variable auto completion is disabled
+        # since it's use case is questioned.
+        #if [[ $_BASH_COMPLETION == "2" ]]; then
+            ## Look in yaml file for defined preprocess variables.
+            #if [[ -e $_yamlfile ]]; then
+                #printf "%s\n" "${_bash_completion_current//./.}"
+                #local _r=
+                #while IFS= read -r _r; do
+                    #if [[ $_r =~ ^@(${_bash_completion_current}[a-zA-Z0-9_]*):- ]]; then
+                        #local _var=${BASH_REMATCH[1]}
+                        #printf "%s\n" "${_var}="
+                    #fi
+                #done < $_yamlfile
+                #unset _r
+                #return 0
+            #fi
+            #return 1
+        #fi
+
+        # Check if we now should add more namespaces to be loaded.
+        if (( _counter == 1 )); then
+            _YAML_NAMESPACE=1
+            if (( ${#_namespaces[@]} == 1 )); then
+                # We only have one ns so far, see if to add the second.
+                local _file=
+                _copy "_file" "/_namespaces/0/file"
+                local _module=
+                _copy "_module" "/_namespaces/0/module"
+                if [[ -n $_file ]]; then
+                    _namespaces+=("file=$_file")
+                    _debug "Friends auto added namespace 2: ${_namespaces[$((${#_namespaces[@]}-1))]}."
+                elif [[ -n $_module ]]; then
+                    _namespaces+=("module=$_module")
+                    _debug "Friends auto added namespace 2: ${_namespaces[$((${#_namespaces[@]}-1))]}."
+                fi
+                unset _file _module
+            fi
+            if (( ${#_namespaces[@]} == 2 )); then
+                # We only have two ns's so far, see if to add the third.
+                local _file=
+                _copy "_file" "/_namespaces/1/file"
+                local _module=
+                _copy "_module" "/_namespaces/1/module"
+                if [[ -n $_file ]]; then
+                    _namespaces+=("file=$_file")
+                    _debug "Friends auto added namespace 3: ${_namespaces[$((${#_namespaces[@]}-1))]}."
+                elif [[ -n $_module ]]; then
+                    _namespaces+=("module=$_module")
+                    _debug "Friends auto added namespace 3: ${_namespaces[$((${#_namespaces[@]}-1))]}."
+                fi
+                unset _file _module
+            fi
+        fi
+
+    done
+    unset _t _path _namespace _counter _yamlfile _envPs
+
+    if [[ $_DEBUG_OUTPUT_PREPROCESSED == "1" ]]; then
+        return 0
+    fi
+
+    if [[ $_DEBUG_OUTPUT_PARSED == "1" ]]; then
+        return 0
+    fi
+
+    if [[ $_DEBUG_OUTPUT_TRANSFORMED_YAML == "1" ]]; then
+        return 0
+    fi
+
+    # Source all sh/bash files added so far.
+    _source_added
+    (( $? > 0 )) && return 1
+
+    # Figure out the dimension to namespace affinity.
+    local _dim1ns=1 _dim2ns=1 _dim3ns=1
+    if (( ${#_namespaces[@]} >= 2 )); then
+        _dim2ns=2
+    fi
+    if (( ${#_namespaces[@]} >= 3 )); then
+        _dim3ns=3
+    fi
+
+    if [[ $_BASH_COMPLETION == "1" ]]; then
+        local _dim=$_bash_completion_current
+        if [[ $_dim == "0" ]]; then
+            return 1
+        fi
+        eval "local _ns=\$_dim${_dim}ns"
+
+        if [[ $_dim == "1" ]]; then
+            local _pattern=${_dimensions[0]}
+            local _node=$_pattern
+            if [[ ${_node: -1} != "/" ]]; then
+                _node=$_node".*/"
+            fi
+            _debug "Bash completion dimension 1 for pattern: $_node in namespace ${_ns}."
+            local _nodes=()
+            _match_node "_parsedyamlnodelist${_YAML_PREFIX}${_ns}" "$_node"
+            if (( ${#_nodes[@]} == 1 )); then
+                if [[ ${_nodes[0]} == $_pattern ]]; then
+                    _node=$_node".*/"
+                    _nodes=()
+                    _match_node "_parsedyamlnodelist${_YAML_PREFIX}${_ns}" "$_node"
+                    if (( ${#_nodes[@]} > 0 )); then
+                        printf "%s\n" "$_pattern"
+                        printf "%s\n" "${_nodes[@]}"
+                    else
+                        printf "%s\n" "$_pattern"
+                        printf "%s\n" "$_pattern"
+                    fi
+                else
+                    printf "%s\n" "${_nodes[0]}"
+                    printf "%s\n" "${_nodes[0]}"
+                fi
+                return 0
+            elif (( ${#_nodes[@]} > 1 )); then
+                printf "%s\n" "$_pattern"
+                printf "%s\n" "${_nodes[@]}"
+                return 0
+            fi
+            unset _dim _pattern _node _nodes _ns
+            return 1
+        elif [[ $_dim == "2" ]]; then
+            local _first=${_dimensions[0]}
+            local _pattern=${_dimensions[1]}
+            if [[ ${_first: -1} != "/" ]]; then
+                _first=$_first"/"
+            fi
+            _debug "Bash completion dimension 2 for pattern: $_pattern in namespace ${_dim2ns}."
+
+            local _nodes=()
+            _match_node "_parsedyamlnodelist${_YAML_PREFIX}1" "$_first"
+            if (( ${#_nodes[@]} == 0 )); then
+                return 1
+            fi
+
+            # Roll out second dimension filter on second ns.
+            local _dim2=()
+            local _node=
+            for _node in "${_nodes[@]}"; do
+                _get_second_dimension "$_node" "$_dim2ns"
+            done
+            # Filter second dimension on pattern
+            local _nodes=()
+            if (( ${#_dim2[@]} > 0 )); then
+                for _node in "${_dim2[@]}"; do
+                    if [[ $_node =~ ${_pattern}.* ]]; then
+                        local _node2=
+                        for _node2 in "${_nodes[@]-}"; do
+                            [[ $_node2 == $_node ]] && continue 2
+                        done
+                        _nodes+=("$_node")
+                        unset _node2
+                    fi
+                done
+            else
+                _debug "No dim2 nodes found."
+            fi
+
+            if (( ${#_nodes[@]} == 0 )); then
+                return 1
+            elif (( ${#_nodes[@]} > 0 )); then
+                printf "%s\n" "$_pattern"
+                printf "%s\n" "${_nodes[@]}"
+                return 0
+            fi
+            unset _first _pattern _nodes _node
+        elif [[ $_dim == "3" ]]; then
+            local _first=${_dimensions[0]}
+            local _second=${_dimensions[1]}
+            local _pattern=${_dimensions[2]}
+            if [[ ${_first: -1} != "/" ]]; then
+                _first=$_first"/"
+            fi
+            if [[ ${_second: -1} != "/" ]]; then
+                _second=$_second"/"
+            fi
+
+            local _nodes=()
+            _match_node "_parsedyamlnodelist${_YAML_PREFIX}1" "$_first"
+            if (( ${#_nodes[@]} == 0 )); then
+                return 1
+            fi
+
+            local _dim3=()
+            local _node=
+            for _node in "${_nodes[@]}"; do
+                _get_third_dimension "$_node" "$_second" "$_dim3ns"
+            done
+
+            # Filter third dimension on pattern
+            local _nodes=()
+            if (( ${#_dim3[@]} > 0 )); then
+                for _node in "${_dim3[@]}"; do
+                    if [[ $_node =~ ${_pattern}.* ]]; then
+                        local _node2=
+                        for _node2 in "${_nodes[@]-}"; do
+                            [[ $_node2 == $_node ]] && continue 2
+                        done
+                        _nodes+=("$_node")
+                        unset _node2
+                    fi
+                done
+            fi
+
+            if (( ${#_nodes[@]} == 0 )); then
+                return 1
+            elif (( ${#_nodes[@]} > 0 )); then
+                printf "%s\n" "$_pattern"
+                printf "%s\n" "${_nodes[@]}"
+                return 0
+            fi
+            unset _first _second _pattern _nodes _node
+        fi
+    fi
+
+    # Match the dimension node pattern to a nodelist from the dimension associated namespace.
+    local _dim1=() _dim2=() _dim3=()
+    local _pattern=
+    local _dimcounter=0
+    for _pattern in "${_dimensions[@]}"; do
+        if [[ ${_pattern: -1} != "/" ]]; then
+            _node="$_pattern/"
+        fi
+        if [[ ! $_pattern =~ (^/.+/$)|(^/$) ]]; then
+            _error "Malformed node path ($_pattern). Node path must begin and end with a slash."
+            return 1
+        fi
+        (( _dimcounter+=1 ))
+        eval "local _ns=\$_dim${_dimcounter}ns"
+        local _nodes=()
+        # If $_pattern begins with underscore we'll match nodes
+        # for underscore, otherwise we ignore underscore nodes.
+        local _includehidden=0
+        [[ ${_pattern:0:2} == "/_" ]] && _includehidden=1
+        _match_node "_parsedyamlnodelist${_YAML_PREFIX}${_ns}" "$_pattern" "$_includehidden"
+        if (( ${#_nodes[@]} > 0 )); then
+            eval "_dim${_dimcounter}=(\"\${_nodes[@]}\")"
+        else
+            _error "No nodes matched for: $_pattern in namespace ${_ns}."
+            return 1
+        fi
+    done
+    unset _ns _pattern _dimcounter _nodes
+
+    # Show some debug info about namespaces.
+    local _nsload= _s="" _counter=0
+    for _nsload in "${_namespaces[@]}"; do
+        ((_counter+=1))
+        _s="$_s ${_counter}:${_nsload}"
+    done
+    _debug "Namespaces loaded:${_s}."
+    unset _s _nsload _counter
+
+    # Start executing on the dimensions.
+    local _first= _second= _third=
+
+    if [[ $_help == "node" ]]; then
+        _YAML_NAMESPACE=1
+        for _first in "${_dim1[@]}"; do
+            _helpnode "$_first"
+        done
+        return 0
+    fi
+
+    #
+    # GUI mode
+    if [ "$_ENABLE_GUI" -eq "1" ]; then
+        _enter_gui_mode
+        return 0
+    fi
+
+    local _status=0
+    local _nodecombo=
+    for _first in "${_dim1[@]}"; do
+    _context()
+    {
+        printf -v _nodecombo "%s:%s" "$_dim1ns" "$_first"
+        if (( ${#_dim2[@]} == 0 )); then
+            local _dim2=()
+            _get_second_dimension "$_first" "$_dim2ns"
+            _status=$?
+            (( _status > 0 )) && return
+            # We only keep the first node.
+            if (( ${#_dim2[@]} > 0 )); then
+                _dim2=("${_dim2[0]}")
+            fi
+        fi
+        if (( ${#_dim2[@]} > 0 )); then
+            for _second in "${_dim2[@]}"; do
+                _context2()
+                {
+                    printf -v _nodecombo "%s:%s %s:%s" "$_dim1ns" "$_first" "$_dim2ns" "$_second"
+                    if (( ${#_dim3[@]} == 0 )); then
+                        local _dim3=()
+                        _get_third_dimension "$_first" "$_second" "$_dim3ns"
+                        _status=$?
+                        (( _status > 0 )) && return $_status
+                    fi
+                    if (( ${#_dim3[@]} > 0 )); then
+                        for _third in "${_dim3[@]}"; do
+                            printf -v _nodecombo "%s:%s %s:%s %s:%s" "$_dim1ns" "$_first" "$_dim2ns" "$_second" "$_dim3ns" "$_third"
+                            _exec_dimensions "$_dim1ns" "$_first" "$_dim2ns" "$_second" "$_dim3ns" "$_third" "$@"
+                            _status=$?
+                            (( _status > 0 )) && break
+                        done
+                    else
+                        _exec_dimensions "$_dim1ns" "$_first" "$_dim2ns" "$_second" "" "" "$@"
+                        _status=$?
+                    fi
+                }
+                _context2 "$@"
+                (( _status > 0 )) && break
+            done
+        else
+            _exec_dimensions "$_dim1ns" "$_first" "" "" "" "" "$@"
+            _status=$?
+        fi
+    }
+        _context "$@"
+        if (( _status > 0 )); then
+            _error "Node(s): $_nodecombo failed executing (status: $_status)."
+            return $_status
+        fi
+    done
+
+
+    return 0
+}
+
+#======================
+#
+# For a first dimension get the second
+# dimension if defined.
+#
+# env:
+#   $_dim2: will get added to
+#
+# $1: node in first dimension.
+# $2: namespace for second dimension.
+#
+#======================
+_get_second_dimension()
+{
+    local _node1=$1
+    shift
+
+    local _ns=$1
+    shift
+
+    local _levels1=${_node1//[^\/]}
+    _levels1=${#_levels1}
+
+    _YAML_NAMESPACE=1
+    local _l=()
+    _list "_l" "/_friends/" "1"
+    _debug "friends ${_l[@]-}"
+
+    if (( ${#_l[@]} > 0 )); then
+        local _i=
+        for _i in ${_l[@]}; do
+            local _firststr= _secondstr=
+            _copy "_firststr" "/_friends/$_i/first"
+            _copy "_secondstr" "/_friends/$_i/second"
+            if [[ -z $_firststr || -z $_secondstr ]]; then
+                continue
+            fi
+            local _firstarr=() _secondarr=()
+            IFS=' ' read -r -a _firstarr <<< "$_firststr"
+            IFS=' ' read -r -a _secondarr <<< "$_secondstr"
+            local _first=
+            for _first in "${_firstarr[@]}"; do
+                if [[ ! $_first =~ (^/.+/$)|(^/$) ]]; then
+                    _error "Malformed _friends/${_i}/first node path (${_first}). Node path must begin and end with a slash."
+                    return 1
+                fi
+                local _levelsfirst=${_first//[^\/]}
+                _levelsfirst=${#_levelsfirst}
+                if [[ $_levels1 == $_levelsfirst && $_node1 =~ ^${_first}$ ]]; then
+                    local _second=
+                    for _second in "${_secondarr[@]}"; do
+                        if [[ ! $_second =~ (^/.+/$)|(^/$) ]]; then
+                            _error "Malformed _friends/${_i}/second node path (${_second}). Node path must begin and end with a slash."
+                            return 1
+                        fi
+                        local _nodes=()
+                        _match_node "_parsedyamlnodelist${_YAML_PREFIX}${_ns}" "$_second"
+                        if (( ${#_nodes[@]} == 0 )); then
+                            _error "Friend nodes defined for second dimension but then not found in namespace ${_ns}: ${_second}."
+                            return 1
+                        fi
+                        _debug "Friends _friends/${_i}$_first+$_second matched ${#_nodes[@]} nodes for second dimension in namespace ${_ns}."
+                        _dim2+=("${_nodes[@]}")
+                    done
+                    break # No point checking next first if current matched.
+                fi
+            done
+        done
+    fi
+}
+
+#=====================
+#
+# For a first and second dimension
+# combo get the third dimension if defined.
+#
+# env:
+#   $_dim3: will get added to
+#
+# $1: node in first dimension.
+# $2: node in second dimension.
+# $3: namespace for third dimension.
+#
+#=====================
+_get_third_dimension()
+{
+    local _node1=$1
+    shift
+
+    local _node2=$1
+    shift
+
+    local _ns=$1
+    shift
+
+    local _levels1=${_node1//[^\/]}
+    _levels1=${#_levels1}
+    local _levels2=${_node2//[^\/]}
+    _levels2=${#_levels2}
+
+    _YAML_NAMESPACE=1
+    local _l=()
+    _list "_l" "/_friends/" "1"
+
+    if (( ${#_l[@]} > 0 )); then
+        local _i=
+        for _i in ${_l[@]}; do
+            local _firststr= _secondstr= _thirdstr=
+            _copy "_firststr" "/_friends/$_i/first"
+            _copy "_secondstr" "/_friends/$_i/second"
+            _copy "_thirdstr" "/_friends/$_i/third"
+            if [[ -z $_firststr || -z $_secondstr || -z $_thirdstr ]]; then
+                continue
+            fi
+            local _firstarr=() _secondarr=() _thirdarr=()
+            IFS=' ' read -r -a _firstarr <<< "$_firststr"
+            IFS=' ' read -r -a _secondarr <<< "$_secondstr"
+            IFS=' ' read -r -a _thirdarr <<< "$_thirdstr"
+            local _first=
+            for _first in "${_firstarr[@]}"; do
+                if [[ ! $_first =~ (^/.+/$)|(^/$) ]]; then
+                    _error "Malformed _friends/${_i}/first node path (${_first}). Node path must begin and end with a slash."
+                    return 1
+                fi
+                local _levelsfirst=${_first//[^\/]}
+                _levelsfirst=${#_levelsfirst}
+                if [[ $_levels1 == $_levelsfirst && $_node1 =~ ^${_first}$ ]]; then
+                    local _second=
+                    for _second in "${_secondarr[@]}"; do
+                        if [[ ! $_second =~ (^/.+/$)|(^/$) ]]; then
+                            _error "Malformed _friends/${_i}/second node path (${_second}). Node path must begin and end with a slash."
+                            return 1
+                        fi
+                        local _levelssecond=${_second//[^\/]}
+                        _levelssecond=${#_levelssecond}
+                        if [[ $_levels2 == $_levelssecond && $_node2 =~ ^${_second}$ ]]; then
+                            local _third=
+                            for _third in "${_thirdarr[@]}"; do
+                                if [[ ! $_third =~ (^/.+/$)|(^/$) ]]; then
+                                    _error "Malformed _friends/${_i}/third node path (${_third}). Node path must begin and end with a slash."
+                                    return 1
+                                fi
+                                local _nodes=()
+                                _match_node "_parsedyamlnodelist${_YAML_PREFIX}${_ns}" "$_third"
+                                if (( ${#_nodes[@]} == 0 )); then
+                                    _error "Friend nodes defined for third dimension but then not found in namespace ${_ns}: ${_third}."
+                                    return 1
+                                fi
+                                _debug "Friends _friends/${_i}$_first+$_second+$_third matched ${#_nodes[@]} nodes for second dimension in namespace ${_ns}."
+                                _dim3+=("${_nodes[@]}")
+                            done
+                            break # No point in checkin further.
+                        fi
+                    done
+                    break # No point in checkin further.
+                fi
+            done
+        done
+    fi
+}
+
+#=================
+#
+# Merge nodes from one, two or three
+# dimensions and execute.
+#
+#
+#=================
+_exec_dimensions()
+{
+    local _ns1=$1
+    shift
+
+    local _node1=$1
+    shift
+
+    local _ns2=$1
+    shift
+
+    local _node2=$1
+    shift
+
+    local _ns3=$1
+    shift
+
+    local _node3=$1
+    shift
+
+    local _nodecombo=
+    printf -v _nodecombo "%s%s%s" "$_node1" "${_node2+ $_node2}" "${_node3+ $_node3}"
+
+    if [[ ${_listnodes-} == "1" ]]; then
+        printf "%s\n" "$_nodecombo"
+        return 0
+    fi
+
+    # Set command line -e envs, if provided.
+    eval $(_apply_cmd_env)
+
+    local _nodes=("$_ns1 $_node1")
+    [[ -n $_node2 ]] && _nodes+=("$_ns2 $_node2")
+    [[ -n $_node3 ]] && _nodes+=("$_ns3 $_node3")
+
+    # These will be populated by _loadnode.
+    local _infotitle="" _infodesc=""
+
+
+    local _status=0 _tuple= _node= _ns=
+    for _tuple in "${_nodes[@]}"; do
+        [[ $_tuple =~ ([^\ ]+)[\ ](.+) ]]
+        _ns=${BASH_REMATCH[1]}
+        _node=${BASH_REMATCH[2]}
+        _YAML_NAMESPACE=${_ns}
+        while :; do
+            local _res=()
+            _loadnode "_res" "$_node" "$_strip_args"
+            _status=$?
+            if (($_status != 0)); then
+                _error "Could not evaluate node variables for node: $_node. There's probably some syntax error in the YAML."
+                return 1
+            fi
+
+            # TODO: this trap thing is not very effective in catching the right errors.
+            trap '_error "Problem when evaluating syntax for node: ${_node}. Look for unbound variable or other syntax error in the YAML."; trap - EXIT; return 1; ' EXIT
+            if (( ${#_res[@]} > 0 )); then
+                local _str=
+                for _str in "${_res[@]}"; do
+                    if [[ $_DEBUG_OUTPUT_ENV == "1" ]]; then
+                        printf "%s" "$_str"
+                    fi
+                    _status=0
+                    eval "$_str" || _status="$?" 
+                    if (($_status != 0)); then
+                        _error "Could not evaluate node variables for node: $_node. There's probably some syntax error in the YAML."
+                        trap - EXIT
+                        return 1
+                    fi
+                done
+                unset _Str
+            fi
+            trap - EXIT
+
+            if [[ -n ${ALIAS-} ]]; then
+                # Rerun for the new node, same namespace.
+                _debug "Alias $_node to $ALIAS, namespace $_ns."
+                _node=$ALIAS
+                unset ALIAS
+                # will continue
+            else
+                break
+            fi
+        done
+    done
+    unset _ns
+
+    if [[ $_DEBUG_OUTPUT_ENV == "1" ]]; then
+        return 0
+    fi
+
+    # Apply CMDOVERRIDE if set on command line.
+    CMD=${CMDOVERRIDE:-${CMD-}}
+
+    if [[ -z ${CMD-} ]]; then
+        _error "No CMD environment variable specified in YAML nodes nor on command line. Use -H to get help or -a -l to list all child nodes."
+        return 1
+    fi
+
+    _debug "Execute on $_nodecombo."
+    _execute "$@"
+    return $?
+}
+
+#===========
+# Helper "macro" to _main to
+# load, preprocess, parse and cache YAML file.
+#
+#===========
+_load_yaml()
+{
+    if [[ $_DEBUG_OUTPUT_PREPROCESSED == "1" ]]; then
+        _CACHE_LEVEL=0
+    fi
+    if (( $_CACHE_LEVEL == 1 )); then
+        # Use cache if exists and still valid
+        if [[ -e $_cachefile ]]; then
+            _debug "Found cache file: $_cachefile"
+            local _allrows=() _r=
+            while IFS= read -r _r; do
+                _allrows+=("$_r")
+            done < $_cachefile
+            unset _r
+            local _cache_format=${_allrows[0]}
+
+            local _isvalid=0
+            while :; do
+                if [[ $_cache_format != "$_CACHE_FORMAT" ]]; then
+                    _debug "Cached format changed, invalidating."
+                    break
+                fi
+
+                local _filelist=${_allrows[1]}
+                local _filesum=${_allrows[2]}
+                local _fileenvps=${_allrows[3]}
+
+                # Check so that the first file in the list corresponds to $_yamlfile
+                if [[ ${_filelist%%\ *} != $_yamlfile ]]; then
+                    break
+                fi
+
+                local _currentsum=
+                # EXTERNAL: cat
+                [[ -n $_SHASUMBIN ]] && _currentsum=$(cat $_filelist 2>/dev/null | ${_SHASUMBIN} 2>/dev/null)
+
+                if [[ -z $_currentsum ]]; then
+                    _warning "Caching could not be used since checksum could not be generated"
+                elif [[ $_currentsum == "$_filesum" && (-z $_envPs || $_envPs == "$_fileenvps") ]]; then
+                    # Timestamps work out
+                    _debug "Reusing cache: $_cachefile"
+                    if [[ $_envPs != $_fileenvps ]]; then
+                        _warning "Using cached -p variables."
+                        _debug "Cached -p variables: $_fileenvps"
+                    fi
+                    IFS=';' read -r -a _parsedyamlcompletion <<< "${_allrows[4]}"
+                    _parsedyaml=("${_allrows[@]:5}")
+                    _isvalid=1
+                fi
+                break
+            done
+            if [[ $_isvalid == "0" ]]; then
+                _debug "Cached version not valid."
+            fi
+            unset _filelist _filesum _fileenvps
+
+            unset _allrows
+        else
+            _debug "Cache file not found: $_cachefile"
+        fi
+    elif (( $_CACHE_LEVEL == 0 )); then
+        # rm cache file, to avoid future confusions.
+        _debug "Deleting cache file: $_cachefile"
+        # EXTERNAL: rm
+        rm -f $_cachefile
+    fi
+
+    if (( ${#_parsedyaml[@]} == 0 )); then
+        # (re)generate yaml
+        _debug "preprocess YAML file: $_yamlfile ..."
+        local _yamlrows=() _parents=() _yamlfilelist=""
+        # Preprocess variable that points to the directory of the YAML file being processed
+        local _PP_DIR=${_yamlfile%/*}
+        # Preprocess variable that points to current CWD where user invoked space.
+        local _PP_CWD=$CWD
+        if [[ $_PP_DIR != $_PP_CWD ]]; then
+            # If CWD is different that initial YAML file dir, then add
+            # YAML file dir to _INCLUDEPATH.
+            _INCLUDEPATH+=("$_PP_DIR")
+        fi
+        _pp_yaml "_yamlrows" $_yamlfile
+        local _status=$?
+        if (($_status == 1)); then
+            _error "Could not find file $_yamlfile"
+            return 1
+        elif (($_status > 1)); then
+            _error "Preprocessing of YAML aborted with status code: $_status"
+            return $_status
+        fi
+        _debug "...done preprocessing."
+        unset _status
+
+        if [[ $_DEBUG_OUTPUT_PREPROCESSED == "1" ]]; then
+            local _line=
+            for _line in "${_yamlrows[@]}"; do
+                printf "%s\n" "$_line"
+            done
+            unset _line
+        fi
+
+        _debug "parse YAML ..."
+        if (( ${#_yamlrows[@]} > 0 )); then
+            _parse_yaml "_yamlrows" "_parsedyaml" "_parsedyamlcompletion"
+            local _quicksort_output=()
+            _quicksort "${_parsedyamlcompletion[@]}"
+            _parsedyamlcompletion=("${_quicksort_output[@]}")
+        fi
+        unset _parents
+        _debug "...done parsing"
+
+        if (( $_CACHE_LEVEL > 0 )); then
+            # (re)save cache file.
+            _debug "Write to cache file: $_cachefile"
+
+            local _currentsum=
+            # EXTERNAL: cat
+            [[ -n $_SHASUMBIN ]] && _currentsum=$(cat $_yamlfilelist 2>/dev/null | ${_SHASUMBIN} 2>/dev/null)
+
+            if [[ -z $_currentsum ]]; then
+                _warning "Cache could not be stored since checksum could not be generated"
+            else
+                printf "%s\n" "$_CACHE_FORMAT" > $_cachefile
+                printf "%s\n" "$_yamlfilelist"  >> $_cachefile
+                printf "%s\n" "$_currentsum" >> $_cachefile
+                printf "%s\n" "$_envPs" >> $_cachefile
+                local _s=$(IFS=';'; echo "${_parsedyamlcompletion[*]}")
+                printf "%s\n" "$_s" >> $_cachefile
+                unset _s
+                if (( ${#_parsedyaml[@]} > 0 )); then
+                    printf "%s\n" "${_parsedyaml[@]}" >> $_cachefile
+                fi
+            fi
+        fi
+        unset _yamlfilelist
+    fi
+}
+
+#====================
+#
+# Perform Bash auto completion on modules.
+#
+#====================
+_completion_modules()
+{
+    local _bash_completion_current=$1
+    shift
+
+    local _places=( "$CWD/space_modules" "$_MODULES_SHARED" )
+    local _dir=
+    local _f=$_bash_completion_current
+    local _default=${_bash_completion_current}
+
+    if [[ ${_f} == "." ]]; then
+        _f=""
+    fi
+
+    local _items=() _i=
+    for _i in 1 2; do
+        for _dir in "${_places[@]}"; do
+            # EXTERNAL: find
+            local _modules=$(cd $_dir 2>/dev/null && find . -mindepth 3 -maxdepth 3 -wholename "./${_f}*" -type d)
+            for _f in $_modules; do 
+                _items+=("${_f:2}")
+            done
+        done
+        if (( ${#_items[@]} > 0 )); then
+            printf "%s\n" "$_default"
+            printf "%s\n" "${_items[@]}"
+            break
+        else
+            if [[ ! $_f =~ \/ ]]; then
+                _default="gitlab.com/space-sh/"
+                _f="gitlab.com/space-sh/$_f"
+            elif [[ ! $_f =~ space-sh\/([^\/]*) ]]; then
+                _default="gitlab.com/space-sh/"
+                _f="gitlab.com/space-sh/$_f"
+            else
+                return 1
+            fi
+        fi
+    done
+    unset _f
+}
+
+#===============
+# Update all existing space modules
+#
+#===============
+_update_modules()
+{
+    local _updatemodules=$1
+    shift
+
+    # EXTERNAL: git
+    if ! command -v git >/dev/null; then
+        _error "Git is not installed, cannot update modules."
+        return 1
+    fi
+
+    local _pattern=".*"
+    if [[ $_updatemodules != "*" ]]; then
+        local _domainname="gitlab.com"
+        local _username="space-sh"
+        local _reponame=$_updatemodules 
+        if [[ $_updatemodules  =~ (.+)/(.+)/(.+) ]]; then
+            _domainname=${BASH_REMATCH[1]}
+            _username=${BASH_REMATCH[2]}
+            _reponame=${BASH_REMATCH[3]}
+        elif [[ $_updatemodules  =~ (.+)/(.+) ]]; then
+            _username=${BASH_REMATCH[1]}
+            _reponame=${BASH_REMATCH[2]}
+        fi
+        if [[ $_username == "*" ]]; then
+            _username=".*"
+        fi
+        if [[ $_reponame == "*" ]]; then
+            _reponame=".*"
+        fi
+        _pattern="\(./\)?$_domainname/$_username/$_reponame"
+    fi
+    _info "Updating space modules to pattern: $_pattern"
+    local _places=( "$CWD/space_modules" "$_MODULES_SHARED" )
+    local _dir=
+    for _dir in "${_places[@]}"; do
+        # EXTERNAL: find
+        local _modules=$(cd $_dir 2>/dev/null && find . -mindepth 3 -maxdepth 3 -type d -regex "$_pattern")
+        if [[ -n $_modules ]]; then
+            _info "modules found: " $_modules
+            (
+                cd $_dir 2>/dev/null
+                for d in $_modules; do
+                    d=${d:2}
+                    _info "Update module $_dir/$d"
+                    cd $_dir/$d
+                    # EXTERNAL: git
+                    if [[ -d .git ]] ; then
+                        # Check the module banlist.
+                        local _giturl=$(git config --get remote.origin.url)
+                        _module_check_banlist "$_giturl"
+                        (( $? > 0 )) && return 1
+                        git pull 2>&1
+                        (( $? > 0 )) && return 1
+                        if [[ -f .gitmodules ]]; then
+                            git submodule update >&2
+                            if (( $? > 0 )); then
+                                _error "Could not perform Git submodule update. Is Perl installed?"
+                                return 1
+                            fi
+                        fi
+                        # TODO Check the signature of the commit, if applicable.
+                    else
+                        _warning "Directory $_dir/$d is not a Git repository and cannot be updated."
+                    fi
+              done
+            )
+            (( $? > 0 )) && return 1
+        else
+            _info "No modules found."
+        fi
+    done
+}
+
+#============
+#
+# Translate parsed YAML into Bash variables.
+#
+# $1: variable name of input array.
+# $2: variable name of output array.
+#
+#============
+_parsed_yaml_to_bash()
+{
+    local _invarname=$1
+    shift
+
+    local _outvarname=$1
+    shift
+
+    local _allrows=()
+    eval "_allrows=(\"\${"${_invarname}"[@]}\")"
+
+    local _line= _str= _varname=
+    for _line in "${_allrows[@]}"; do
+        if [[ -z $_varname ]]; then
+            _varname="${_YAML_PREFIX}${_YAML_NAMESPACE}${_line}"
+            _str="local $_varname="$'\n'" read -d '' -r $_varname << \"$_SPACEGAL_EOF_TAG\""
+        elif [[ $_line == "$_SPACEGAL_EOF_TAG" ]]; then
+            _str=$_str$'\n'$_SPACEGAL_EOF_TAG$'\n'":"$'\n'
+            eval "$_outvarname+=(\"\$_str\")"
+            _str=""
+            _varname=
+        else
+            _str=$_str$'\n'$_line
+        fi
+    done
+}
+
+#==========
+# _match_node
+#
+# env:
+#   $_nodes
+#       Array to add results to.
+#
+# $1: name of array containing sorted list of nodes.
+# $2: pattern to match against list of nodes, ex: "/sites/.*/".
+# $3: include hidden nodes. set to 1 to include hidden leave nodes
+#   beginning with an underscore.
+# $4: simple, set to 1 to only return the last node part.
+# $5: includeleafs, set to 1 to include leaf nodes.
+#
+#==========
+_match_node()
+{
+    local _inputname=$1
+    shift
+
+    local _nodepath=$1
+    shift
+
+    local _includehidden=${1:-0}
+    shift || :
+
+    local _simple=${1:-0}
+    shift || :
+
+    local _includeleafs=${1:-0}
+    shift || :
+
+    local _item= _node= _isleaf=
+    local _nodelist=()
+    eval '
+    for _item in "${'$_inputname'[@]-}"; do
+        if [[ $_item =~ ([^ ]+)\ (.*) ]]; then
+            _node=${BASH_REMATCH[1]}
+            _isleaf=${BASH_REMATCH[2]}
+            if [[ ($_isleaf == "1" && $_includeleafs == "1") || $_isleaf == "0" ]]; then
+                _nodelist+=($_node)
+            fi
+        fi
+    done
+    '
+    unset _item _node _isleaf
+
+    if ((${#_nodelist[@]} == 0)); then
+        return 0
+    fi
+
+    local _item= _levels=
+    local _match= _matched=
+
+    # Figure out how many levels we have by counting slashes.
+    _levels=${_nodepath//[^\/]}
+    _levels=${#_levels}
+    ((_levels-=1))
+    if (($_levels == 0)); then
+        _nodes+=("/")
+    else
+        _match=""
+        for ((i=0; i<$_levels; i++)); do
+            if ((i < _levels-1)) || [[ $_includehidden == "1" ]]; then
+                _match="${_match}/[a-zA-Z0-9_]+"
+            else
+                _match="${_match}/[a-zA-Z0-9][a-zA-Z0-9_]*"
+            fi
+        done
+        _match="${_match}/"
+        for _item in "${_nodelist[@]}"; do
+            if [[ $_item =~ ^($_match)$ ]]; then
+                _matched=${BASH_REMATCH[1]}
+                if [[ $_matched =~ $_nodepath ]]; then
+                    if [[ $_simple == "0" ]]; then
+                        _nodes+=("$_matched")
+                    else
+                        local _arr=()
+                        IFS='/' read -r -a _arr <<< "${_matched}"
+                        _nodes+=("${_arr[$((${#_arr[@]}-1))]}")
+                        unset _arr
+                    fi
+                fi
+            fi
+        done
+    fi
+    unset _item _levels
+    unset _match _matched
+    unset _nodepath
+}
+
+#==========
+# _loadnode
+#
+# Load the environment variables for a particular node one part at a time.
+#
+# Parameters:
+#   $1: name of the output array to append to.
+#   $2: the node path to load.
+#   $3: set to "1" to strip CMD variable of -- arguments.
+#       We do this when we have commands on command line that shall override.
+#
+# Returns:
+#   -
+#
+#==========
+_loadnode()
+{
+    local _output=$1
+    shift
+
+    local _fullnodepath=$1
+    shift
+
+    local _strip_args=${1:-0}
+    shift || :
+
+    if [[ ${_fullnodepath:0:1} != "/" ]]; then
+        _error "Malformed node ($_fullnodepath), node must begin with slash."
+        return 1
+    fi
+
+    _debug "Load node: ${_fullnodepath}"
+
+    local _nodeparts=()
+    IFS='/' read -r -a _nodeparts <<< "${_fullnodepath}"
+
+
+    local _nodepath=""
+    local _i=0
+    local _nrparts=${#_nodeparts[@]}
+    while (( _i < _nrparts )); do
+        local _node=${_nodeparts[$_i]}
+        _nodepath="${_nodepath}${_node}/"
+        ((_i+=1))
+
+        local _str=
+        _copy "_str" "${_nodepath}_info/desc"
+        [[ -n $_str ]] && _infodesc="$_str"
+        _copy "_str" "${_nodepath}_info/title"
+        [[ -n $_str ]] && _infotitle="$_str"
+
+        local _src=
+        _copy "_src" "${_nodepath}_source"
+        if [[ -n $_src ]]; then
+            local _s='_source "'$_src'"'$'\n'
+            eval "$_output+=( \"\$_s\" )"
+        fi
+        local _envarrkeys=()
+        _list "_envarrkeys" "${_nodepath}_env/" "1"
+        if [[ -z ${_envarrkeys-} || ((${#_envarrkeys} == 0)) ]]; then
+            continue
+        fi
+        local _arrindex= _key=
+        for _arrindex in "${_envarrkeys[@]}"; do
+            local _envs=()
+            _list "_envs" "${_nodepath}_env/$_arrindex/" "1" "1"
+            if (( ${#_envs[@]} > 0 )); then
+                for _key in "${_envs[@]}"; do
+                    # Check if it's a protected variable that's only
+                    # allowed to be set on the last part of the node.
+                    if (( _i < _nrparts )); then
+                        case "${_key}" in
+                            CMD|CMDREDIR|ALIAS|CMDOUTER|CMDARGS)
+                                continue
+                                ;;
+                        esac
+                    fi
+
+                    if [[ $_key =~ ^[0-9]+$ ]]; then
+                        _error "${_nodepath}_env/$_arrindex/$_key is malformed, array inside object?. Syntax error in YAML."
+                        return 1
+                    fi
+
+                    if [[ ${_key:0:1} == "_" ]]; then
+                        _error "Environment variable ${_nodepath}_env/$_arrindex/$_key is forbidden, variable cannot begin with underscore."
+                        return 1
+                    fi
+
+                    local _value=
+                    _copy "_value" "${_nodepath}_env/$_arrindex/$_key"
+
+                    if [[ $_key == "CMD" && $_strip_args == "1" ]]; then
+                        # If variable is CMD, we check if to trim away the arguments
+                        # after "--" already here, to avoid variables not being declared.
+                        # Use case is when overriding arguments from command line with the "--" switch.
+                        # NOTE: There's a small probability that the first -- encountered is not
+                        # a switch. We could use _split_quoted instead, but it feels a bit overkill.
+                        if [[ $_value =~ (.+)[\ ]--[\ ] ]]; then
+                            _value=${BASH_REMATCH[1]}
+                        fi
+                    fi
+
+                    if [[ "$_value" == "!unset" ]]; then
+                        local _s="unset ${_key}"$'\n'":"$'\n'
+                        eval "$_output+=( \"\$_s\" )"
+                    elif [[ "${_value:0:1}" == \' && "${_value: -1}" == \' ]]; then
+                        local _s="[[ \${$_key-} == \"\" && \${$_key-unset} == \"unset\" ]] && local ${_key} || local ${_key}=\$${_key}; read -d '' -r ${_key} << \"$_SPACEGAL_EOF_TAG\""$'\n'"${_value:1:$((${#_value}-2))}"$'\n'"$_SPACEGAL_EOF_TAG"$'\n'":"$'\n'
+                        eval "$_output+=( \"\$_s\" )"
+                    else
+                        if [[ "${_value:0:1}" == \" && "${_value: -1}" == \" ]]; then
+                            _value="${_value:1:$((${#_value}-2))}"
+                            _value=${_value//\\\"/\"}
+                        fi
+
+                        # Escape all quoted variables.
+                        while :; do
+                            local _left="${_value%%\"\$\{*}"
+                            local _intermed=${_value:$((${#_left} + 1))}
+                            local _middle="${_intermed%%\}\"*}"
+                            if [ "${_left}" = "${_value}" -o "${_middle}" = "${_intermed}" ]; then
+                                break
+                            fi
+                            _middle="${_middle}}"
+                            local _right=${_value:$((${#_left} + 2 + ${#_middle}))}
+                            _escape "_middle"
+                            _value="${_left}\$(_escape_inline \"${_middle}\")${_right}"
+                        done
+
+                        local _s="[[ \${$_key-} == \"\" && \${$_key-unset} == \"unset\" ]] && local ${_key} || local ${_key}=\$${_key}; read -d '' -r ${_key} << $_SPACEGAL_EOF_TAG"$'\n'"${_value}"$'\n'"$_SPACEGAL_EOF_TAG"$'\n'":"$'\n'
+                        eval "$_output+=( \"\$_s\" )"
+                    fi
+                done
+            else
+                _warning "_env item ${_nodepath}_env/$_arrindex has no children, are you sure _env is treated as an array?"
+            fi
+        done
+
+    done
+    return 0
+}
+
+#==========
+# _execute
+#
+# Process a particular node path. Starts with root and evaluates every node.
+# in path.
+# Note: This function expects that the YAML has been loaded.
+#
+# Parameters:
+#   $@: arguments given after '--' on command line.
+#
+# Returns:
+#   Status code of the executed command
+#
+#==========
+_execute()
+{
+    # Source all sh/bash files added.
+    _source_added
+    (( $? > 0 )) && return 1
+
+    # Cut potential function arguments from $CMD into $_defaultargs.
+    # NOTE: possibly make it possible to have CMD: "A=1 B=2 echo something"
+    # in the sense that A=1 isn't treated as the command and the rest as arguments.
+    local _defaultargs=
+    if [[ $CMD =~ ([^ ]+)[\ ]+(.+) ]]; then
+        CMD=${BASH_REMATCH[1]}
+        _defaultargs=${BASH_REMATCH[2]}
+        if [[ $CMD =~ \= ]]; then
+            _error "Sorry, but the CMD (\"$CMD $_defaultargs\") seems to be prefixed by variable assignment(s), the CMD variable assigned from YAML cannot not take such a complex form. Please instead use a Bash function to set CMD."
+            return 1
+        fi
+    fi
+
+    # Split string into array of arguments.
+    local _args=()
+    _split_quoted "_args" "$_defaultargs"
+
+    # Any arguments in CMD after -- (including) have already been cut away by now.
+    # If it was not we now remove the -- token.
+    local _rowindex=
+    for ((_rowindex=0; _rowindex<${#_args[@]}; _rowindex+=1 )); do
+        if [[ ${_args[$_rowindex]} == "--" ]]; then
+            _args=("${_args[@]:0:$_rowindex}" "${_args[@]:(($_rowindex+1))}")
+            break
+        fi
+    done
+    unset _rowindex
+
+    # Append CMDARGS arguments to CMD.
+    local _arg=
+    if [[ -n ${CMDARGS-} ]]; then
+        for _arg in ${CMDARGS}; do
+            _args+=("$_arg")
+        done
+    fi
+
+    # Append command line arguments to CMD.
+    for _arg in "$@"; do
+        _args+=("$_arg")
+    done
+
+    local _cmd_args_count=${#_args[@]}
+    local _rowindex= _cmd_args_str=""
+    for ((_rowindex=0; _rowindex<_cmd_args_count; _rowindex+=1 )); do
+        _arg="${_args[$_rowindex]}"
+        _escape "_arg" '"'
+        # Always quote arg for eval statement to avoid evaluating &&, >, etc
+        _cmd_args_str="${_cmd_args_str:+${_cmd_args_str} }\""$_arg$'"'
+    done
+    unset _rowindex _arg _args _cmd_args_count
+
+
+    # Now start looking at the CMD.
+    # All these arrays will be the same size,
+    # and populated by the _cmd_extract function.
+    local _cmd_names=()
+    local _cmd_bodies=()
+    local _cmd_args=()
+    local _cmd_redirs=()
+    local _cmd_outers=()
+    local _cmd_wraps=()
+    local _cmd_deps=()
+    local _cmd_envs=()
+    local _cmd_outerenvs=()
+    local _cmd_outerdeps=()
+
+    # Check if $CMD is a function or just a snippet.
+    declare -f -F $CMD &>/dev/null
+    if (($? > 0)); then
+        # $CMD is not a function, it's an external executable or a Bash snippet
+        _debug "CMD is snippet or executable: $CMD"
+        _debug "CMD args: $_cmd_args_str"
+        # As for now CMDDEP is nothing we provide for anonymous functions.
+        local _fn_def="_anonymous ()"$'\n'"{"$'\n'"    $CMD \"\$@\""$'\n'"}"$'\n'
+        _add_cmd "_anonymous" "${_fn_def}" "$_cmd_args_str" "${CMDREDIR-}" "${CMDOUTER-}" "${CMDWRAP-}" "" "${CMDENV-}"
+        unset _fn_def
+    else
+        # $CMD is a function.
+        _debug "CMD is function: $CMD"
+        _debug "CMD args: $_cmd_args_str"
+        _debug "CMD wrap: ${CMDWRAP-}"
+
+        local SPACE_CMD=$CMD                # Inherited value from YAML.
+        local SPACE_CMDREDIR=${CMDREDIR-}   # Inherited value from YAML.
+        local SPACE_CMDOUTER=${CMDOUTER-}   # Inherited value from YAML.
+        local SPACE_CMDWRAP=${CMDWRAP-}     # Inherited value from YAML.
+        local SPACE_CMDENV=
+        local SPACE_CMDARGS=${_cmd_args_str}
+        local SPACE_CMDDEP=
+        local SPACE_CMDOUTERDEP=
+        local SPACE_CMDOUTERENV=
+        _cmd_extract
+        (( $? > 0 )) && return 1
+    fi
+    unset _cmd_args_str
+
+    # Iterate over all cmds and their data to build up the export
+    local _numcmds=${#_cmd_names[@]}
+    if (( _numcmds == 0 )); then
+        _error "No CMD's to run."
+        return 1
+    fi
+
+    local _export_cmd=""
+    local _cmd_options="set -u;
+"
+    local _index=0
+    while (( _index < _numcmds )); do
+        local _fn_name=${_cmd_names[$_index]}
+        local _fn_def=${_cmd_bodies[$_index]}
+        local _fn_args=${_cmd_args[$_index]}
+        local _fn_redir=${_cmd_redirs[$_index]}
+        local _fn_outer=${_cmd_outers[$_index]}
+        local _fn_wrap=${_cmd_wraps[$_index]}
+        local _fn_env="${_cmd_envs[$_index]}"
+        local _fn_deps="${_cmd_deps[$_index]}"
+        local _fn_cmdouterenv="${_cmd_outerenvs[$_index]}"
+        local _fn_cmdouterdep="${_cmd_outerdeps[$_index]}"
+
+        if [[ -z "${_fn_wrap}" ]]; then
+            if [[ -n "${_fn_cmdouterenv}" ]]; then
+                _fn_env="${_fn_cmdouterenv} ${_fn_env}"
+            fi
+            if [[ -n "${_fn_cmdouterdep}" ]]; then
+                local _item=
+                for _item in ${_fn_cmdouterdep}; do
+                    if [[ ! ${_fn_deps} =~ (^|[\ ])${_item}($|[\ ]) ]]; then
+                        _cmd_add_fn_dep "${_fn_cmdouterdep}" "SPACE_CMDOUTER"
+                        (( $? > 0 )) && return 1
+                    fi
+                done
+                unset _item
+            fi
+            _fn_cmdouterenv=
+            _fn_cmdouterdep=
+        fi
+
+        if [[ -n ${CMDENV-} ]]; then
+            _fn_env="${CMDENV} ${_fn_env}"
+        fi
+
+        local _fn_call="${_fn_name} ${_fn_args}"
+        unset _fn_args
+
+        local _wrapped_fn_def=""
+        local _wrappers=0
+        if [[ -n ${_fn_wrap} ]]; then
+            _wrapped_fn_def=$'\n'   # An empty line before all the wrapping comes.
+            local _fn_wrap_item= _fn_wrap_items= _i=
+            IFS=' ' read -r -a _fn_wrap_items <<< "${_fn_wrap}"
+            _wrappers=${#_fn_wrap_items[@]}
+            # We evaluate all the wrappers beginning with the outermost one.
+            # In this way wrappers can manipulate environment variables for
+            # innermore wrappers and also for the final function.
+            for ((_i=$((_wrappers-1)); _i>=0; _i-=1 )); do
+                _fn_wrap_item="${_fn_wrap_items[${_i}]}"
+
+                # We need to isolate some variables.
+                _spacegal_context ()
+                {
+                    local _cmd_names=()
+                    local _cmd_bodies=()
+                    local _cmd_args=()
+                    local _cmd_redirs=()
+                    local _cmd_outers=()
+                    local _cmd_wraps=()
+                    local _cmd_deps=()
+                    local _cmd_envs=()
+                    local _cmd_outerenvs=()
+                    local _cmd_outerdeps=()
+                    local SPACE_CMD="${_fn_wrap_item}"
+                    local SPACE_CMDREDIR=
+                    local SPACE_CMDOUTER=
+                    local SPACE_CMDWRAP=
+                    local SPACE_CMDDEP=
+                    local SPACE_CMDENV=
+                    local SPACE_CMDOUTERDEP=
+                    local SPACE_CMDOUTERENV=
+                    # We do NOT pass the arguments
+                    # into the wrapper function.
+                    local SPACE_CMDARGS=
+
+                    _cmd_extract
+                    (( $? > 0 )) && return 1
+
+                    local _fn_env="${_cmd_envs[0]}"
+                    #if [[ -n ${CMDENV-} ]]; then
+                        #_fn_env="${CMDENV} ${_fn_env}"
+                    #fi
+
+                    local _fn_name=${_cmd_names[0]}
+                    local _fn_def=${_cmd_bodies[0]}
+                    local _fn_args="${_cmd_args[0]}"
+                    local _fn_call="${_fn_name} ${_fn_args}"
+                    local _fn_deps="${_cmd_deps[$_index]}"
+
+                    # Check if this is the outermost wrapper and
+                    # if CMDOUTER has env and dep's to it, then
+                    # we add those to this top most level.
+                    if [[ "${_i}" == "$((_wrappers-1))" ]]; then
+                        if [[ -n "${_fn_cmdouterenv}" ]]; then
+                            _fn_env="${_fn_cmdouterenv} ${_fn_env}"
+                        fi
+                        if [[ -n "${_fn_cmdouterdep}" ]]; then
+                            local _item=
+                            for _item in ${_fn_cmdouterdep}; do
+                                if [[ ! ${_fn_deps} =~ (^|[\ ])${_item}($|[\ ]) ]]; then
+                                    _cmd_add_fn_dep "${_fn_cmdouterdep}" "SPACE_CMDOUTER"
+                                    (( $? > 0 )) && return 1
+                                fi
+                            done
+                            unset _item
+                        fi
+                    fi
+
+                    local _export_vars=""
+                    _cmd_export_vars "${_fn_env}"
+
+                    push "_fn_def"
+                    push "_fn_call"
+                    push "_export_vars"
+                }
+                _spacegal_context
+                (( $? > 0 )) && return 1
+            done
+            unset _fn_wrap_item _fn_wrap_items _i
+        fi
+
+        local _export_vars=""
+        _cmd_export_vars "${_fn_env}"
+
+        while ((_wrappers>0)); do
+            ((_wrappers-=1))
+            _wrapped_fn_def="CMD=\$(cat <<\"${_wrappers}${_SPACEGAL_EOF_TAG}\""$'\n'"${_wrapped_fn_def}${_export_vars}${_fn_def}${_fn_call}"$'\n\n'"${_wrappers}${_SPACEGAL_EOF_TAG}"$'\n'")"$'\n\n'
+            pop "_export_vars"
+            pop "_fn_call"
+            pop "_fn_def"
+        done
+
+        if [[ -n ${_fn_redir} ]]; then
+            _fn_call="${_fn_call} ${_fn_redir}"
+        fi
+
+        # $_fn_outer is used to make the CMD be inside a for loop
+        # or some other prefixing or enclosing code.
+        local _fn_outer_header=""
+        local _fn_outer_footer=""
+        if [[ -n ${_fn_outer} ]]; then
+            _fn_outer_header=${_fn_outer%_CMD_*}
+            _fn_outer_footer=${_fn_outer#*_CMD_}
+        fi
+
+        _export_cmd="${_cmd_options}${_export_cmd}${_wrapped_fn_def}${_export_vars}${_fn_def}${_fn_outer_header}${_fn_call}${_fn_outer_footer}"$'\n'
+
+            _export_cmd="${_export_cmd}"$'\n''_status="$?"
+if [ "'${CMDSILENT:-0}'" -eq 0 -a "${_status}" -ne "'${CMDEXIT:-0}'" ]; then
+    type PRINT >/dev/null 2>&1 &&
+        PRINT "'${_fn_name}' exited with status: ${_status}." "error" ||
+        printf "%s\n" "[ERROR] '${_fn_name}' exited with status: ${_status}." >&2
+    exit "$(( ${_status} > 0 ? ${_status} : 1 ))"
+fi
+'
+
+        (( _index += 1 ))
+    done
+    unset _index
+
+
+    if [[ ! -z $_dry ]]; then
+        if [[ -t 1 ]]; then
+            _info "##################################################"
+            _info "#######       DRY RUN - NOT EXECUTING      #######"
+            _info "####### Redirect STDOUT to save as script. #######"
+            _info "##################################################"
+        fi
+
+        local _sh="/bin/env sh"
+        if [ "${_FORCE_BASH}" = "1" ]; then
+            _sh="/bin/env bash"
+        fi
+
+        local _exportinfo="#!${_sh}
+# Script exported by:
+#   ____  ____   __    ___  ____  ___   __   __
+#  / ___)(  _ \ / _\  / __)(  __)/ __) / _\ (  )
+#  \___ \ ) __//    \( (__  ) _)( (_ \/    \/ (_/\\
+#  (____/(__)  \_/\_/ \___)(____)\___/\_/\_/\____/
+#                                         space.sh"
+        printf "%s\n" "$_exportinfo"
+
+        local _helpinfo="# Node: $_nodecombo"$'\n'
+        [[ $_infotitle ]] && _helpinfo="${_helpinfo}# $_infotitle"
+        [[ $_infodesc ]] && _helpinfo="${_helpinfo}"$'\n'"# ${_infodesc//$'\n'/$'\n'\# }"
+        [[ -n $_helpinfo ]] && printf "%s\n\n" "$_helpinfo"
+
+        printf "%s\n" "$_export_cmd"
+        return 0
+    else
+        # We run the final result in a separate shell, to isolate the
+        # environment to not have leaky environment.
+        local _sh="env sh"
+        if [ "${_FORCE_BASH}" = "1" ]; then
+            _sh="env bash"
+        fi
+        ${_sh} -c "$_export_cmd"
+        local _status=$?
+        return $_status
+    fi
+}
+
+#============
+# _cmd_extract
+#
+# Helper function analyze and extract CMD function and headers.
+#
+# It depends on some variables already been set, to which it populates:
+#   _cmd_names=()
+#   _cmd_bodies=()
+#   _cmd_args=()
+#   _cmd_redirs=()
+#   _cmd_outers=()
+#   _cmd_wraps=()
+#   _cmd_deps=()
+#   _cmd_envs=()
+#
+# These space header variables could or are expected to have been set with default values:
+#   SPACE_CMD - requried.
+#   SPACE_CMDENV
+#   SPACE_CMDREDIR
+#   SPACE_CMDOUTER
+#   SPACE_CMDARGS
+#   SPACE_CMDWRAP
+#   
+#============
+_cmd_extract()
+{
+    trap '_error "Problem when evaluating SPACE_ header variables or function body for: ${_fn_name}. Look for unbound variable or other syntax error."; trap - EXIT; return 1; ' EXIT
+    local _space_cmds=("${SPACE_CMD}")
+    local _space_cmd_index=0
+    while :; do
+        # TODO: When we implement FORK, we have to consider
+        # SPACE_CMDARGS, etc also.
+        (( _space_cmd_index >= ${#_space_cmds[@]} )) && break
+        SPACE_CMD=${_space_cmds[$_space_cmd_index]}
+        (( _space_cmd_index += 1))
+
+        local _counter=0
+        while :; do
+            # Loop until we reach the "actual" function,
+            # which is a function that does not chain to
+            # another function using SPACE_CMD="funcname".
+            (( _counter += 1 ))
+            if (( _counter > 100 )); then
+                _error "Aborting! Looks like your function chaining using SPACE_CMD is looping. Function: ${SPACE_CMD}."
+                trap - EXIT
+                return 1
+            fi
+
+            local _fn_name= _fn_body=
+            _get_fn "$SPACE_CMD" "_fn_name" "_fn_body"
+            if (( $? > 0 )); then
+                _error "Function $SPACE_CMD is not declared or syntax error."
+                trap - EXIT
+                return 1
+            fi
+
+            local _args=()
+            _split_quoted "_args" "${SPACE_CMDARGS}"
+            local _cmd_args_count=${#_args[@]};
+            unset _args
+
+            # Separate the SPACE_ variables header and the function body.
+            local _space_cmd=$SPACE_CMD
+            local _fnlines=()
+            local _spacelines=()
+            _cmd_extract_space_header "${_fn_body}" "${_fn_name}" "${_cmd_args_count}"
+            (( $? > 0 )) && { trap - EXIT; return 1; }
+
+            # If we have any SPACE_ variables we evaluate them together
+            # with the function arguments.
+            if (( ${#_spacelines[@]} > 0 )); then
+                local _SPACE_ARGS=$SPACE_CMDARGS
+                local _fns=
+                printf -v _fns "    %s\n" "${_spacelines[@]}"
+                _fns="_set_args () {"$'\n'"${_fns}}"$'\n'"_set_args ${_SPACE_ARGS}"$'\n'
+                eval "$_fns"
+                if (( $? > 0 )); then
+                    _error "Could not evaluate function header of ${SPACE_CMD} to set SPACE_ variables."
+                    trap - EXIT
+                    return 1
+                fi
+                unset _fns
+            fi
+            unset _spacelines
+
+            # Check if this function is a compile time wrapper for another function,
+            # if so we want to evaluate it now.
+            #if [[ -n ${SPACE_CMDFORK} ]]; then
+                # TODO: fork many commands from this command, by adding
+                # to _space_cmds.
+                # Not implemented yet.
+            if [[ ${SPACE_CMD} != ${_space_cmd} ]]; then
+                local _SPACE_ARGS=$SPACE_CMDARGS
+                local _fns=
+                printf -v _fns "%s\n" "${_fnlines[@]-:}"
+                _fns="_wrapper () {"$'\n'"${_fns}}"$'\n'"_wrapper ${_SPACE_ARGS}"$'\n'
+                eval "$_fns"
+                if (( $? > 0 )); then
+                    _error "Error in wrapper function: ${_space_cmd}."
+                    trap - EXIT
+                    return 1
+                fi
+                unset _fns
+            else
+                # This function is the actual function.
+                local _fn_def=
+                local _fn_env="${SPACE_CMDENV}"
+                printf -v _fn_def "%s\n" "${_fnlines[@]-:}"
+                _fn_def="${_fn_name} ()"$'\n'"{"$'\n'"${_fn_def}""}"$'\n\n'
+                _cmd_add_fn_dep "${SPACE_CMDDEP}" "${_fn_name}"
+                if (( $? > 0 )); then trap - EXIT; return 1; fi
+                _add_cmd "${_fn_name}" "${_fn_def}" "${SPACE_CMDARGS}" "${SPACE_CMDREDIR}" "${SPACE_CMDOUTER}" "${SPACE_CMDWRAP}" "${SPACE_CMDDEP}" "${_fn_env}" "${SPACE_CMDOUTERDEP}" "${SPACE_CMDOUTERENV}" 
+                unset _fn_def
+                break
+            fi
+        done
+    done
+    trap - EXIT
+}
+
+#==========
+# _cmd_extract_space_header
+#
+# Helper function to extract space headers from the function body.
+#
+# env:
+#   _fnlines
+#   _spacelines
+#   SPACE_xyz
+#
+#==========
+_cmd_extract_space_header ()
+{
+    local _fn_body="$1"
+    shift
+
+    local _fn_name="$1"
+    shift
+
+    local _cmd_args_count="${1-}"
+    shift || :
+
+    # NOTE: This is a special case for now.
+    # We do not want this line in the PRINT function.
+    # But we do want it in all the other functions exported, for PRINT to use.
+    [[ $_fn_name != "PRINT" ]] && _fnlines+=("    local SPACE_FNNAME=\"${_fn_name}\"")
+
+    local _line=
+    local _isheader="1"
+    while IFS= read -r _line; do
+        # Disconsider comments when evaluating header line
+        if [[ $_isheader == "1" ]]; then
+            if [[ $_line =~ ^[\ ]*(SPACE_[^=]+)=(.+) ]]; then
+                local _spacevar=${BASH_REMATCH[1]}
+                if [[ ${_spacevar} == "SPACE_SIGNATURE" ]]; then
+                    if [[ -n ${_cmd_args_count-} ]]; then
+                        # Check so that signature matches.
+                        local _signature=${BASH_REMATCH[2]}
+                        [[ ${_signature:0:1} == \" ]] && _signature=${_signature:1}
+                        [[ ${_signature: -1} == ";" ]] && _signature=${_signature:0:$((${#_signature}-1))}
+                        [[ ${_signature: -1} == \" ]] && _signature=${_signature:0:$((${#_signature}-1))}
+                        local _sigcount=0
+                        local _signature2="${_signature}"
+                        if [ "${_signature:0:1}" = "[" ]; then
+                            _signature2=${_signature##*\]}
+                        elif [ "${_signature: -1}" = "]" ]; then
+                            _signature2=${_signature%%\[*}
+                        else
+                            _sigcount=$(( ${#_signature} > 0 ? 1 : 0 ))
+                        fi
+                        _signature2=${_signature2//[^\ ]}
+                        (( _sigcount += ${#_signature2} ))
+                        if (( _sigcount > _cmd_args_count )); then
+                            _error "Missing $((_sigcount-_cmd_args_count)) argument(s). Function $_space_cmd has the signature: ${_signature}, but only these arguments where provided: ${SPACE_CMDARGS}."
+                            return 1
+                        fi
+                    fi
+                else
+                    if [[ ${_spacevar} == "SPACE_CMDENV" ]]; then
+                        # Always overwritten.
+                        _spacelines+=("SPACE_CMDENV=${BASH_REMATCH[2]}")
+                    elif [[ ${_spacevar} == "SPACE_CMDDEP" ]]; then
+                        # Always overwritten.
+                        _spacelines+=("SPACE_CMDDEP=${BASH_REMATCH[2]}")
+                    elif [[ ${_spacevar} == "SPACE_CMDREDIR" ]]; then
+                        # Do not overwrite.
+                        if [[ -z ${SPACE_CMDREDIR} ]]; then
+                            _spacelines+=("SPACE_CMDREDIR=${BASH_REMATCH[2]}")
+                        fi
+                    elif [[ ${_spacevar} == "SPACE_CMDOUTER" ]]; then
+                        # Do not overwrite.
+                        if [[ -z ${SPACE_CMDOUTER} ]]; then
+                            _spacelines+=("SPACE_CMDOUTER=${BASH_REMATCH[2]}")
+                        fi
+                    elif [[ ${_spacevar} == "SPACE_CMDARGS" ]]; then
+                        # Always overwritten.
+                        _spacelines+=("SPACE_CMDARGS=${BASH_REMATCH[2]}")
+                    elif [[ ${_spacevar} == "SPACE_CMDWRAP" ]]; then
+                        # Always overwritten, but prepended to.
+                        local _s="${BASH_REMATCH[2]}"
+                        if [ "${_s:0:1}" = "\"" ]; then
+                            _s="${_s:1}"
+                        fi
+                        if [ "${_s: -1}" = ";" ]; then
+                            _s="${_s:0:$((${#_s}-1))}"
+                        fi
+                        if [ "${_s: -1}" = "\"" ]; then
+                            _s="${_s:0:$((${#_s}-1))}"
+                        fi
+                        _spacelines+=("SPACE_CMDWRAP=\"${_s}${SPACE_CMDWRAP:+ ${SPACE_CMDWRAP}}"\")
+                        unset _s
+                    elif [[ ${_spacevar} == "SPACE_CMD" ]]; then
+                        # Always overwritten.
+                        _spacelines+=("SPACE_CMD=${BASH_REMATCH[2]}")
+                    elif [[ ${_spacevar} == "SPACE_CMDOUTERENV" ]]; then
+                        # Always overwritten.
+                        _spacelines+=("SPACE_CMDOUTERENV=${BASH_REMATCH[2]}")
+                    elif [[ ${_spacevar} == "SPACE_CMDOUTERDEP" ]]; then
+                        # Always overwritten.
+                        _spacelines+=("SPACE_CMDOUTERDEP=${BASH_REMATCH[2]}")
+                    else
+                        _error "Unknown SPACE HEADER variable: ${_spacevar}, in function: ${_fn_name}."
+                        return 1
+                    fi
+                fi
+            elif [[ $_line =~ ^[\ ]*#.* ]]; then
+                continue
+            else
+                # Stop extracting header if a row is not prefixed by "SPACE_" nor "#".
+                _isheader="0"
+            fi
+        fi
+        if [[ $_isheader == "0" ]]; then
+            _fnlines+=("$_line")
+        fi
+    done <<< "${_fn_body}"
+    unset _line _isheader
+}
+
+#==========
+#
+# env:
+#   _export_vars
+#==========
+_cmd_export_vars()
+{
+    local _fn_env="${1}"
+    shift
+
+    trap '_error "Problem when evaluating SPACE_CMD(OUTER)ENV header variables. Look for unbound variable or syntax error."; trap - EXIT; return 1; ' EXIT
+    if [[ -n ${_fn_env} ]]; then
+        local _fn_env_item= _k1= _k2= _v= _done=""
+        for _fn_env_item in ${_fn_env}; do
+            _k1=${_fn_env_item%%=*}
+            if [[ ${_k1} == ${_fn_env_item} ]]; then
+                _k2="\${${_fn_env_item}}"
+            else
+                _k2=${_fn_env_item##*=}
+            fi
+            if [[ ${_done} =~ (^|[\ ])${_k1}($|[\ ]) ]]; then
+                continue;
+            fi
+            _done="${_done} ${_k1}"
+            if [[ -n ${_k2} ]]; then
+                eval "_v=\"${_k2}\""
+                if [ "$?" != "0" ]; then
+                    _error "Problem when evaluating SPACE_CMD(OUTER)ENV header variables. Look for unbound variable or syntax error."
+                    trap - EXIT
+                    return 1
+                fi
+            else
+                _v=""
+            fi
+            _escape "_v"
+            _export_vars="${_export_vars}${_k1}=\""$_v"\""$'\n'
+        done
+        unset _fn_env_item _k _v _done
+    fi
+    trap - EXIT
+}
+
+#============
+# _cmd_add_fn_dep
+#
+# Helper function
+#
+# env:
+#   _fn_def
+#   _fn_env
+#
+#============
+_cmd_add_fn_dep()
+{
+    local _fn_dep="${1-}"
+    shift || :
+
+    local _fn_name="${1-}"
+    shift || :
+
+    [[ -z ${_fn_dep} ]] && return 0
+
+    local _fn_dep_name= _fn_dep_body= _fn_dep_item= _i=0 _arr=()
+    IFS=' ' read -r -a _arr <<< "${_fn_dep}"
+    while (( _i < ${#_arr[@]} )); do
+        _fn_dep_item=${_arr[$_i]}
+        (( _i += 1 ))
+        _get_fn "${_fn_dep_item}" "_fn_dep_name" "_fn_dep_body"
+        if (( $? > 0 )); then
+            _error "Dependency function not found or syntax error: ${_fn_dep_item}. Referred from function: ${_fn_name}."
+            return 1
+        fi
+        local _spacelines=() _fnlines=() _line=
+        # We set some space header variable to non empty because we do not
+        # want them returned in _spacelines.
+        local SPACE_CMDDEP= SPACE_CMDENV= SPACE_CMDREDIR=1
+        local SPACE_CMDWRAP=1 SPACE_CMD=1 SPACE_CMDOUTER=1 SPACE_CMDARGS=1
+        _cmd_extract_space_header "${_fn_dep_body}" "${_fn_dep_name}"
+        (( $? > 0 )) && return 1
+        local _fns=
+        printf -v _fns "    %s\n" "${_spacelines[@]-:}"
+        _fns="_set_args () {"$'\n'"${_fns}}"$'\n'"_set_args"
+        eval "$_fns"
+        unset _fns
+        local _fns=
+        printf -v _fns "%s\n" "${_fnlines[@]-:}"
+        _fn_def="${_fn_def}${_fn_dep_name} ()"$'\n'"{"$'\n'"${_fns}}"$'\n\n'
+        unset _fns
+        if [[ -n ${SPACE_CMDENV} ]]; then
+            _fn_env="${_fn_env} ${SPACE_CMDENV}"
+        fi
+
+        # Now check for further dependencies.
+        if [[ -n ${SPACE_CMDDEP} ]]; then
+            local _arr2=() _item2=
+            IFS=' ' read -r -a _arr2 <<< "${SPACE_CMDDEP}"
+            for _item2 in "${_arr2[@]}"; do
+                if [[ ! ${_fn_dep} =~ (^|[\ ])${_item2}($|[\ ]) ]]; then
+                    _arr+=("${_item2}")
+                    _fn_dep="${_fn_dep} ${_item2}"
+                fi
+            done
+            unset _arr2 _item2
+        fi
+        unset _spacelines _fnlines _line SPACE_CMDDEP
+    done
+    unset _fn_dep_name _fn_dep_body _fn_dep_item _i _arr
+}
+
+#=========
+# _add_cmd
+#
+# Add a command to be exported to the list, together with all it's data.
+#
+#=========
+_add_cmd()
+{
+    _cmd_names+=("${1-}")
+    shift || :
+
+    _cmd_bodies+=("${1-}")
+    shift || :
+
+    _cmd_args+=("${1-}")
+    shift || :
+
+    _cmd_redirs+=("${1-}")
+    shift || :
+
+    _cmd_outers+=("${1-}")
+    shift || :
+
+    _cmd_wraps+=("${1-}")
+    shift || :
+
+    _cmd_deps+=("${1-}")
+    shift || :
+
+    _cmd_envs+=("${1-}")
+    shift || :
+
+    _cmd_outerdeps+=("${1-}")
+    shift || :
+
+    _cmd_outerenvs+=("${1-}")
+    shift || :
+}
+
+#============
+# _escape_inline
+#
+# We use this when evaluating environment variables.
+#
+#
+#============
+_escape_inline()
+{
+    eval "local var=${1}"
+    shift
+
+    _escape "var" '"'
+    echo "\"${var}\""
+}
+
+#==========
+# _escape
+#
+# Escape a variable which name is given by $1.
+# Double quotes are escaped one up.
+# Dollar signs are escaped one up.
+#
+_escape()
+{
+    local _s=$1
+    shift
+    local _c=${1-\"\$}
+    shift || :
+
+    local _s2=${!_s}
+
+    if [[ $_c =~ \" ]]; then
+        _s2=${_s2//\"/\\\"}
+        _s2=${_s2//\\\\\"/\\\\\\\"} # Adjust the odd ones...
+    fi
+
+    if [[ $_c =~ \$ ]]; then
+        _s2=${_s2//\$/\\\$}
+        _s2=${_s2//\\\\\$/\\\\\\\$} # Adjust the odd ones...
+    fi
+
+    eval "$_s=\$_s2"
+    return 0
+}
+
+#===========
+# _to_lower
+#
+# Lower case a string and echo it back.
+# Probably slow, but works in Bash 3.
+#
+#===========
+_to_lower()
+{
+    local _s=$1
+    shift
+
+    local _trans="abcdefghijklmnopqrstuvwxyz"
+
+    local _s2=""
+    local _i=
+    local _c=
+    local _ascii=
+    for (( _i=0; _i<${#_s}; _i++ )); do
+        _c=${_s:$_i:1}
+        printf -v _ascii "%d" "'$_c"
+        if (( _ascii >= 65 && _ascii <= 90 )); then
+            ((_ascii-=65))
+            _c=${_trans:$_ascii:1}
+        fi
+        _s2="${_s2}${_c}"
+    done
+    echo "${_s2}"
+}
+
+#==========
+# _split_quoted
+#
+# Helper function to split a string into it's quoted components.
+# $1 the variable name of the array to add extracted arguments to.
+# $2 The string to parse.
+#
+#==========
+_split_quoted()
+{
+    # NOTE: This should have a neater solution, no?
+
+    local _output=$1
+    shift
+    local _s=$1
+    shift
+
+    local _tag="_PAIRED_SPACE_TAG_"
+
+    # Remove whitespace
+    if [[ $_s =~ ^([ ])+(.*) ]]; then
+        _s=${BASH_REMATCH[2]}
+    fi
+
+    while ((${#_s} > 0)); do
+        local _del=
+        if [[ ${_s:0:1} == \" ]]; then
+            # Find next double quote which is not escaped.
+            _del=\"
+            _s=${_s:1}
+        elif [[ ${_s:0:1} == \' ]]; then
+            # Find next single quote which is not escaped.
+            _del=\'
+            _s=${_s:1}
+        else
+            _del=" "
+        fi
+        local _s2=${_s//$_del/$_tag}
+        local _s2=${_s2//\\$_tag/\\$_del}
+        local _s3=${_s2%%$_tag*}
+        if [[ $_s2 == "$_s3" ]]; then
+            # Closing not found, just take the rest.
+            eval "$_output+=(\"\$_s\")"
+            break
+        fi
+        local _pos=$((${#_s3}))
+        local _s4=${_s:0:$_pos}
+        _s4=${_s4//\\\"/\"}
+        _s4=${_s4//\\\\\"/\\\"}  # Adjust some oddities.
+        eval "$_output+=(\"\$_s4\")"
+        ((_pos+=1))
+        _s=${_s:$_pos}
+        # Remove whitespace
+        if [[ $_s =~ ^([ ])+(.*) ]]; then
+            _s=${BASH_REMATCH[2]}
+        fi
+    done
+}
+
+#==========
+# _get_fn
+#
+# Helper function to extract the body and name of a given function
+#
+# $1 Name of the function.
+# $2 Name of the variable to write to the fn name to.
+# $3 Name of the variable to write to the fn body to.
+#
+# Return 1 on error
+#
+#==========
+_get_fn()
+{
+    local _cmdname=$1
+    shift
+
+    local _varname=$1
+    shift
+
+    local _varbody=$1
+    shift
+
+    # Look through all loaded source files to find the declaration, in reverse order.
+    local _i=$((${#_SOURCE_FILES_TOTAL[@]}-1))
+    while [ "${_i}" -gt -1 ]; do
+        _file="${_SOURCE_FILES_TOTAL[$_i]}"
+        local _content="$(cat ${_file})"
+        if [[ ${_content} =~ (.?)${_cmdname}[\ ]*\(\)$'\n'\{[\ ]*$'\n'(.*$'\n') ]]; then
+            if [ "${#BASH_REMATCH[1]}" -eq 0 -o "${BASH_REMATCH[1]}" = $'\n' ]; then
+                _content="${BASH_REMATCH[2]}"
+                _content="${_content%%$'\n'\}$'\n'*}"
+                eval "${_varbody}=\${_content}$'\n'"
+                eval "${_varname}=\${_cmdname}"
+                return 0
+            fi
+        fi
+        _i=$(( _i-1 ))
+    done
+    return 1
+}
+
+#===============
+# _apply_cmd_env
+#
+# Apply the cmd line environment variables if provided.
+#
+# env:
+#   _envE
+#===============
+_apply_cmd_env()
+{
+    local _ev=
+    for _ev in "${_envE[@]-}"; do
+        if [[ $_ev =~ ([_a-zA-Z0-9]+)=(.*) ]]; then
+            local _varname=${BASH_REMATCH[1]}
+            if [[ $_varname == "CMDOVERRIDE" ]]; then
+                # Protected variable
+                continue
+            fi
+            if [[ ${BASH_REMATCH[2]} == "!unset" ]]; then
+                printf "%s\n" "unset $_varname"
+            else
+                printf "%s\n" "local $_varname=\"${BASH_REMATCH[2]}\""
+            fi
+        fi
+    done
+}
+
+#=============
+#
+# Push variable onto stack.
+# Note: Only handles strings, for now.
+#
+# $1 variable name
+#
+#=============
+push()
+{
+    ((_STACK_POINTER+=1))
+
+    local _stname="${_STACK_PREFIX}${_STACK_POINTER}"
+    eval "${_stname}=\$${1}"
+}
+
+#=============
+#
+# Pop variable from stack.
+#
+# $1 variable name to pop into.
+#
+#=============
+pop()
+{
+    if ((_STACK_POINTER == 0)); then
+        return 1;
+    fi
+
+    local _stname="${_STACK_PREFIX}${_STACK_POINTER}"
+    eval "${1}=\$${_stname}"
+
+    ((_STACK_POINTER-=1))
+}
+
+_main "$@"

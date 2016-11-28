@@ -542,8 +542,7 @@ Usage:
           -K  Verify module Git HEAD signature using GPG. 0 = off,
               1 = accept moderate trust, 2 = only accept full trust signatures.
               Default = 1.
-          -h  help, show usage.
-          -H  help on node(s) referred.
+          -h  help, show Space usage or help on specific node.
           node(s) Pattern of one or many nodes to run.
               If no node path is given the root node "/" is implied.
               If node path(s) are given but none matches then Space aborts.
@@ -2307,7 +2306,7 @@ _main()
     local _envE=()        # -e
     local _envP=()        # -p
     local _dry=""         # -d
-    local _help=""        # -h/-H
+    local _help=""        # -h
     local _listnodes=0    # -l
     local _updatemodules=  #-U
     local _bash_completion_current= # -L
@@ -2329,7 +2328,7 @@ _main()
         elif [[ ${1:0:1} == '-' ]]; then
             # A normal switch, let getopts handle it.
             OPTIND=1
-            getopts ":f:m:aM:c:e:dp:v:k:K:ShHVlC:BU:X:13:g" "_o"
+            getopts ":f:m:aM:c:e:dp:v:k:K:ShVlC:BU:X:13:g" "_o"
             case "${_o}" in
                 f)
                     if (( ${#_namespaces[@]} == 3 )); then
@@ -2466,10 +2465,6 @@ _main()
                     ;;
                 h)
                     _help="general"
-                    (return 1)
-                    ;;
-                H)
-                    _help="node"
                     (return 1)
                     ;;
                 V)
@@ -2622,14 +2617,18 @@ _main()
 
     local CWD=$(pwd)  # Set as global environment variable.
 
-    if [[ $_help == "general" ]]; then
-        _helpusage
-        return 0
-    fi
-
     if [[ $_help == "version" ]]; then
         _helpversion
         return 0
+    fi
+
+    if [[ $_help == "general" ]]; then
+        if (( ${#_dimensions[@]} == 0 )); then
+            _helpusage
+            return 0
+        else
+            _help="node"
+        fi
     fi
 
     if [[ -n ${_updatemodules-} ]]; then

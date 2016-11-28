@@ -5,11 +5,11 @@ Please note that this tool is intended to be used as base template installer for
 
 ## Configuration
 
-1. Package version must be configured according to release version
-2. Package hashes must be correctly specified according to Packer generated .sha and .sha256 information
-3. Download base URL must be correctly defined for curl download to work
+1. Package version must be configured according to release version;
+2. Package hashes must be correctly specified according to _Space Packer_ generated _.sha_ and _.sha256_ information;
+3. Download base URL must be correctly defined for curl download to work.
 
 ## Running
 
-It is possible to run the install.sh script from the ./release/<version> folder, after running the Space Packer tool and having generated all the necessary release files.
+It is possible to run the _install.sh_ script from the _./release/<version>_ folder, after running the _Space Packer_ tool and having generated all the necessary release files.
 

@@ -1,0 +1,10 @@
+image: debian:jessie
+
+before_script:
+  - which bash
+  - bash --version
+
+test_yaml:
+  script:
+    - bash space -f ./test/yaml/test.yaml /tests/0/ -a
+

@@ -28,10 +28,10 @@ _space()
 {
     local _current=${COMP_WORDS[COMP_CWORD]}
     local _previous=${COMP_WORDS[((COMP_CWORD-1))]}
-    local _switches="-f -m -a -M -c -e -d -p -v -h -H -V -C -U -X -k -K -S --"
-    local _switchesmute="-f -c -e -d -p -v -h -H -V -C -U -X -k -K -S --"
+    local _switches="-f -m -a -M -c -e -d -p -v -h -V -C -U -X -k -K -S --"
+    local _switchesmute="-f -c -e -d -p -v -h -V -C -U -X -k -K -S --"
 
-    # Check if cursor is beyond a duoble dash (--), then we only complete using glob.
+    # Check if cursor is beyond a double dash (--), then we only complete using glob.
     local _counter=0
     while (( _counter < COMP_CWORD )); do
         if [[ ${COMP_WORDS[$_counter]} == "--" ]]; then

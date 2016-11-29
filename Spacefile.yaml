@@ -22,7 +22,7 @@ _env:
     - AC_PREFIX: "/usr/share/bash-completion/completions"
 
 _info:
-    title: Space Tool installer
+    title: SpaceGal shell installer
     desc:|
         Provides system wide installation and Bash auto-completion setup.
 
@@ -33,9 +33,9 @@ _dep_install:
         - CMD: SPACE_DEP_INSTALL
 install:
     _info:
-        title: Install Space Tool
+        title: Install SpaceGal shell
         desc:|
-            Perform Space Tool install
+            Perform SpaceGal shell install
             Takes two parameters:
             BIN_PREFIX which is where the program will be installed
             AC_PREFIX where the auto completion will be installed
@@ -45,8 +45,8 @@ install:
 
 uninstall:
     _info:
-        title: Uninstall Space Tool
-        desc: Perform Space tool uninstall
+        title: Uninstall SpaceGal shell
+        desc: Perform SpaceGal shell uninstall
     _env:
         - CMD: SPACE_UNINSTALL
 

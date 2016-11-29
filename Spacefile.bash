@@ -77,7 +77,7 @@ SPACE_INSTALL()
         local _src_file_size=$(wc -c < ${_bin_file_name})
         local _src_file_version=$(${_bin_file_name} -V 2>&1)
 
-        PRINT "Space Tool is already installed on ${_bin_full_path}" "warning"
+        PRINT "Space is already installed on ${_bin_full_path}" "warning"
         if [ ${_dest_file_size} -eq ${_src_file_size} ]; then
             PRINT "Source file size is the same as destination: ${_src_file_size} bytes long." "warning"
         else
@@ -130,14 +130,14 @@ SPACE_UNINSTALL()
 
     local _find_space=$(which space 2>&1)
     if [ -z "${_find_space}" ]; then
-        PRINT "Failed to find Space Tool installed on the system. Either not installed or missing on PATH." "warning"
+        PRINT "Failed to find Space installed on the system. Either not installed or missing on PATH." "warning"
     else
         local _uname_s=$(uname -s)
         local _find_ac=${AC_PREFIX}
         if [ $_uname_s == "Darwin" ]; then
             _find_ac="/usr/local/etc/bash_completion.d"
         fi
-        PRINT "In order to uninstall Space Tool, remove the following files: #1 ${_find_space} #2 ${_find_ac}/space"
+        PRINT "In order to uninstall Space, remove the following files: #1 ${_find_space} #2 ${_find_ac}/space"
     fi
 }
 

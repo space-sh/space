@@ -1031,7 +1031,7 @@ _sg_test_node_is_executable()
 #==========
 # _sg_execute_node
 #
-# Calls space tool execution
+# Calls Space execution
 #
 # Expects:
 # execute_args_array

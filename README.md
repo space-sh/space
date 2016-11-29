@@ -1,9 +1,9 @@
 
-# SpaceGal Tool
+# Space
 
 ![SpaceGal](https://space.sh/static/img/logo.png)
 
-The _SpaceGal Tool_ is a single file program, referred to as _Space_, that relies only on _Bash version 3.2 or later_ as dependency for loading and running configuration files and invoking programs in a structured manner.  
+The _SpaceGal shell_ is a single file program, referred to as _Space_, that relies only on _Bash version 3.2 or later_ as dependency for loading and running configuration files and invoking programs in a structured manner.  
 _Space_ is aimed to be run in constrained environments, embedded systems and devices geared towards the _Internet of Things (IoT)_. It also serves as a general purpose automation tool for structuring, setting up, deploying and executing commands, complex programs or replicating complete environments in an easy way.  
 _Space_ provides the notion of _Modules_, which in essence are _Git_ repositories filled with user content defined as _Space_ descriptions and operations. _Modules_ can also point to other modules, so it is possible to create content on top of other users' work.  
 
@@ -29,7 +29,7 @@ Choose one of the methods below for installing _Space_:
 Download, extract and install the _Space_:
 
 ```
-curl -sL https://GET.space.sh/space-1.0.0.tar.gz | tar xvf - && ./space/space /install/
+curl -sL https://get.space.sh/space-1.0.0.tar.gz | tar xvf - && ./space/space /install/
 ```
 
 ### Automated install
@@ -37,7 +37,7 @@ curl -sL https://GET.space.sh/space-1.0.0.tar.gz | tar xvf - && ./space/space /i
 Install _Space_ from terminal:
 
 ```
-curl -sL https://GET.space.sh/ | sh
+curl -sL https://get.space.sh/ | sh
 ```
 
 ### First steps

@@ -1,0 +1,49 @@
+#
+# Copyright 2016 Blockie AB
+#
+# This file is part of Space.
+#
+# Space is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation version 3 of the License.
+#
+# Space is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with Space.  If not, see <http://www.gnu.org/licenses/>.
+#
+
+---
+# A collection of bugs and abnormalities found in the yaml parsing.
+# These tests are made to pass, they serve as a showcase of the issues.
+
+## Abnormality 1
+# Something with @including lists..
+# Could also check the caveat about not indenting
+# list - under it's parent.
+list:
+    - A:
+        info: A
+
+    - B:
+        info: B
+SUM:
+    @include: |/list
+        # Uncomment this line and it crasches!
+        #Add: yes
+
+### Abnormanility 2
+nodes:
+    @include: a.yaml
+
+nodes2:
+    # This works.
+    @include: |/nodes
+
+nodes3:
+    # But this does not include anything... Which is not good.
+    @include: |/nodes/A
+...

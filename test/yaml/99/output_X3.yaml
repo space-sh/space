@@ -1,0 +1,25 @@
+SUM:
+    0:
+        A:
+            info: A
+    1:
+        B:
+            info: B
+list:
+    0:
+        A:
+            info: A
+    1:
+        B:
+            info: B
+nodes:
+    A:
+        info: This is A
+    B:
+        info: This is B
+nodes2:
+    A:
+        info: This is A
+    B:
+        info: This is B
+nodes3:

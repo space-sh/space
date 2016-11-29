@@ -1,0 +1,12 @@
+test_node_name:
+    NoDE_1NAME: TeSt
+    2node_name: 0987654321
+    node3_N4M3:
+        _sub_: "TeSt"
+        _s_b_u_: "123456789042!"
+        s_b_u:
+            1234: >
+                Multiline just 
+                for kicks
+    _env:
+        title: Test node names

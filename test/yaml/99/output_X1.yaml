@@ -1,0 +1,21 @@
+list:
+    - A:
+        info: A
+    - B:
+        info: B
+SUM:
+    - A:
+        info: A
+    - B:
+        info: B
+nodes:
+    A:
+        info: This is A
+    B:
+        info: This is B
+nodes2:
+    A:
+        info: This is A
+    B:
+        info: This is B
+nodes3:

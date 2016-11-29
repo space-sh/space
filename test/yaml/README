@@ -1,0 +1,4 @@
+This directory contains integration tests for space YAML loading, parsing and processing.
+
+A single test can be run with the following command:
+space -f <path>/test_name.yaml /tests/0/ -a

@@ -1,0 +1,60 @@
+#
+# Copyright 2016 Blockie AB
+#
+# This file is part of Space.
+#
+# Space is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation version 3 of the License.
+#
+# Space is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with Space.  If not, see <http://www.gnu.org/licenses/>.
+#
+
+---
+# Do some pre processing includes
+@a: Default value
+subdoc:
+    hello:
+        @a: @{1-@a}
+        title: @{a}
+    world:
+        title: @{2}
+
+test:
+    info: here comes a.yaml
+    @include: a.yaml
+
+test0:
+    info: here comes a.yaml|first
+    @include: a.yaml|/first/
+
+test1:
+    info: here comes a.yaml|second
+    @include: a.yaml|/second/
+
+test2:
+    info: here comes a.yaml|all
+    @include: a.yaml|/all/
+
+test3:
+    info: here comes an iteration of a.yaml|all with added sub document.
+    @include: a.yaml|/all/
+        hello: world
+        good: stuff
+        oodier:
+            - aa: 11
+            - bb: 22
+
+test4:
+    info: | 
+        here comes an iteration of a.yaml|all with added sub include.
+        Notice the args passed with the @include. o/
+    @DIRs: @{DIR}
+    @include: a.yaml|/all/(firstarg secondarg)
+        @include: @{DIRs}/input.yaml|/subdoc/(firstarg2@{PARENTPATH} secarg2@{PARENT})

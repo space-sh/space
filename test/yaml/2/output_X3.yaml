@@ -1,0 +1,94 @@
+0:
+    elm1:
+    elm2: data here 2
+    elm3: "data here 3"
+1:
+    obj1:
+        0:
+            Elm1:
+        1:
+            Elm2: Data2
+    obj2:
+        0:
+            Elm3: Data3
+        1:
+            Elm4: Data4
+2:
+    abcdef:
+        0:
+            name: spaces stripped
+        1: ignored:no it becomes an indexed array value.
+3:
+    OK: some text
+    OK2: One row,\ntwo rows.
+    OK3: One row, still one row.
+4:
+    OK4: Yes!
+    OK4a:
+        0:
+        1:
+        2: Spaces removed. index 2.
+        3: "Astro Physics"
+        4: Multiline\nright here,\nthanks.
+5: Old school.
+6: Great school.
+7: Astro School.
+8: Gotta love these collapsed lines.
+9:
+    0:
+        A: Aaa
+        A2: A2aa
+    1:
+        B: Bbb
+10:
+    0:
+        0:
+            0: Come on
+            1: Let's go
+        1: Where too?
+_env:
+    0:
+        CMD: here it is
+        CMD2: something more
+        CMD3: ""
+    1:
+        PIPE: input comes from here
+    2:
+        A:
+        B: my data is visible
+    3:
+        A: my data is visible
+        B: my data is visible
+    4:
+        A: hej
+        B: hej
+    5:
+        A: san
+        B: san
+    6:
+        WRAPCMD: ""
+    7:
+        STDIN: /dev/stdin
+    9999:
+        CMD: OK prio
+hej:
+    0:
+        a: Testing syntax
+    1:
+        b: Works
+    2:
+        c: great.
+hej2:
+    0:
+        A: More syntax.
+    1:
+        B: B
+    2:
+        C: One row,\ntwo rows.
+names:
+    0: Mary Smith
+    1: "Ester J:son"
+    2: John Smith
+    3: Susan Williams
+    4: Bill Jones
+strange_place: indeed

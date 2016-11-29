@@ -1,0 +1,124 @@
+#
+# Copyright 2016 Blockie AB
+#
+# This file is part of Space.
+#
+# Space is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation version 3 of the License.
+#
+# Space is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with Space.  If not, see <http://www.gnu.org/licenses/>.
+#
+
+---
+# A very advanced yaml structure.
+_env:
+    - CMD: here it is
+      CMD2: something more
+      CMD3: ""
+    - PIPE: input comes from here
+
+- elm1:
+  elm2: data here 2
+  elm3: "data here 3"
+- 
+  obj1:
+    - Elm1:
+    - Elm2: Data2
+  obj2:
+    - Elm3: Data3
+    - Elm4: Data4
+_env:
+    # var set but empty
+    @var: 
+    @a: my data
+    - A: @{var-@{a} not visible}
+      B: @{var:-@{a} is visible}
+    # unset var, due to no trailing space(s) (cowboy space(s)).
+    @var:
+    - A: @{var-@{a} is visible}
+      B: @{var:-@{a} is visible}
+    @var:- hej
+    - A: @{var-@{a} is visible}
+      B: @{var:-@{a} is visible}
+    @var:+ san
+    - A: @{var-@{a} is visible}
+      B: @{var:-@{a} is visible}
+    - WRAPCMD: ""
+    - STDIN: /dev/stdin
+
+- abcdef:
+    - name:            spaces stripped
+    - ignored:no it becomes an indexed array value.
+    -ignored:indeed, simply malformed.
+
+- OK: some text
+  OK2: |
+      One row,
+      two rows.
+  OK3: >
+      One row,
+      still one row.
+
+strange_place: indeed
+
+hej:     
+    - a:        Testing syntax
+    - b: Works
+    - c: great.
+
+hej2:
+    - A:        More syntax.
+    - B: B
+    - C: |
+        One row,
+        two rows.
+
+- OK4: Yes!
+  OK4a:
+      # not ignored, even dough no trailing space
+      -
+      # Not ignored, trailing space.
+      - 
+      -                Spaces removed. index 2.
+      - "Astro Physics"
+      - |
+          Multiline
+          right here,
+          thanks.
+
+# Numeric index
+- Old school.
+-                Great school.
+- Astro School.
+- >
+    Gotta love these
+    collapsed lines.
+
+- 
+    - A: Aaa
+      A2: A2aa
+    - B: Bbb
+-
+    -
+        - 
+            - Come on
+            - Let's go
+        - Where too?
+
+names:
+      - Mary Smith
+      - "Ester J:son"
+names:
+    - John Smith
+    - Susan Williams
+    - Bill Jones
+_env:
+    9999:
+        CMD: OK prio

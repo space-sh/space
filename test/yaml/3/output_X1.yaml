@@ -1,0 +1,65 @@
+subdoc:
+    hello:
+        title: Default value
+    world:
+        title:
+test:
+    info: here comes a.yaml
+    first:
+        a:
+    second:
+        aa:
+    all:
+        aa:
+        a:
+        c:
+test0:
+    info: here comes a.yaml|first
+    a:
+test1:
+    info: here comes a.yaml|second
+    aa:
+test2:
+    info: here comes a.yaml|all
+    aa:
+    a:
+    c:
+test3:
+    info: here comes an iteration of a.yaml|all with added sub document.
+    aa:
+        hello: world
+        good: stuff
+        oodier:
+            - aa: 11
+            - bb: 22
+    a:
+        hello: world
+        good: stuff
+        oodier:
+            - aa: 11
+            - bb: 22
+    c:
+        hello: world
+        good: stuff
+        oodier:
+            - aa: 11
+            - bb: 22
+test4:
+    info: | 
+        here comes an iteration of a.yaml|all with added sub include.
+        Notice the args passed with the @include. o/
+    aa:
+        hello:
+            title: firstarg2/test4/aa/hello/
+        world:
+            title: secarg2world
+    a:
+        hello:
+            title: firstarg2/test4/a/hello/
+        world:
+            title: secarg2world
+    c:
+        hello:
+            title: firstarg2/test4/c/hello/
+        world:
+            title: secarg2world

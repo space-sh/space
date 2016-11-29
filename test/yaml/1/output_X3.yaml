@@ -1,0 +1,11 @@
+First:
+    SUB3:
+        sub4:
+            sub341: This is a\n\nmultiline!
+            sub342: This is a collapsed multiline without newlines.
+        sub31: "HELLO"
+        sub32: "WORLD!"
+    _env:
+        title: First test
+    sub1: Hello
+    sub2: World

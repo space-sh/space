@@ -19,6 +19,10 @@
 SPACE_INSTALL_BIN()
 {
     command install -m 755 ${_bin_file_name} ${_bindest}
+    if [ "$?" -gt 0 ]; then
+        PRINT "[${_bin_full_path}]  FAILED" "error"
+        return 1
+    fi
     PRINT "[${_bin_full_path}]  OK" "success"
 }
 
@@ -44,21 +48,44 @@ SPACE_INSTALL()
 
     PRINT "Installing..."
 
-    if [ ! -d "$BIN_PREFIX" ]; then
-        PRINT "Default BIN_PREFIX=$BIN_PREFIX doesn't exist!" "warning"
-        if [ -n "${PREFIX:-}" ]; then
-            PRINT "Using PREFIX=$PREFIX instead." "warning"
-            BIN_PREFIX="$PREFIX"
+    local _binprefix="${1-}"
+    shift
+    local _acprefix="${1-}"
+    shift
+
+    # Check if to auto detect installation paths.
+    if [ -z "${_binprefix}" ]; then
+        PRINT "No bin prefix provided on cmd line, attempting auto detect." "debug"
+        if [ -n "${PREFIX-}" ]; then
+            PRINT "Auto detected bin prefix: \${PREFIX}=${PREFIX}." "debug"
+            _binprefix="${PREFIX}"
         else
-            PRINT "Environment variable PREFIX is not set. Please 'export env PREFIX' with the desired installation path and rerun installation" "error"
-            exit 1
+            PRINT "Did not auto detect bin prefix \${PREFIX}. Using default: ${BIN_PREFIX}. 'export env PREFIX' to override." "debug"
+            _binprefix="${BIN_PREFIX}"
         fi
     fi
 
-    local _binprefix=${1:-$BIN_PREFIX}
-    shift
-    local _acprefix=${1:-$AC_PREFIX}
-    shift
+    if [ -z "${_acprefix}" ]; then
+        PRINT "No auto completion prefix provided on cmd line, attempting auto detect." "debug"
+        if [ -n "${PREFIX-}" ]; then
+            PRINT "Auto detected auto completion prefix: \${PREFIX}=${PREFIX}." "debug"
+            PRINT "Looking for destinations..." "debug"
+            local _acdests="etc/bash_completion.d usr/share/bash-completion/completions"
+            for _acdir in ${_acdests}; do
+                local _dir="${PREFIX}/${_acdir}"
+                PRINT "Trying: ${_dir}." "debug"
+                if [ -d "${_dir}" ]; then
+                    PRINT "Auto detected auto completion destination: ${_dir}."
+                    _acprefix="${_dir}"
+                    break
+                fi
+            done
+        fi
+    fi
+    if [ -z "${_acprefix}" ]; then
+        PRINT "Did not auto detect auto completion prefix \${PREFIX}. Using default: ${AC_PREFIX}. 'export env PREFIX' to override." "debug"
+        _acprefix="${AC_PREFIX}"
+    fi
 
     local _bindest=${_binprefix}/bin
     local _acdest=${_acprefix}
@@ -92,6 +119,9 @@ SPACE_INSTALL()
 
         # Install!
         SPACE_INSTALL_BIN
+        if [ "$?" -gt 0 ]; then
+            return 1
+        fi
     else
         # Often times PREFIX exists but not /bin
         # Make sure destination exists, otherwise we just create it
@@ -99,6 +129,9 @@ SPACE_INSTALL()
 
         # Install!
         SPACE_INSTALL_BIN
+        if [ "$?" -gt 0 ]; then
+            return 1
+        fi
     fi
 
     # Install auto completion
@@ -109,9 +142,15 @@ SPACE_INSTALL()
     else
         if [ -d ${_acdest} ]; then
             command install -m 644 $_ac_file_path ${_acdest}/space
-            PRINT "[${_acdest}/${_ac_file_name}]  OK" "success"
+            if [ "$?" -gt 0 ]; then
+                PRINT "[${_acdest}/space]  FAILED" "error"
+                PRINT "Auto completion will not work because destination doesn't exist: [${_acdest}]. Make sure the destination directory is valid and bash-completion is installed. After that, repeat the installation process if bash completion is desired." "warning"
+            else
+                PRINT "[${_acdest}/space]  OK" "success"
+                PRINT "You might want to re-login into bash to get the bash completion loaded."
+            fi
         else
-            PRINT "[${_acdest}/${_ac_file_name}]  FAILED" "error"
+            PRINT "[${_acdest}/space]  FAILED" "error"
             PRINT "Auto completion will not work because destination doesn't exist: [${_acdest}]. Make sure the destination directory is valid and bash-completion is installed. After that, repeat the installation process if bash completion is desired." "warning"
 
             local _uname_s=$(uname -s)

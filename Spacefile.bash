@@ -20,6 +20,9 @@ SPACE_INSTALL_BIN()
 {
     command install -m 755 ${_bin_file_name} ${_bindest}
     if [ "$?" -gt 0 ]; then
+        if [ "$(id -u)" != 0 ]; then
+            PRINT "This program must be run as root in order to install ${_bin_file_name} to ${_bindest}. Please run as: \"curl https://get.space.sh > install.sh; sudo sh install.sh\" or \"curl https://get.space.sh | sudo sh\" instead." "error"
+        fi
         PRINT "[${_bin_full_path}]  FAILED" "error"
         return 1
     fi

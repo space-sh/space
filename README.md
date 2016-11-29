@@ -25,21 +25,24 @@ Some external programs related to I/O operations are not _POSIX 1003.1_ complian
 
 Please choose one of the methods below for installing _Space_ or read the [installation documents](doc/install.md) in the /doc directory for the complete guide.
 
-### Manual install via tarball
-Download, extract and install the _Space_:
-
-```
-mkdir space
-curl -sL https://space.sh/static/download/space-0.9.0/space-0.9.0.tar.gz | tar xvf - -C ./space && cd ./space && /space /install/
-```
 
 ### Automated install
 
 Install _Space_ from terminal:
 
 ```
-curl -sL https://get.space.sh/ | sh
+curl https://get.space.sh/ | sh
 ```
+
+### Manual install via tarball
+Download, extract and install _Space_:
+
+```
+mkdir space
+curl https://space.sh/static/download/space-0.9.0/space-0.9.0.tar.gz | tar xvf - -C ./space && cd ./space && /space /install/
+```
+Note: this exact method does not check for the integrity of the downloaded .tar.gz file. It is possible to do so while still performing a manual install, please refer to the [install documentation](doc/install.md).
+
 
 ### First steps
 _Space_ is now installed. Run `space -h` anywhere to read the help instructions.

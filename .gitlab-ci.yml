@@ -6,13 +6,6 @@ alpinelatest_test_yaml:
     - bash --version
     - bash space -f ./test/yaml/test.yaml /tests/0/ -a
 
-bash31_test_yaml:
-  image: bash:3.1
-  script:
-    - which bash
-    - bash --version
-    - bash space -f ./test/yaml/test.yaml /tests/0/ -a
-
 bash32_test_yaml:
   image: bash:3.2
   script:

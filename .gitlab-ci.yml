@@ -34,24 +34,8 @@ bashlatest_test_yaml:
     - bash --version
     - bash space -f ./test/yaml/test.yaml /tests/0/ -a
 
-busyboxg_test_yaml:
-  image: busybox:glibc
-  script:
-    - opkg-install bash
-    - which bash
-    - bash --version
-    - bash space -f ./test/yaml/test.yaml /tests/0/ -a
-
-busyboxm_test_yaml:
-  image: busybox:musl
-  script:
-    - opkg-install bash
-    - which bash
-    - bash --version
-    - bash space -f ./test/yaml/test.yaml /tests/0/ -a
-
-busyboxu_test_yaml:
-  image: busybox:uclibc
+busybox_test_yaml:
+  image: progrium/busybox
   script:
     - opkg-install bash
     - which bash
@@ -69,5 +53,4 @@ debianlatest_test_yaml:
   script:
     - which bash
     - bash space -f ./test/yaml/test.yaml /tests/0/ -a
-
 

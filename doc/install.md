@@ -120,7 +120,7 @@ After cloning the repository, from the root directory call _Space_ for installin
 
 Download install.sh and pipe into shell:
 ```
-curl -sL https://get.space.sh/ | sh
+curl https://get.space.sh | sh
 ```
 
 or use the `install-space-latest.sh` downloaded in the _Downloading_ section and execute it:
@@ -128,7 +128,7 @@ or use the `install-space-latest.sh` downloaded in the _Downloading_ section and
 sh install-space-latest.sh
 ```
 
-Please note that non-root users might need sudo for default installation. In that case, use the following command: `sudo sh -c "curl -sL https://get.space.sh/ | sh"`
+Please note that non-root users might need sudo for default installation. In that case, use the following command: `sudo sh -c "curl https://get.space.sh | sh"`
 
 ## Customizing installation parameters
 

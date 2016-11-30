@@ -39,7 +39,7 @@ Download, extract and install _Space_:
 
 ```
 mkdir space
-curl https://space.sh/static/download/space-0.9.0/space-0.9.0.tar.gz | tar xvf - -C ./space && cd ./space && /space /install/
+curl https://space.sh/static/download/space-0.9.0/space-0.9.0.tar.gz | tar xvf - -C ./space && cd ./space && ./space /install/
 ```
 Note: this exact method does not check for the integrity of the downloaded .tar.gz file. It is possible to do so while still performing a manual install, please refer to the [install documentation](doc/install.md).
 

@@ -17,7 +17,7 @@ _Space_ requires _Bash_ version 3.2 or later.
 
 Some external programs related to I/O operations are not _POSIX 1003.1_ compliant. Non-standard programs have been tested to work with:  
 - GNU/Linux  
-- BusyBox  
+- BusyBox/Linux (Android)  
 - MacOS 10+  
 
 

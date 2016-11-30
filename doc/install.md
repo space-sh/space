@@ -49,11 +49,11 @@ wget https://space.sh/static/download/space-0.9.0/install-0.9.0.sh
 Releases are signed either by one of the following keys:
 
 - Thomas Backlund
-  - Fingerprint: CEE9 3024 3EBA C1B1 D08A  B73D 3611 E9C2 4F6C 6E63
-  - Key: blund-3611E9C24F6C6E63.asc
+  - Fingerprint: `CEE9 3024 3EBA C1B1 D08A  B73D 3611 E9C2 4F6C 6E63`
+  - Key: [blund-3611E9C24F6C6E63.asc](https://gitlab.com/space-sh/space/snippets/32500/raw)
 - Maicon Diniz Filippsen
-  - Fingerprint: 295E 7B7B 14D8 8EEC 62E7  FBB1 DC8D 6348 0F72 A139
-  - Key: filippsen-DC8D63480F72A139.asc
+  - Fingerprint: `295E 7B7B 14D8 8EEC 62E7  FBB1 DC8D 6348 0F72 A139`
+  - Key: [filippsen-DC8D63480F72A139.asc](https://gitlab.com/space-sh/space/snippets/32501/raw)
 
 
 It is then possible to verify the release signatures using the following command:

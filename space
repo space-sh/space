@@ -466,8 +466,10 @@ _SECURITY_GPG_VERIFY_SIGNATURE=0
 # If Git is not installed try to download tarball using curl/wget.
 _SECURITY_ALLOW_HTTPS_FALLBACK=0
 
-# Stack
+# Stack current pointer
 _STACK_POINTER=0
+
+# Stack name prefix
 _STACK_PREFIX="_stack_"
 
 # Set to "1" to force to run export in Bash.
@@ -1952,9 +1954,10 @@ _module_clone()
 #
 # Populate env variables
 #
-# $1: the module name
+# Parameters:
+#   $1: the module name
 #
-# env:
+# Expects:
 #   _domain
 #   _domainuser
 #   _username
@@ -2035,8 +2038,7 @@ _extract_repo_parts()
 }
 
 #=============
-#
-#
+# _module_check_banlist
 #
 #=============
 _module_check_banlist()
@@ -2104,12 +2106,14 @@ _module_check_banlist()
 
 
 #=============
+# _module_find_yaml
 #
 # Search for a modules YAML file using defaults and
 # trying all the different YAML file name variants.
 #
-# $1: module name: [username/]reponame
-# $2: variable name to assign found YAML file path to.
+# Parameters:
+#   $1: module name: [username/]reponame
+#   $2: variable name to assign found YAML file path to.
 #
 #=============
 _module_find_yaml()
@@ -2205,9 +2209,11 @@ PRINT()
 # SUBST
 #
 # Substitute text in place.
-# $1 variable name to substitute in.
-# $2 text to substitute.
-# $3 text to insert.
+#
+# Parameters:
+#   $1 variable name to substitute in.
+#   $2 text to substitute.
+#   $3 text to insert.
 #
 #===========
 SUBST()
@@ -2277,6 +2283,8 @@ _debug()
 # prompt
 #
 # Use this in YAML _env variable values to prompt the user for input.
+#
+# Example:
 # node:
 #   _env:
 #       - name: $(prompt 'what is your name? ')
@@ -2298,6 +2306,9 @@ prompt()
 
 #==========
 # _main
+#
+# Space program entrypoint
+#
 #==========
 _main()
 {
@@ -3148,15 +3159,17 @@ _main()
 }
 
 #======================
+# _get_second_dimension
 #
 # For a first dimension get the second
 # dimension if defined.
 #
-# env:
-#   $_dim2: will get added to
+# Parameters:
+#   $1: node in first dimension.
+#   $2: namespace for second dimension.
 #
-# $1: node in first dimension.
-# $2: namespace for second dimension.
+# Expects:
+#   $_dim2: will get added to
 #
 #======================
 _get_second_dimension()
@@ -3219,16 +3232,18 @@ _get_second_dimension()
 }
 
 #=====================
+# _get_third_dimension
 #
 # For a first and second dimension
 # combo get the third dimension if defined.
 #
-# env:
-#   $_dim3: will get added to
+# Parameters:
+#   $1: node in first dimension.
+#   $2: node in second dimension.
+#   $3: namespace for third dimension.
 #
-# $1: node in first dimension.
-# $2: node in second dimension.
-# $3: namespace for third dimension.
+# Expects:
+#   $_dim3: will get added to
 #
 #=====================
 _get_third_dimension()
@@ -3309,10 +3324,10 @@ _get_third_dimension()
 }
 
 #=================
+# _exec_dimensions
 #
 # Merge nodes from one, two or three
 # dimensions and execute.
-#
 #
 #=================
 _exec_dimensions()
@@ -3420,6 +3435,8 @@ _exec_dimensions()
 }
 
 #===========
+# _load_yaml
+#
 # Helper "macro" to _main to
 # load, preprocess, parse and cache YAML file.
 #
@@ -3562,6 +3579,7 @@ _load_yaml()
 }
 
 #====================
+# _completion_modules
 #
 # Perform Bash auto completion on modules.
 #
@@ -3609,6 +3627,8 @@ _completion_modules()
 }
 
 #===============
+# _update_modules
+#
 # Update all existing space modules
 #
 #===============
@@ -3687,11 +3707,13 @@ _update_modules()
 }
 
 #============
+# _parsed_yaml_to_bash
 #
 # Translate parsed YAML into Bash variables.
 #
-# $1: variable name of input array.
-# $2: variable name of output array.
+# Parameters:
+#   $1: variable name of input array.
+#   $2: variable name of output array.
 #
 #============
 _parsed_yaml_to_bash()
@@ -3724,16 +3746,17 @@ _parsed_yaml_to_bash()
 #==========
 # _match_node
 #
-# env:
-#   $_nodes
-#       Array to add results to.
+# Matches a given pattern to a list of nodes
 #
+# Parameters:
 # $1: name of array containing sorted list of nodes.
 # $2: pattern to match against list of nodes, ex: "/sites/.*/".
-# $3: include hidden nodes. set to 1 to include hidden leave nodes
-#   beginning with an underscore.
+# $3: include hidden nodes. set to 1 to include hidden leave nodes beginning with an underscore.
 # $4: simple, set to 1 to only return the last node part.
 # $5: includeleafs, set to 1 to include leaf nodes.
+#
+# Expects:
+#   $_nodes: Array to add results to.
 #
 #==========
 _match_node()
@@ -3820,11 +3843,7 @@ _match_node()
 # Parameters:
 #   $1: name of the output array to append to.
 #   $2: the node path to load.
-#   $3: set to "1" to strip CMD variable of -- arguments.
-#       We do this when we have commands on command line that shall override.
-#
-# Returns:
-#   -
+#   $3: set to "1" to strip CMD variable of -- arguments. We do this when we have commands on command line that shall override.
 #
 #==========
 _loadnode()
@@ -4045,7 +4064,9 @@ _execute()
         # $CMD is not a function, it's an external executable or a Bash snippet
         _debug "CMD is snippet or executable: $CMD"
         _debug "CMD args: $_cmd_args_str"
+
         # As for now CMDDEP is nothing we provide for anonymous functions.
+
         local _fn_def="_anonymous ()"$'\n'"{"$'\n'"    $CMD \"\$@\""$'\n'"}"$'\n'
         _add_cmd "_anonymous" "${_fn_def}" "$_cmd_args_str" "${CMDREDIR-}" "${CMDOUTER-}" "${CMDWRAP-}" "" "${CMDENV-}"
         unset _fn_def
@@ -4130,7 +4151,7 @@ _execute()
             for ((_i=$((_wrappers-1)); _i>=0; _i-=1 )); do
                 _fn_wrap_item="${_fn_wrap_items[${_i}]}"
 
-                # We need to isolate some variables.
+                # Inner scope used to isolate some variables 
                 _spacegal_context ()
                 {
                     local _cmd_names=()
@@ -4286,9 +4307,16 @@ fi
 #============
 # _cmd_extract
 #
-# Helper function analyze and extract CMD function and headers.
+# Helper function to analyze and extract CMD function and headers.
+# The following Space header variables could or are expected to have been set with default values:
+# - SPACE_CMD (required)
+# - SPACE_CMDENV
+# - SPACE_CMDREDIR
+# - SPACE_CMDOUTER
+# - SPACE_CMDARGS
+# - SPACE_CMDWRAP
 #
-# It depends on some variables already been set, to which it populates:
+# Expects:
 #   _cmd_names=()
 #   _cmd_bodies=()
 #   _cmd_args=()
@@ -4298,14 +4326,6 @@ fi
 #   _cmd_deps=()
 #   _cmd_envs=()
 #
-# These space header variables could or are expected to have been set with default values:
-#   SPACE_CMD - requried.
-#   SPACE_CMDENV
-#   SPACE_CMDREDIR
-#   SPACE_CMDOUTER
-#   SPACE_CMDARGS
-#   SPACE_CMDWRAP
-#   
 #============
 _cmd_extract()
 {
@@ -4408,7 +4428,7 @@ _cmd_extract()
 #
 # Helper function to extract space headers from the function body.
 #
-# env:
+# Expects:
 #   _fnlines
 #   _spacelines
 #   SPACE_xyz
@@ -4523,9 +4543,11 @@ _cmd_extract_space_header ()
 }
 
 #==========
+# _cmd_export_vars
 #
-# env:
+# Expects:
 #   _export_vars
+#
 #==========
 _cmd_export_vars()
 {
@@ -4569,7 +4591,7 @@ _cmd_export_vars()
 #
 # Helper function
 #
-# env:
+# Expects:
 #   _fn_def
 #   _fn_env
 #
@@ -4634,7 +4656,7 @@ _cmd_add_fn_dep()
 #=========
 # _add_cmd
 #
-# Add a command to be exported to the list, together with all it's data.
+# Add a command to be exported to the list, together with all its data.
 #
 #=========
 _add_cmd()
@@ -4673,8 +4695,7 @@ _add_cmd()
 #============
 # _escape_inline
 #
-# We use this when evaluating environment variables.
-#
+# Used when evaluating environment variables.
 #
 #============
 _escape_inline()
@@ -4693,6 +4714,7 @@ _escape_inline()
 # Double quotes are escaped one up.
 # Dollar signs are escaped one up.
 #
+#============
 _escape()
 {
     local _s=$1
@@ -4750,8 +4772,10 @@ _to_lower()
 # _split_quoted
 #
 # Helper function to split a string into it's quoted components.
-# $1 the variable name of the array to add extracted arguments to.
-# $2 The string to parse.
+#
+# Parameters:
+#   $1 the variable name of the array to add extracted arguments to.
+#   $2 The string to parse.
 #
 #==========
 _split_quoted()
@@ -4810,11 +4834,13 @@ _split_quoted()
 #
 # Helper function to extract the body and name of a given function
 #
-# $1 Name of the function.
-# $2 Name of the variable to write to the fn name to.
-# $3 Name of the variable to write to the fn body to.
+# Parameters:
+#   $1 Name of the function.
+#   $2 Name of the variable to write to the fn name to.
+#   $3 Name of the variable to write to the fn body to.
 #
-# Return 1 on error
+# Returns:
+#   1 on error
 #
 #==========
 _get_fn()
@@ -4852,7 +4878,7 @@ _get_fn()
 #
 # Apply the cmd line environment variables if provided.
 #
-# env:
+# Expects:
 #   _envE
 #===============
 _apply_cmd_env()
@@ -4875,11 +4901,13 @@ _apply_cmd_env()
 }
 
 #=============
+# push
 #
 # Push variable onto stack.
 # Note: Only handles strings, for now.
 #
-# $1 variable name
+# Parameters:
+#   $1: variable name
 #
 #=============
 push()
@@ -4891,10 +4919,12 @@ push()
 }
 
 #=============
+# pop
 #
 # Pop variable from stack.
 #
-# $1 variable name to pop into.
+# Parameters:
+#   $1: variable name to pop into.
 #
 #=============
 pop()

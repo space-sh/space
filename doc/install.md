@@ -4,6 +4,14 @@ A manual install can be performed by downloading the _release tarball_ and using
 
 The other method is performing the automatic install process by using the _Space_ installer script, which is automatically generated on every new _Space_ release to match the new version and new file hashes. Note that this method automatically performs file integrity checks (shasum) on the downloaded files to ensure the files were not corrupted or modified before installing.
 
+## Versions
+
+### Stable  
+All released versions are marked as _Git tags_ on the [source repository](https://gitlab.com/space-sh/space/tags). Those are referred to as _stable_ versions, which are the ones packaged and distributed on [space.sh](https://space.sh) website. Check the [Downloading](#downloading) section below for download links.
+
+### Current  
+The _master_ branch on the repository is under active development and due to change on a regular basis. The _master_ branch is referred to as the _current_ version.
+
 
 ## Release files
 
@@ -16,7 +24,6 @@ The release files are expected to contain at least the following set of items:
 - shasum: space-<version>.sha256
 - MD5: space-<version>.md5
 
-Files directory listing can be found at http://space.sh/download/.
 
 
 ## Downloading
@@ -79,6 +86,7 @@ Simply clone the repository:
 ```
 git clone https://gitlab.com/space-sh/space
 ```
+Note that the _master_ branch is referred as the _current_ version of _Space_. For _stable_ releases, please checkout a specific Git tag (see also: `git tag`).
 
 ### From site
 

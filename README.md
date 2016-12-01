@@ -28,14 +28,14 @@ Please choose one of the methods below for installing _Space_ or read the [insta
 
 ### Automated install
 
-Install _Space_ from terminal:
+Install the latest stable version of _Space_ from terminal:
 
 ```
 curl https://get.space.sh/ | sh
 ```
 
 ### Manual install via tarball
-Download, extract and install _Space_:
+Download, extract and install the latest stable version of _Space_:
 
 ```
 mkdir space

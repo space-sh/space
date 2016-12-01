@@ -11,6 +11,7 @@ The release files are expected to contain at least the following set of items:
 - The tarball: space-<version>.tar.gz
 - The tarball GPG signature: space-<version>.tar.gz.asc
 - The installer script: install-<version>.sh
+- Code documentation: space-<version>.md
 - shasum: space-<version>.sha
 - shasum: space-<version>.sha256
 - MD5: space-<version>.md5

@@ -20,6 +20,8 @@
 # Space Packer tool
 #
 
+_source "${CWD}/tools/spacedoc/Spacefile.bash"
+
 # Check if command is available
 SPACE_PACKER_CHECK_AVAILABLE()
 {
@@ -34,7 +36,7 @@ SPACE_PACKER_CHECK_AVAILABLE()
 
 SPACE_PACKER_MAKE()
 {
-    SPACE_CMDDEP="PRINT SPACE_PACKER_CHECK_AVAILABLE"
+    SPACE_CMDDEP="PRINT SPACE_PACKER_CHECK_AVAILABLE _EXPORT_MARKDOWN"
     SPACE_CMDENV="RELEASE_FILES"
 
     local _files=''
@@ -136,6 +138,33 @@ SPACE_PACKER_MAKE()
     sed -i.bak "/^_package_sha1=/s/=.*/=\'$(cat "${_release_name}.sha" | cut -d ' ' -f 1)\'/" "install-${_version}.sh"
     sed -i.bak "/^_package_sha256=/s/=.*/=\'$(cat "${_release_name}.sha256" | cut -d ' ' -f 1)\'/" "install-${_version}.sh"
     rm "install-${_version}.sh.bak"
+
+    #
+    # Generate code documentation
+    local _space_file_path="${PWD}/../../space"
+    local _doc_expected_output_name="space_doc.md"
+    local _doc_output_name="space-${_version}.md"
+
+    # Export space_doc.md
+    GENERATE_TOC=1
+    _EXPORT_MARKDOWN "$_space_file_path"
+    if [ ! -f "$_doc_expected_output_name" ]; then
+        PRINT "Failed to generate documentation for $_space_file_path" "error"
+        exit 1
+    fi
+
+    # Change the very first line of text
+    local _first_line="Code documentation for Space ${_version}"
+    sed -i.bak "1s/.*/$_first_line/" "$_doc_expected_output_name"
+
+    # Rename documentation
+    PRINT "Renaming documentation to $_doc_output_name"
+    mv "$_doc_expected_output_name" "$_doc_output_name"
+
+    # Cleanup
+    if [ -f "./${_doc_expected_output_name}.bak" ]; then
+        rm "./${_doc_expected_output_name}.bak"
+    fi
 
     #
     # Sign package

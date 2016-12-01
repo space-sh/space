@@ -17,6 +17,9 @@
 #
 
 ---
+
+@include: @{CWD}/tools/spacedoc/Spacefile.yaml
+
 _env:
     - RELEASE_FILES: "space Spacefile.bash Spacefile.yaml completion/init_autocompletion.sh"
 

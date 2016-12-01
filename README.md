@@ -1,5 +1,5 @@
 
-# Space
+# Space | [![build status](https://gitlab.com/space-sh/space/badges/master/build.svg)](https://gitlab.com/space-sh/space/commits/master)
 
 ![SpaceGal](https://space.sh/static/img/logo.png)
 

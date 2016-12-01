@@ -154,7 +154,7 @@ SPACE_PACKER_MAKE()
     fi
 
     # Change the very first line of text
-    local _first_line="Code documentation for Space ${_version}"
+    local _first_line="# Code documentation for Space ${_version}"
     sed -i.bak "1s/.*/$_first_line/" "$_doc_expected_output_name"
 
     # Rename documentation

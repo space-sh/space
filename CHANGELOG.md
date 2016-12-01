@@ -6,6 +6,10 @@
 
 * Update packer to include code documentation as part of the release files.
 
+* Change packer module file to be recognized as shell instead of Bash
+
+* Change base _Space_ module file to be recognized as shell instead of Bash
+
 ## [0.9.0] - 2016-30-11
 
 First public version

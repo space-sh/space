@@ -1983,8 +1983,26 @@ _extract_repo_parts()
     _repofullname=
 
     # Extract protocol if given.
-    if [[ $_mod =~ (.+):// ]]; then
+    if [[ $_mod =~ (.+)://(.*) ]]; then
         _protocol=${BASH_REMATCH[1]}
+
+        #
+        # Further check if the 'domain' part appears to be an IP address
+        # Otherwise, try to capture the domain name into two parts:
+        # [1] before and [2] after the expected dot, in order to provide meaningful error messages
+        #
+        local _domain_part=${BASH_REMATCH[2]}
+        if [[ $_domain_part =~ ([0-9]{1,3}[\.]){3}[0-9]{1,3} ]]; then
+            _debug "_extract_repo_parts: $_domain_part accepted"
+        elif [[ $_domain_part =~ (.+)\.(.*) ]]; then
+            if [[ -z ${BASH_REMATCH[2]} ]]; then
+                _error "Malformed import name: $_mod. Format: (protocol)<domain>/<user_name>/<repo_name>. Examples: \"space -m gitlab.com/<user_name>/<repo_name>\" \"space -m https://gitlab.com/<user_name>/<repo_name>\""
+                return 1
+            fi
+        else
+            _error "Malformed import name: $_mod. Format: (protocol)<domain>/<user_name>/<repo_name>. Examples: \"space -m gitlab.com/<user_name>/<repo_name>\" \"space -m https://gitlab.com/<user_name>/<repo_name>\""
+            return 1
+        fi
     fi
 
     # Extract "user@domain", if given, and the repo name.

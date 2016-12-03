@@ -2014,7 +2014,7 @@ _extract_repo_parts()
         if [[ $_username == "space-sh" ]]; then
             _domain="gitlab.com"
         else
-            _error "_extract_repo_parts : No domain provided for git url: $_mod."
+            _error "Expected domain name for git url: $_mod. Format: (protocol)<domain>/<user_name>/<repo_name>. Examples: \"space -m gitlab.com/$_mod\" \"space -m https://gitlab.com/$_mod\""
             return 1
         fi
     fi
@@ -2025,7 +2025,7 @@ _extract_repo_parts()
         _commit=${BASH_REMATCH[2]}
     fi
     if [[ $_protocol == "" || $_domain == "" || $_username == "" || $_reponame == "" || $_commit == "" ]]; then
-        _error "_extract_repo_parts : Malformed import name."
+        _error "Malformed import name: $_mod. Format: (protocol)<domain>/<user_name>/<repo_name>. Examples: \"space -m gitlab.com/<user_name>/<repo_name>\" \"space -m https://gitlab.com/<user_name>/<repo_name>\""
         return 1
     fi
     if [[ $_commit == "master" ]]; then

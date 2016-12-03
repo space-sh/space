@@ -1,0 +1,10 @@
+@prompt: userinput "Enter some input"
+@prompt:- userinput "Never called"
+
+env:
+
+print_input:
+  @userinput: "[prompt.yaml] overwriting prompt answer... "
+  _env:
+    - CMD: printf @{userinput}
+

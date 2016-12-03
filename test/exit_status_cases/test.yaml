@@ -1,0 +1,42 @@
+# Preprocessing variable assignment, set, unset and reset
+@ppvar1: "ppvar one"
+@ppvar1:- "ppvar one"
+@ppvar1:+ "ppvar one"
+@ppvar1:+
+@ppvar1:+ "ppvar one"
+@ppvar1:-
+@ppvar1:+
+@ppvar1:
+@ppvar1:-
+@ppvar1: "ppvar one reset"
+@ppvar1:-
+@somenotset:- 
+
+# Preprocessing assert
+@assert: nonempty $HOME
+@assert: nonempty @ppvar1
+
+# Preprocessing debug print
+@debug: HOME is ${HOME}
+
+# Cache settings via preprocessor
+@cache: 1
+
+# Include good and bad files, filtered files, modules
+@include: Spacefile.yaml|uninstall/
+@include: Spacefile.yaml|/install
+@include:- non_existent_is_fine_with_dash.yaml
+
+# Clone good repo
+@clone: file
+
+
+_env:
+
+print_test:
+    _env:
+        - CMD: printf "[test.yaml] testing CMD node execution... "
+
+source_failure:
+    - CMD: _SOME_NON_EXISTENT_FUNCTION
+

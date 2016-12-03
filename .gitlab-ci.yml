@@ -1,3 +1,7 @@
+#
+# YAML-only basic tests for multiple boxes
+#
+
 alpinelatest_test_yaml:
   image: alpine:latest
   script:
@@ -42,15 +46,22 @@ busybox_test_yaml:
     - bash --version
     - bash space -f ./test/yaml/test.yaml /tests/0/ -a
 
-debianjessie_test_yaml:
-  image: debian:jessie
-  script:
-    - which bash
-    - bash space -f ./test/yaml/test.yaml /tests/0/ -a
-
 debianlatest_test_yaml:
   image: debian:latest
   script:
     - which bash
     - bash space -f ./test/yaml/test.yaml /tests/0/ -a
+
+#
+# Run exit status code checking for Space
+#
+
+debianjessie_test_yaml:
+  image: debian:jessie
+  script:
+    - apt-get update -qq && apt-get install -y -qq curl git
+    - mkdir ~/.ssh
+    - printf "Host *\n StrictHostKeyChecking no" > ~/.ssh/config
+    - which bash
+    - bash test/test_all_exit_status.sh
 

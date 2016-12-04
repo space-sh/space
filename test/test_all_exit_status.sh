@@ -24,7 +24,18 @@
 # and interactions are returning known exit codes.
 #
 #======================
+
 set -o nounset
+
+#
+# Pass custom parameter for Space in case Git is not available
+_SPACE_BIN="space"
+if ! command -v git >/dev/null; then
+    _SPACE_BIN="space -S"
+    printf "\033[35mGit command is not available. Signaling Space with -S switch.\033[0m\n"
+else
+    printf "\033[35mGit command is available.\033[0m\n"
+fi
 
 #======================
 # _RUN_CHECK_OK and FAIL
@@ -65,134 +76,135 @@ _RUN_CHECK_FAIL()
 
 # Invalid space calls
 _RUN_CHECK_FAIL space
-_RUN_CHECK_FAIL space -
-_RUN_CHECK_FAIL space -6
-_RUN_CHECK_FAIL space -Z
-_RUN_CHECK_FAIL space -X6
-_RUN_CHECK_FAIL space -- something1 otherthing2
+_RUN_CHECK_FAIL $_SPACE_BIN -
+_RUN_CHECK_FAIL $_SPACE_BIN -6
+_RUN_CHECK_FAIL $_SPACE_BIN -Z
+_RUN_CHECK_FAIL $_SPACE_BIN -X6
+_RUN_CHECK_FAIL $_SPACE_BIN -- something1 otherthing2
 
 # Regular environment variable
-_RUN_CHECK_OK   space -e dummyenv=mukyanjong    / -h
+_RUN_CHECK_OK   $_SPACE_BIN -e dummyenv=mukyanjong    / -h
 # Malformed environment variable settings
-_RUN_CHECK_FAIL space -e malformedEnv           / -h
+_RUN_CHECK_FAIL $_SPACE_BIN -e malformedEnv           / -h
 
 # Valid preprocessing variables
-_RUN_CHECK_OK space -p var1=ready   / -h
-_RUN_CHECK_OK space -p var1+=again  / -h
+_RUN_CHECK_OK $_SPACE_BIN -p var1=ready   / -h
+_RUN_CHECK_OK $_SPACE_BIN -p var1+=again  / -h
 
 # All verbosity levels
-_RUN_CHECK_OK   space   / -h -v0
-_RUN_CHECK_OK   space   / -h -v1
-_RUN_CHECK_OK   space   / -h -v2
-_RUN_CHECK_OK   space   / -h -v3
-_RUN_CHECK_OK   space   / -h -v4
-_RUN_CHECK_FAIL space   / -h -v6
+_RUN_CHECK_OK   $_SPACE_BIN   / -h -v0
+_RUN_CHECK_OK   $_SPACE_BIN   / -h -v1
+_RUN_CHECK_OK   $_SPACE_BIN   / -h -v2
+_RUN_CHECK_OK   $_SPACE_BIN   / -h -v3
+_RUN_CHECK_OK   $_SPACE_BIN   / -h -v4
+_RUN_CHECK_FAIL $_SPACE_BIN   / -h -v6
 
 # All caching modes
-_RUN_CHECK_OK   space -C1   / -h
-_RUN_CHECK_OK   space -C2   / -h
-_RUN_CHECK_FAIL space -C3   / -h
+_RUN_CHECK_OK   $_SPACE_BIN -C1   / -h
+_RUN_CHECK_OK   $_SPACE_BIN -C2   / -h
+_RUN_CHECK_FAIL $_SPACE_BIN -C3   / -h
 
 # List mode
-_RUN_CHECK_OK space /install/ -l
+_RUN_CHECK_OK $_SPACE_BIN /install/ -l
 
 # Bash mode
-_RUN_CHECK_OK space -B /install/ -h
+_RUN_CHECK_OK $_SPACE_BIN -B /install/ -h
 
 # Dry run
-_RUN_CHECK_OK space /install/ -d
+_RUN_CHECK_OK $_SPACE_BIN /install/ -d
 
 # Bash Completion expected to return 1
-_RUN_CHECK_FAIL space -1
-_RUN_CHECK_FAIL space -1 /install/
-_RUN_CHECK_FAIL space -2
+_RUN_CHECK_FAIL $_SPACE_BIN -1
+_RUN_CHECK_FAIL $_SPACE_BIN -1 /install/
+_RUN_CHECK_FAIL $_SPACE_BIN -2
 
 # Help
-_RUN_CHECK_OK space -h
+_RUN_CHECK_OK $_SPACE_BIN -h
 
 # helpversion
-_RUN_CHECK_OK space -V
+_RUN_CHECK_OK $_SPACE_BIN -V
 
 # helpnode
-_RUN_CHECK_OK   space / -h
-_RUN_CHECK_OK   space /install/ -h
-_RUN_CHECK_OK   space -f ./test/yaml/test.yaml /tests/ -h
-_RUN_CHECK_FAIL space -f ./test/yaml/test.yaml wrongnode -h
-_RUN_CHECK_FAIL space -f ./test/yaml/test.yaml /tests/wrongpath -h
+_RUN_CHECK_OK   $_SPACE_BIN / -h
+_RUN_CHECK_OK   $_SPACE_BIN /install/ -h
+_RUN_CHECK_OK   $_SPACE_BIN -f ./test/yaml/test.yaml /tests/ -h
+_RUN_CHECK_FAIL $_SPACE_BIN -f ./test/yaml/test.yaml wrongnode -h
+_RUN_CHECK_FAIL $_SPACE_BIN -f ./test/yaml/test.yaml /tests/wrongpath -h
 
 # prompt during preprocessing
-echo "input" | _RUN_CHECK_OK space -C0 -f test/exit_status_cases/prompt.yaml /print_input/
+echo "input" | _RUN_CHECK_OK $_SPACE_BIN -C0 -f test/exit_status_cases/prompt.yaml /print_input/
 
 # Misc base cases
-_RUN_CHECK_OK space -C0 -f ./test/exit_status_cases/test.yaml / -h
-_RUN_CHECK_OK space -C0 -f ./test/exit_status_cases/test.yaml /print_test/
+_RUN_CHECK_OK $_SPACE_BIN -C0 -f ./test/exit_status_cases/test.yaml / -h
+_RUN_CHECK_OK $_SPACE_BIN -C0 -f ./test/exit_status_cases/test.yaml /print_test/
 
 # Fail cloning repo
-_RUN_CHECK_FAIL space -f ./test/exit_status_cases/fail_pp_clone.yaml / -h
+_RUN_CHECK_FAIL $_SPACE_BIN -f ./test/exit_status_cases/fail_pp_clone.yaml / -h
 
 # Fail include during preprocessing
-_RUN_CHECK_FAIL space -f ./test/exit_status_cases/fail_pp_include_file.yaml / -h
-_RUN_CHECK_FAIL space -f ./test/exit_status_cases/fail_pp_include_module.yaml / -h
-_RUN_CHECK_FAIL space -f ./test/exit_status_cases/fail_pp_include_file_on_included.yaml / -h
+_RUN_CHECK_FAIL $_SPACE_BIN -f ./test/exit_status_cases/fail_pp_include_file.yaml / -h
+_RUN_CHECK_FAIL $_SPACE_BIN -f ./test/exit_status_cases/fail_pp_include_module.yaml / -h
+_RUN_CHECK_FAIL $_SPACE_BIN -f ./test/exit_status_cases/fail_pp_include_file_on_included.yaml / -h
 
 # Malformed clone import name
-_RUN_CHECK_FAIL space -f ./test/exit_status_cases/fail_pp_clone_malformed.yaml / -h
+_RUN_CHECK_FAIL $_SPACE_BIN -f ./test/exit_status_cases/fail_pp_clone_malformed.yaml / -h
 
 # Fail assert during preprocessing
-_RUN_CHECK_FAIL space -f ./test/exit_status_cases/fail_pp_assert.yaml / -h
+_RUN_CHECK_FAIL $_SPACE_BIN -f ./test/exit_status_cases/fail_pp_assert.yaml / -h
 
 #
 # Fail cloning module repository
-_RUN_CHECK_FAIL space -m ssh://gitlab.com/space-sh/non-existent-repo/ / -h
-_RUN_CHECK_FAIL space -m ssh://username@gitlab.com/space-sh/non-existent-repo/ / -h
+_RUN_CHECK_FAIL $_SPACE_BIN -m ssh://gitlab.com/space-sh/non-existent-repo/ / -h
+_RUN_CHECK_FAIL $_SPACE_BIN -m ssh://username@gitlab.com/space-sh/non-existent-repo/ / -h
 # Bad commit
-_RUN_CHECK_FAIL space -m username/os:badversion3 / -h
+_RUN_CHECK_FAIL $_SPACE_BIN -m username/os:badversion3 / -h
 
 
 #
 # Modules
 #
 # Security check TODO: FIXME: point to trusted module
-#_RUN_CHECK_OK space -C0 -k2 -m os / -h
-_RUN_CHECK_OK   space   / -h -k0
-_RUN_CHECK_OK   space   / -h -k1
-_RUN_CHECK_OK   space   / -h -k2
-_RUN_CHECK_FAIL space   / -h -k3
-_RUN_CHECK_FAIL space   / -h -k6
+#_RUN_CHECK_OK $_SPACE_BIN -C0 -k2 -m os / -h
+_RUN_CHECK_OK   $_SPACE_BIN   / -h -k0
+_RUN_CHECK_OK   $_SPACE_BIN   / -h -k1
+_RUN_CHECK_OK   $_SPACE_BIN   / -h -k2
+_RUN_CHECK_FAIL $_SPACE_BIN   / -h -k3
+_RUN_CHECK_FAIL $_SPACE_BIN   / -h -k6
 
 # # Signature check
-_RUN_CHECK_OK   space   / -h -K0
-_RUN_CHECK_OK   space   / -h -K1
-_RUN_CHECK_OK   space   / -h -K2
-_RUN_CHECK_FAIL space   / -h -K3
-_RUN_CHECK_FAIL space   / -h -K6
-_RUN_CHECK_FAIL space -C0 -K2 -S -m os / -h
+_RUN_CHECK_OK   $_SPACE_BIN   / -h -K0
+_RUN_CHECK_OK   $_SPACE_BIN   / -h -K1
+# TODO: FIXME: not available
+#_RUN_CHECK_OK   $_SPACE_BIN   / -h -K2
+#_RUN_CHECK_FAIL $_SPACE_BIN -C0 -K2 -S -m os / -h
+_RUN_CHECK_FAIL $_SPACE_BIN   / -h -K3
+_RUN_CHECK_FAIL $_SPACE_BIN   / -h -K6
 # Clone and load, adding a dummy CMDOVERRIDE
-_RUN_CHECK_OK space -M os -c "# dummy command" / -h
+_RUN_CHECK_OK $_SPACE_BIN -M os -c "# dummy command" / -h
 # Completion returns 1
-_RUN_CHECK_FAIL space -3 -m os / -h
+_RUN_CHECK_FAIL $_SPACE_BIN -3 -m os / -h
 # Multi
-_RUN_CHECK_OK space -C0 -m sshd -m os -m file / -h
+_RUN_CHECK_OK $_SPACE_BIN -C0 -m sshd -m os -m file / -h
 # Cached
-_RUN_CHECK_OK space -m sshd -m os -m file / -h
+_RUN_CHECK_OK $_SPACE_BIN -m sshd -m os -m file / -h
 # Bad cache
-_RUN_CHECK_FAIL space -C6 -m sshd -m os -m file / -h
+_RUN_CHECK_FAIL $_SPACE_BIN -C6 -m sshd -m os -m file / -h
 # Too many namespaces
-_RUN_CHECK_FAIL space -C0 -m os1 -m os2 -m os3 -m os4
-_RUN_CHECK_FAIL space -C0 -f Spacefile.yaml -f Spacefile.yaml -f Spacefile.yaml -f Spacefile.yaml
+_RUN_CHECK_FAIL $_SPACE_BIN -C0 -m os1 -m os2 -m os3 -m os4
+_RUN_CHECK_FAIL $_SPACE_BIN -C0 -f Spacefile.yaml -f Spacefile.yaml -f Spacefile.yaml -f Spacefile.yaml
 
-# TODO: FIXME: 
-# Disabled until fix returning non-zero on some platforms
 # Update one module
-#_RUN_CHECK_OK space -U "os"
+if command -v git >/dev/null; then
+    _RUN_CHECK_OK $_SPACE_BIN -U "os"
+fi
 
 # No dimensions
-_RUN_CHECK_FAIL space -a
+_RUN_CHECK_FAIL $_SPACE_BIN -a
 
 # Too many dimensions
-_RUN_CHECK_FAIL space /a/ /b/ /c/ /d/
+_RUN_CHECK_FAIL $_SPACE_BIN /a/ /b/ /c/ /d/
 
 #
 # YAML
-_RUN_CHECK_OK space -f ./test/yaml/test.yaml /tests/0/ -a
+_RUN_CHECK_OK $_SPACE_BIN -f ./test/yaml/test.yaml /tests/0/ -a
 

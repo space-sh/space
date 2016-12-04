@@ -3699,7 +3699,9 @@ _update_modules()
                     fi
               done
             )
-            (( $? > 0 )) && return 1
+            if [ "$?" -gt 0 ]; then
+                return 1
+            fi
         else
             _info "No modules found."
         fi

@@ -2007,7 +2007,7 @@ _extract_repo_parts()
     fi
 
     # Extract "user@domain", if given, and the repo name.
-    if [[ $_mod =~ (.+://)([-@:A-Za-z0-9.]+) ]]; then
+    if [[ $_mod =~ (.+://)?([-@:A-Za-z0-9.]+)/ ]]; then
         # Domain provided
         _domain=${BASH_REMATCH[2]}
 

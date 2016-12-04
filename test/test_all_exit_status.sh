@@ -193,10 +193,10 @@ _RUN_CHECK_FAIL $_SPACE_BIN -C6 -m sshd -m os -m file / -h
 _RUN_CHECK_FAIL $_SPACE_BIN -C0 -m os1 -m os2 -m os3 -m os4
 _RUN_CHECK_FAIL $_SPACE_BIN -C0 -f Spacefile.yaml -f Spacefile.yaml -f Spacefile.yaml -f Spacefile.yaml
 
-# TODO: FIXME: 
-# Disabled until fix returning non-zero on some platforms
 # Update one module
-#_RUN_CHECK_OK $_SPACE_BIN -U "os"
+if command -v git >/dev/null; then
+    _RUN_CHECK_OK $_SPACE_BIN -U "os"
+fi
 
 # No dimensions
 _RUN_CHECK_FAIL $_SPACE_BIN -a

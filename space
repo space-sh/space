@@ -544,6 +544,7 @@ Usage:
           -K  Verify module Git HEAD signature using GPG. 0 = off,
               1 = accept moderate trust, 2 = only accept full trust signatures.
               Default = 1.
+          -S  Allow HTTPS fallback for downloading modules using curl or wget when git is not available.
           -h  help, show Space usage or help on specific node.
           node(s) Pattern of one or many nodes to run.
               If no node path is given the root node "/" is implied.

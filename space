@@ -557,20 +557,20 @@ Usage:
                   Bash will not expand that before passing it to Space as arguments.
                   /we{st,b}/ without quotes will get expanded by Bash as two arguments
                   /west/ and /web/ that are passed to Space, which is cool of that is what you meant.
-          -V show Space version information
-          -a All. Adds a ".*" to the node it suffixes, to match all it's nodes below.
-          -C caching level, 0 = off, 1 = on (default), 2 = regenerate cache.
-          -B Set to force to run modules in Bash. Normally Bash dependency depends
-             on module script files ending in .bash instead of .sh.
-          -U Update module(s). Performs a Git pull on matched module(s) then quit.
-             Space will update repositories both in local space_modules and also in shared space_modules directories.
-             -U ""    means update all modules.
-             -U "ssh" means update gitlab.com/space-sh/ssh.
-             -U "gitlab.com/blockie-org/ssh" means update gitlab.com/blockie-org/ssh repository.
-             -U "space-sh/.*" means update every module for the space-sh user on gitlab.com.
-          -X Outputs debug information.
-             1 = preprocessed YAML result, 2 = YAML parsed to Bash, 3 = YAML loaded from Bash (retransformed), 4 = eval code
-          -g Enable graphical user interface. Defaults to 0, disabled.
+          -V  show Space version information
+          -a  All. Adds a ".*" to the node it suffixes, to match all it's nodes below.
+          -C  caching level, 0 = off, 1 = on (default), 2 = regenerate cache.
+          -B  Set to force to run modules in Bash. Normally Bash dependency depends
+              on module script files ending in .bash instead of .sh.
+          -U  Update module(s). Performs a Git pull on matched module(s) then quit.
+              Space will update repositories both in local space_modules and also in shared space_modules directories.
+              -U ""    means update all modules.
+              -U "ssh" means update gitlab.com/space-sh/ssh.
+              -U "gitlab.com/blockie-org/ssh" means update gitlab.com/blockie-org/ssh repository.
+              -U "space-sh/.*" means update every module for the space-sh user on gitlab.com.
+          -X  Outputs debug information.
+              1 = preprocessed YAML result, 2 = YAML parsed to Bash, 3 = YAML loaded from Bash (retransformed), 4 = eval code
+          -g  Enable graphical user interface. Defaults to 0, disabled.
 Examples:
 
 _EOF

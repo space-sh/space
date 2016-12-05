@@ -571,7 +571,14 @@ Usage:
           -X  Outputs debug information.
               1 = preprocessed YAML result, 2 = YAML parsed to Bash, 3 = YAML loaded from Bash (retransformed), 4 = eval code
           -g  Enable graphical user interface. Defaults to 0, disabled.
+
 Examples:
+
+# Load a module named "os" from the official Space repositories and run the node named "info"
+space -m "os" /info/
+
+# Load and run a local module and show description for its root node
+space -f Spacefile.yaml / -h
 
 _EOF
     printf "%s" "$_s" >&2

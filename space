@@ -3696,7 +3696,7 @@ _update_modules()
         if [[ $_reponame == "*" ]]; then
             _reponame=".*"
         fi
-        _pattern="\(./\)?$_domainname/$_username/$_reponame"
+        _pattern="./$_domainname/$_username/$_reponame"
     fi
     _info "Updating space modules to pattern: $_pattern"
     local _places=( "$CWD/space_modules" "$_MODULES_SHARED" )
@@ -3705,7 +3705,7 @@ _update_modules()
         # EXTERNAL: find
         local _modules=$(cd $_dir 2>/dev/null && find . -mindepth 3 -maxdepth 3 -type d -regex "$_pattern")
         if [[ -n $_modules ]]; then
-            _info "modules found: " $_modules
+            _info "Modules found in $_dir: " $_modules
             (
                 cd $_dir 2>/dev/null
                 for d in $_modules; do
@@ -3737,7 +3737,7 @@ _update_modules()
                 return 1
             fi
         else
-            _info "No modules found."
+            _info "No modules found in $_dir."
         fi
     done
 }

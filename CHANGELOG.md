@@ -18,6 +18,8 @@
 
 * Fix an issue that causes the wrong module being cloned when the protocol is set as part of a malformed Git URL
 
+* Fix an issue that caused `space -U <expression>` not to work under BSD
+
 ## [0.9.0] - 2016-30-11
 
 First public version

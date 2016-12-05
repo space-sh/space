@@ -50,9 +50,20 @@ For more information, please refer to the documentation files located in the `do
 For the latest news and online reference, please visit [https://space.sh](https://space.sh).
 
 
+## Contributing
+
+Code contributions are welcome via [GitLab merge requests](https://gitlab.com/space-sh/space/merge_requests). More information and details on how to do it can be found in the [CONTRIBUTING](CONTRIBUTING.md) document.
+
+
+## Issues
+
+Bug reports and suggestions can be filed at the project [GitLab Issues](https://gitlab.com/space-sh/space/issues) page.
+
+
 ## Authors
 
 Copyright 2016 Blockie AB [Blockie.org](https://blockie.org)
+
 
 ## License
 

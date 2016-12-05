@@ -6,6 +6,8 @@
 
 + Add support for hostnames (without punctuation) to be specified as a module Git URL
 
++ Add undocumented command switches -S, -V and -X to help usage text (-h switch)
+
 * Update packer to include code documentation as part of the release files.
 
 * Change packer module file to be recognized as shell instead of Bash

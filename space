@@ -557,6 +557,7 @@ Usage:
                   Bash will not expand that before passing it to Space as arguments.
                   /we{st,b}/ without quotes will get expanded by Bash as two arguments
                   /west/ and /web/ that are passed to Space, which is cool of that is what you meant.
+          -V show Space version information
           -a All. Adds a ".*" to the node it suffixes, to match all it's nodes below.
           -C caching level, 0 = off, 1 = on (default), 2 = regenerate cache.
           -B Set to force to run modules in Bash. Normally Bash dependency depends

@@ -47,6 +47,12 @@ _PARSE_YAML()
             ./space -C0 -f ./"$_dir_name"/input.yaml -X3 | \
                 $DIFF_BIN - ./"$_dir_name"/output_X3.yaml || (PRINT "  Failed!" "error"; exit 1)
             PRINT "  [OK!]" "success"
+
+            PRINT "  X4: env eval step"
+            ./space -C0 -f ./"$_dir_name"/input.yaml -X4 | \
+                $DIFF_BIN - ./"$_dir_name"/output_X4.yaml || (PRINT "  Failed!" "error"; exit 1)
+            PRINT "  [OK!]" "success"
+
             PRINT ""
         fi
     done

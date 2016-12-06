@@ -1,0 +1,60 @@
+[[ ${CMD-} == "" && ${CMD-unset} == "unset" ]] && local CMD || local CMD=$CMD; read -d '' -r CMD << _SPACEGAL_SAYS_END_OF_FINITY_
+here it is
+_SPACEGAL_SAYS_END_OF_FINITY_
+:
+[[ ${CMD2-} == "" && ${CMD2-unset} == "unset" ]] && local CMD2 || local CMD2=$CMD2; read -d '' -r CMD2 << _SPACEGAL_SAYS_END_OF_FINITY_
+something more
+_SPACEGAL_SAYS_END_OF_FINITY_
+:
+[[ ${CMD3-} == "" && ${CMD3-unset} == "unset" ]] && local CMD3 || local CMD3=$CMD3; read -d '' -r CMD3 << _SPACEGAL_SAYS_END_OF_FINITY_
+
+_SPACEGAL_SAYS_END_OF_FINITY_
+:
+[[ ${PIPE-} == "" && ${PIPE-unset} == "unset" ]] && local PIPE || local PIPE=$PIPE; read -d '' -r PIPE << _SPACEGAL_SAYS_END_OF_FINITY_
+input comes from here
+_SPACEGAL_SAYS_END_OF_FINITY_
+:
+[[ ${A-} == "" && ${A-unset} == "unset" ]] && local A || local A=$A; read -d '' -r A << _SPACEGAL_SAYS_END_OF_FINITY_
+
+_SPACEGAL_SAYS_END_OF_FINITY_
+:
+[[ ${B-} == "" && ${B-unset} == "unset" ]] && local B || local B=$B; read -d '' -r B << _SPACEGAL_SAYS_END_OF_FINITY_
+my data is visible
+_SPACEGAL_SAYS_END_OF_FINITY_
+:
+[[ ${A-} == "" && ${A-unset} == "unset" ]] && local A || local A=$A; read -d '' -r A << _SPACEGAL_SAYS_END_OF_FINITY_
+my data is visible
+_SPACEGAL_SAYS_END_OF_FINITY_
+:
+[[ ${B-} == "" && ${B-unset} == "unset" ]] && local B || local B=$B; read -d '' -r B << _SPACEGAL_SAYS_END_OF_FINITY_
+my data is visible
+_SPACEGAL_SAYS_END_OF_FINITY_
+:
+[[ ${A-} == "" && ${A-unset} == "unset" ]] && local A || local A=$A; read -d '' -r A << _SPACEGAL_SAYS_END_OF_FINITY_
+hej
+_SPACEGAL_SAYS_END_OF_FINITY_
+:
+[[ ${B-} == "" && ${B-unset} == "unset" ]] && local B || local B=$B; read -d '' -r B << _SPACEGAL_SAYS_END_OF_FINITY_
+hej
+_SPACEGAL_SAYS_END_OF_FINITY_
+:
+[[ ${A-} == "" && ${A-unset} == "unset" ]] && local A || local A=$A; read -d '' -r A << _SPACEGAL_SAYS_END_OF_FINITY_
+san
+_SPACEGAL_SAYS_END_OF_FINITY_
+:
+[[ ${B-} == "" && ${B-unset} == "unset" ]] && local B || local B=$B; read -d '' -r B << _SPACEGAL_SAYS_END_OF_FINITY_
+san
+_SPACEGAL_SAYS_END_OF_FINITY_
+:
+[[ ${WRAPCMD-} == "" && ${WRAPCMD-unset} == "unset" ]] && local WRAPCMD || local WRAPCMD=$WRAPCMD; read -d '' -r WRAPCMD << _SPACEGAL_SAYS_END_OF_FINITY_
+
+_SPACEGAL_SAYS_END_OF_FINITY_
+:
+[[ ${STDIN-} == "" && ${STDIN-unset} == "unset" ]] && local STDIN || local STDIN=$STDIN; read -d '' -r STDIN << _SPACEGAL_SAYS_END_OF_FINITY_
+/dev/stdin
+_SPACEGAL_SAYS_END_OF_FINITY_
+:
+[[ ${CMD-} == "" && ${CMD-unset} == "unset" ]] && local CMD || local CMD=$CMD; read -d '' -r CMD << _SPACEGAL_SAYS_END_OF_FINITY_
+OK prio
+_SPACEGAL_SAYS_END_OF_FINITY_
+:

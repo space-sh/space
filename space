@@ -1851,7 +1851,7 @@ _module_clone()
         elif [[ $(_to_lower $_protocol) == "ssh" ]]; then
             _domainuser="git@"
         fi
-        local _giturl=$_protocol://$_domainuser$_domain/$_repofullname
+        local _giturl=$_protocol://$_domainuser$_domain/$_username/$_reponame
 
         # Check the module banlist.
         _module_check_banlist "$_giturl"
@@ -2040,7 +2040,7 @@ _extract_repo_parts()
         fi
 
         # Expect both username and reponame to have been provided
-        if [[ $_mod =~ (.*://)?([-@:A-Za-z0-9.?]+)/([-A-Za-z0-9_]+)/([-A-Za-z0-9_:]+) ]]; then
+        if [[ $_mod =~ (.*://)?([-@:A-Za-z0-9.?]+)/([-A-Za-z0-9_]+)/([-A-Za-z0-9_:.]+) ]]; then
             _username=${BASH_REMATCH[3]}
             _reponame=${BASH_REMATCH[4]}
         else
@@ -2049,10 +2049,10 @@ _extract_repo_parts()
         fi
     else
         # Domain not provided, expect username and/or reponame[:commit]
-        if [[ $_mod =~ ([-A-Za-z0-9_]+)/([-A-Za-z0-9_:]+) ]]; then
+        if [[ $_mod =~ ([-A-Za-z0-9_]+)/([-A-Za-z0-9_:.]+) ]]; then
             _username=${BASH_REMATCH[1]}
             _reponame=${BASH_REMATCH[2]}
-        elif [[ $_mod =~ ^([-A-Za-z0-9_:]*) ]]; then
+        elif [[ $_mod =~ ^([-A-Za-z0-9_:.]*) ]]; then
             _reponame=${BASH_REMATCH[1]}
         fi
 
@@ -3729,6 +3729,10 @@ _update_modules()
                         local _giturl=$(git config --get remote.origin.url)
                         _module_check_banlist "$_giturl"
                         (( $? > 0 )) && return 1
+                        if [[ "$d" =~ .*[:]+(.*) ]]; then
+                            _info "Skipping update. Keeping revision ${BASH_REMATCH[1]}"
+                            continue
+                        fi
                         git pull 2>&1
                         (( $? > 0 )) && return 1
                         if [[ -f .gitmodules ]]; then

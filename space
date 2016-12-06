@@ -1851,10 +1851,10 @@ _module_clone()
         elif [[ $(_to_lower $_protocol) == "ssh" ]]; then
             _domainuser="git@"
         fi
-        local _giturl=$_protocol://$_domainuser$_domain/$_repofullname
+        local _giturl=$_protocol://$_domainuser$_domain/$_username/$_reponame
 
         # Check the module banlist.
-        _module_check_banlist "$_giturl"
+        _module_check_banlist "${_giturl}:${_commit}"
         (( $? > 0 )) && return 1
 
         if ! command -v git >/dev/null; then
@@ -2040,7 +2040,7 @@ _extract_repo_parts()
         fi
 
         # Expect both username and reponame to have been provided
-        if [[ $_mod =~ (.*://)?([-@:A-Za-z0-9.?]+)/([-A-Za-z0-9_]+)/([-A-Za-z0-9_:]+) ]]; then
+        if [[ $_mod =~ (.*://)?([-@:A-Za-z0-9.?]+)/([-A-Za-z0-9_]+)/([-A-Za-z0-9_:.]+) ]]; then
             _username=${BASH_REMATCH[3]}
             _reponame=${BASH_REMATCH[4]}
         else
@@ -2049,10 +2049,10 @@ _extract_repo_parts()
         fi
     else
         # Domain not provided, expect username and/or reponame[:commit]
-        if [[ $_mod =~ ([-A-Za-z0-9_]+)/([-A-Za-z0-9_:]+) ]]; then
+        if [[ $_mod =~ ([-A-Za-z0-9_]+)/([-A-Za-z0-9_:.]+) ]]; then
             _username=${BASH_REMATCH[1]}
             _reponame=${BASH_REMATCH[2]}
-        elif [[ $_mod =~ ^([-A-Za-z0-9_:]*) ]]; then
+        elif [[ $_mod =~ ^([-A-Za-z0-9_:.]*) ]]; then
             _reponame=${BASH_REMATCH[1]}
         fi
 
@@ -2095,6 +2095,7 @@ _module_check_banlist()
         local _response=
         # We want the Bash version and OS info to check if the module is broken
         # for some specific combination.
+        _debug "Ban server check against: $_giturl"
         if [[ $_HTTPBIN == "curl" ]]; then
             _response=$($_HTTPBIN $_SECURITY_BAN_SERVER -s -X POST --data-urlencode "git_url=${_giturl}" --data-urlencode "bash=${BASH_VERSION}" --data-urlencode "os=$(${_UNAME})")
             _debug "Ban server response, curl: ${_response}."
@@ -3727,8 +3728,19 @@ _update_modules()
                     if [[ -d .git ]] ; then
                         # Check the module banlist.
                         local _giturl=$(git config --get remote.origin.url)
-                        _module_check_banlist "$_giturl"
-                        (( $? > 0 )) && return 1
+                        if [[ "$d" =~ .*[:]+(.*) ]]; then
+                            _module_check_banlist "${_giturl}:${BASH_REMATCH[1]}"
+                            (( $? > 0 )) && return 1
+
+                            git symbolic-ref -q HEAD > /dev/null 2>&1
+                            if [ "$?" -gt "0" ]; then
+                                _info "Skipping update. Keeping revision ${BASH_REMATCH[1]}";
+                                continue
+                            fi
+                        else
+                            _module_check_banlist "$_giturl"
+                            (( $? > 0 )) && return 1
+                        fi
                         git pull 2>&1
                         (( $? > 0 )) && return 1
                         if [[ -f .gitmodules ]]; then

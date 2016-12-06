@@ -1,5 +1,5 @@
 
-# Space | [![build status](https://gitlab.com/space-sh/space/badges/master/build.svg)](https://gitlab.com/space-sh/space/commits/master)
+# Space | [![build status](https://gitlab.com/space-sh/space/badges/master/build.svg)](https://gitlab.com/space-sh/space/commits/master) [![latest stable version](https://img.shields.io/badge/latest%20stable-0.9.0-blue.svg?style=flat)](https://gitlab.com/space-sh/space/tags/0.9.0)
 
 ![SpaceGal](https://space.sh/static/img/logo.png)
 

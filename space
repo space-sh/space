@@ -3730,8 +3730,11 @@ _update_modules()
                         _module_check_banlist "$_giturl"
                         (( $? > 0 )) && return 1
                         if [[ "$d" =~ .*[:]+(.*) ]]; then
-                            _info "Skipping update. Keeping revision ${BASH_REMATCH[1]}"
-                            continue
+                            git symbolic-ref -q HEAD > /dev/null 2>&1
+                            if [ "$?" -gt "0" ]; then
+                                _info "Skipping update. Keeping revision ${BASH_REMATCH[1]}";
+                                continue
+                            fi
                         fi
                         git pull 2>&1
                         (( $? > 0 )) && return 1

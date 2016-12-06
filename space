@@ -1854,7 +1854,7 @@ _module_clone()
         local _giturl=$_protocol://$_domainuser$_domain/$_username/$_reponame
 
         # Check the module banlist.
-        _module_check_banlist "$_giturl"
+        _module_check_banlist "${_giturl}:${_commit}"
         (( $? > 0 )) && return 1
 
         if ! command -v git >/dev/null; then
@@ -2095,6 +2095,7 @@ _module_check_banlist()
         local _response=
         # We want the Bash version and OS info to check if the module is broken
         # for some specific combination.
+        _debug "Ban server check against: $_giturl"
         if [[ $_HTTPBIN == "curl" ]]; then
             _response=$($_HTTPBIN $_SECURITY_BAN_SERVER -s -X POST --data-urlencode "git_url=${_giturl}" --data-urlencode "bash=${BASH_VERSION}" --data-urlencode "os=$(${_UNAME})")
             _debug "Ban server response, curl: ${_response}."
@@ -3727,14 +3728,18 @@ _update_modules()
                     if [[ -d .git ]] ; then
                         # Check the module banlist.
                         local _giturl=$(git config --get remote.origin.url)
-                        _module_check_banlist "$_giturl"
-                        (( $? > 0 )) && return 1
                         if [[ "$d" =~ .*[:]+(.*) ]]; then
+                            _module_check_banlist "${_giturl}:${BASH_REMATCH[1]}"
+                            (( $? > 0 )) && return 1
+
                             git symbolic-ref -q HEAD > /dev/null 2>&1
                             if [ "$?" -gt "0" ]; then
                                 _info "Skipping update. Keeping revision ${BASH_REMATCH[1]}";
                                 continue
                             fi
+                        else
+                            _module_check_banlist "$_giturl"
+                            (( $? > 0 )) && return 1
                         fi
                         git pull 2>&1
                         (( $? > 0 )) && return 1

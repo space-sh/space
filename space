@@ -597,7 +597,7 @@ _helpversion()
 {
     local _s=
     IFS= read -d '' -r _s << _EOF
-space $_VERSION
+Space $_VERSION
 _EOF
     printf "%s" "$_s" >&2
 }

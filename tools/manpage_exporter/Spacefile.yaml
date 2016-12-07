@@ -1,0 +1,35 @@
+#
+# Copyright 2016 Blockie AB
+#
+# This file is part of Space.
+#
+# Space is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation version 3 of the License.
+#
+# Space is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with Space.  If not, see <http://www.gnu.org/licenses/>.
+#
+
+_env:
+    - MAN_NAME: "SpaceGal shell Manual"
+    - ORGANIZATION_NAME: "$(space -V 2>&1)"
+    - DATE_NOW: "$(date +%Y-%m-%d)"
+
+_info:
+    title: Man page exporter
+    desc:|
+         Exports Markdown documentation to roff man pages and HTML
+man:
+    _env:
+        - CMD: _EXPORT_MAN
+
+html:
+    _env:
+        - CMD: _EXPORT_HTML
+

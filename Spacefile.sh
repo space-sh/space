@@ -213,7 +213,7 @@ SPACE_UNINSTALL()
         _uname_s=$(uname -s)
         local _find_ac=${AC_PREFIX}
         local _find_man=
-        _find_man=$(man space -w 2>&1)
+        _find_man=$(man -w space 2>&1)
 
         # If man didn't work, look for known locations
         if [ "$?" -gt 0 ]; then

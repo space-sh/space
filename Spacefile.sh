@@ -128,15 +128,21 @@ SPACE_INSTALL()
         PRINT "Grace time: 5 seconds before proceeding..." "warning"
         sleep 5
 
+        # In case of existing old installs (0.9.0 and earlier), they likely
+        # won't have man pages installed and the destination dir might not exist.
+        # Make sure destination exists, otherwise we just create it
+        mkdir -p "$_mandest"
+
         # Install!
         SPACE_INSTALL_BIN
         if [ "$?" -gt 0 ]; then
             return 1
         fi
     else
-        # Often times PREFIX exists but not /bin
+        # Often times PREFIX exists but not /bin or /man/{man1}
         # Make sure destination exists, otherwise we just create it
         mkdir -p "$_bindest"
+        mkdir -p "$_mandest"
 
         # Install!
         SPACE_INSTALL_BIN

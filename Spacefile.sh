@@ -202,7 +202,7 @@ SPACE_UNINSTALL()
 {
     # External
     SPACE_CMDDEP="PRINT"
-    SPACE_CMDENV="AC_PREFIX"
+    SPACE_CMDENV="AC_PREFIX BIN_PREFIX"
 
     local _find_space=
     _find_space=$(which space 2>&1)
@@ -213,7 +213,21 @@ SPACE_UNINSTALL()
         _uname_s=$(uname -s)
         local _find_ac=${AC_PREFIX}
         local _find_man=
-        _find_man=$(man space -w)
+        _find_man=$(man space -w 2>&1)
+
+        # If man didn't work, look for known locations
+        if [ "$?" -gt 0 ]; then
+            local _man_file_name="space.1"
+            _find_man=${BIN_PREFIX}/share/man/man1/${_man_file_name}
+            if [ ! -f "$_find_man" ]; then
+                _find_man=${PREFIX-}/share/man/man1/${_man_file_name}
+                if [ ! -f "$_find_man" ]; then
+                    PRINT "Failed to retrieve man page location for \"$_man_file_name\"" "warning"
+                    _find_man="$_man_file_name"
+                fi
+            fi
+        fi
+
         if [ "$_uname_s" = "Darwin" ]; then
             _find_ac="/usr/local/etc/bash_completion.d"
         fi

@@ -90,9 +90,12 @@ SPACE_INSTALL()
 
     local _bindest=${_binprefix}/bin
     local _acdest=${_acprefix}
+    local _mandest=${_binprefix}/share/man/man1
     local _bin_file_name="space"
     local _ac_file_name="init_autocompletion.sh"
+    local _man_file_name="space.1"
     local _ac_file_path="./completion/${_ac_file_name}"
+    local _man_file_path="./${_man_file_name}"
     local _bin_full_path=${_bindest}/${_bin_file_name}
 
     #
@@ -142,23 +145,40 @@ SPACE_INSTALL()
         fi
     fi
 
+    # Install man page
+    # Check source file is present
+    if [ ! -f $_man_file_path ]; then
+        PRINT "[${_mandest}/${_man_file_name}]  FAILED to find man page: $_man_file_path. Skipping..." "warning"
+    else
+        if [ -d "${_mandest}" ]; then
+            command install -m 644 "${_man_file_path}" "${_mandest}"
+            if [ "$?" -gt 0 ]; then
+                PRINT "[${_mandest}/${_man_file_name}]  FAILED to install man page. Skipping..." "warning"
+            else
+                PRINT "[${_mandest}/${_man_file_name}]  OK" "success"
+            fi
+        else
+            PRINT "[${_mandest}/${_man_file_name}]  FAILED to find destination directory: $_mandest. Skipping..." "warning"
+        fi
+    fi
+
     # Install auto completion
     # Check source file is present
     if [ ! -f $_ac_file_path ]; then
-        PRINT "[${_acdest}/${_ac_file_name}]  FAILED" "error"
+        PRINT "[${_acdest}/${_ac_file_name}]  FAILED" "warning"
         PRINT "Auto completion will not work because the completion script could not be located at ${_ac_file_path}" "warning"
     else
         if [ -d "${_acdest}" ]; then
             command install -m 644 "$_ac_file_path" "${_acdest}/space"
             if [ "$?" -gt 0 ]; then
-                PRINT "[${_acdest}/space]  FAILED" "error"
+                PRINT "[${_acdest}/space]  FAILED" "warning"
                 PRINT "Auto completion will not work because destination doesn't exist: [${_acdest}]. Make sure the destination directory is valid and bash-completion is installed. After that, repeat the installation process if bash completion is desired." "warning"
             else
                 PRINT "[${_acdest}/space]  OK" "success"
                 PRINT "You might want to re-login into bash to get the bash completion loaded."
             fi
         else
-            PRINT "[${_acdest}/space]  FAILED" "error"
+            PRINT "[${_acdest}/space]  FAILED" "warning"
             PRINT "Auto completion will not work because destination doesn't exist: [${_acdest}]. Make sure the destination directory is valid and bash-completion is installed. After that, repeat the installation process if bash completion is desired." "warning"
 
             local _uname_s=

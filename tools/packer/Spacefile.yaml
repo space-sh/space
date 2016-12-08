@@ -27,13 +27,16 @@ _env:
 _info:
     title: SpaceGal shell packer
     desc:|
-        Builds new packages for Space releases
+        Builds new packages for Space releases.
 
 make:
     _info:
         title: Make new release package
         desc:|
-            Perform SpaceGal shell packaging
+            Performs SpaceGal shell packaging process.
+            Generates a new package file containing the release file set for current Space version,
+            along with exporting code documentation and user man page.
+            Also creates hashes and GPG signature for verifying file integrity and authorship.
     _env:
         - CMD: SPACE_PACKER_MAKE
 

@@ -20,11 +20,40 @@
 _env:
   - GENERATE_TOC: ${GENERATE_TOC-0}
 
+_info:
+    title: Spacedoc: code documentation exporter
+    desc:|
+        Exports code documentation from shell script source files.
+
 markdown:
+    _info:
+        title: Generate code documentation and export as a Markdown file
+        desc:|
+            Takes a shell script code as input, parse all its comments and generate a
+            Markdown formatted documentation file in the current directory as result.
+            If GENERATE_TOC environment variable is set to 1, documentation will
+            automatically generate and include table of contents section.
+            Parameters:
+                1: input shell script
+            Example:
+                ./space -f ./tools/spacedoc/Spacefile.yaml /markdown/ -- ./space
     _env:
         - CMD: _EXPORT_MARKDOWN
 
 html:
+    _info:
+        title: Generate code documentation and export as a Markdown and HTML files
+        desc:|
+            Takes a shell script code as input, parse all its comments and generate a
+            Markdown formatted documentation file, including a copy as HTML, in the
+            current directory as result.
+            If GENERATE_TOC environment variable is set to 1, documentation will
+            automatically generate and include table of contents section.
+            Parameters:
+                1: input shell script
+            Example:
+                ./space -f ./tools/spacedoc/Spacefile.yaml /html/ -- ./space
+
     _env:
         - CMD: _EXPORT_HTML
 

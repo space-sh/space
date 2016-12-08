@@ -24,12 +24,28 @@ _env:
 _info:
     title: Man page exporter
     desc:|
-         Exports Markdown documentation to roff man pages and HTML
+        Exports Markdown documentation to roff man pages and HTML.
 man:
+    _info:
+        title: Export man page to roff format
+        desc:|
+            Takes a Markdown documentation as input, transforms it into a valid man page and exports as roff file.
+            Parameters:
+                1: input Markdown documentation
+            Example:
+                ./space -f ./tools/manpage_exporter/Spacefile.yaml /man/ -- ./doc/space.md
     _env:
         - CMD: _EXPORT_MAN
 
 html:
+    _info:
+        title: Export man page to HTML format
+        desc:|
+            Takes a Markdown documentation as input, transforms it into a valid man page and exports as HTML.
+            Parameters:
+                1: input Markdown documentation
+            Example:
+                ./space -f ./tools/manpage_exporter/Spacefile.yaml /html/ -- ./doc/space.md
     _env:
         - CMD: _EXPORT_HTML
 

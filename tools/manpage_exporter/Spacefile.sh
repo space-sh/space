@@ -33,7 +33,8 @@ _EXPORT_MAN()
     local _doc_file_path="$1"
     local _doc_file_name=
     _doc_file_name=$(basename "$_doc_file_path")
-    local _doc_export_path="$(pwd)/${_doc_file_name%.*}.1"
+    local _doc_export_path=
+    _doc_export_path="$(pwd)/${_doc_file_name%.*}.1"
 
     # Check if file exists
     if [ ! -f "$_doc_file_path" ]; then
@@ -47,7 +48,7 @@ _EXPORT_MAN()
         exit 1
     fi
 
-    ronn --roff --date=$DATE_NOW --manual="$MAN_NAME" --organization="$ORGANIZATION_NAME" --pipe "$_doc_file_path" > "$_doc_export_path"
+    ronn --roff --date="$DATE_NOW" --manual="$MAN_NAME" --organization="$ORGANIZATION_NAME" --pipe "$_doc_file_path" > "$_doc_export_path"
 
     if [ $? -ne 0 ]; then
         PRINT "Failed to generate man page for $_doc_file_name" "error"
@@ -70,7 +71,8 @@ _EXPORT_HTML()
     local _doc_file_path="$1"
     local _doc_file_name=
     _doc_file_name=$(basename "$_doc_file_path")
-    local _doc_export_path="$(pwd)/${_doc_file_name%.*}.html"
+    local _doc_export_path=
+    _doc_export_path="$(pwd)/${_doc_file_name%.*}.html"
 
     # Check if file exists
     if [ ! -f "$_doc_file_path" ]; then
@@ -84,7 +86,7 @@ _EXPORT_HTML()
         exit 1
     fi
 
-    ronn --html --date=$DATE_NOW --manual="$MAN_NAME" --organization="$ORGANIZATION_NAME" --pipe "$_doc_file_path" > "$_doc_export_path"
+    ronn --html --date="$DATE_NOW" --manual="$MAN_NAME" --organization="$ORGANIZATION_NAME" --pipe "$_doc_file_path" > "$_doc_export_path"
 
     if [ $? -ne 0 ]; then
         PRINT "Failed to generate HTML page for $_doc_file_name" "error"

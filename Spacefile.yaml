@@ -25,28 +25,31 @@ _info:
     title: SpaceGal shell installer
     desc:|
         Provides system wide installation and Bash auto-completion setup.
+        Provides an uninstall utility for listing files originally installed by Space.
 
 _dep_install:
     _info:
-        tite: Verify Space dependencies.
+        tite: Verify Space dependencies
     _env:
         - CMD: SPACE_DEP_INSTALL
 install:
     _info:
         title: Install SpaceGal shell
         desc:|
-            Perform SpaceGal shell install
-            Takes two parameters:
-            BIN_PREFIX which is where the program will be installed
-            AC_PREFIX where the auto completion will be installed
-            Example: ./space /install/ -- "/usr/local" "/usr/share/bash-completion/completions"
+            Perform SpaceGal shell install.
+            Parameters (both optional):
+                1: BIN_PREFIX which is where the program and man page will be installed.
+                2: AC_PREFIX where the auto completion will be installed.
+            Example (using default values):
+                ./space /install/ -- "/usr/local" "/usr/share/bash-completion/completions"
     _env:
         - CMD: SPACE_INSTALL
 
 uninstall:
     _info:
         title: Uninstall SpaceGal shell
-        desc: Perform SpaceGal shell uninstall
+        desc:|
+            Auto detects and lists all the files originally installed by SpaceGal shell.
     _env:
         - CMD: SPACE_UNINSTALL
 

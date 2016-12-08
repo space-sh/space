@@ -212,10 +212,12 @@ SPACE_UNINSTALL()
         local _uname_s=
         _uname_s=$(uname -s)
         local _find_ac=${AC_PREFIX}
+        local _find_man=
+        _find_man=$(man space -w)
         if [ "$_uname_s" = "Darwin" ]; then
             _find_ac="/usr/local/etc/bash_completion.d"
         fi
-        PRINT "In order to uninstall Space, remove the following files: #1 ${_find_space} #2 ${_find_ac}/space"
+        PRINT "In order to uninstall Space, remove the following files: \"${_find_space}\" \"${_find_ac}/space\" \"${_find_man}\""
     fi
 }
 

@@ -19,9 +19,10 @@
 ---
 
 @include: @{CWD}/tools/spacedoc/Spacefile.yaml
+@include: @{CWD}/tools/manpage_exporter/Spacefile.yaml
 
 _env:
-    - RELEASE_FILES: "space Spacefile.bash Spacefile.yaml completion/init_autocompletion.sh"
+    - RELEASE_FILES: "space Spacefile.sh Spacefile.yaml completion/init_autocompletion.sh space.1"
 
 _info:
     title: SpaceGal shell packer

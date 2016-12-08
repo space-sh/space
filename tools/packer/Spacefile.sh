@@ -21,6 +21,7 @@
 #
 
 _source "${CWD}/tools/spacedoc/Spacefile.bash"
+_source "${CWD}/tools/manpage_exporter/Spacefile.sh"
 
 # Check if command is available
 SPACE_PACKER_CHECK_AVAILABLE()
@@ -36,7 +37,7 @@ SPACE_PACKER_CHECK_AVAILABLE()
 
 SPACE_PACKER_MAKE()
 {
-    SPACE_CMDDEP="PRINT SPACE_PACKER_CHECK_AVAILABLE _EXPORT_MARKDOWN"
+    SPACE_CMDDEP="PRINT SPACE_PACKER_CHECK_AVAILABLE _EXPORT_MARKDOWN _EXPORT_MAN"
     SPACE_CMDENV="RELEASE_FILES"
 
     local _files=''
@@ -93,6 +94,12 @@ SPACE_PACKER_MAKE()
     done
 
     #
+    # Generate man page on current directory
+    local _space_man_input_file_path="${PWD}/doc/space.md"
+    local _space_man_expected_output_file_path="${PWD}/space.1"
+    _EXPORT_MAN "$_space_man_input_file_path"
+
+    #
     #Build package name
     _release_name="space-${_version}"
     _package_name="${_release_name}.tar.gz"
@@ -106,6 +113,10 @@ SPACE_PACKER_MAKE()
     # Generate compressed tar
     # shellcheck disable=SC2086
     tar cvzf "${_release_dir}/${_package_name}" $_files
+    if [ "$?" -gt 0 ]; then
+        PRINT "Failed to create tar file: $_package_name" "error"
+        exit 1
+    fi
 
     #
     # Generate hashes
@@ -164,6 +175,11 @@ SPACE_PACKER_MAKE()
     # Cleanup
     if [ -f "./${_doc_expected_output_name}.bak" ]; then
         rm "./${_doc_expected_output_name}.bak"
+    fi
+
+    # Cleanup generated man page
+    if [ -f "${_space_man_expected_output_file_path}" ]; then
+        rm "${_space_man_expected_output_file_path}"
     fi
 
     #

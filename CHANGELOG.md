@@ -16,6 +16,8 @@
 
 + Add _Space_ man page as part of the install process
 
++ Add man page to the list of installed files to remove when running /uninstall/ base _Space_ module
+
 * Change packer module file to be recognized as shell instead of Bash
 
 * Change base _Space_ module file to be recognized as shell instead of Bash

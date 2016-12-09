@@ -16,8 +16,13 @@ In short, the YAML structure sets up the environment and then execution is passe
 **Space** only depends on Bash and its exported scripts only depend on POSIX shell, so it runs with any POSIX compliant shell (ash, dash or bash). It provides a built-in YAML parser and preprocessor which are used to build **Space Modules**. *Modules* are exportable user extensions that can include each other to be loaded and run by **Space** in a composable way. The execution can then be exported as a shell script, to be run directly or shared, all in a decentralized manner.  
 Behind the scenes, Space Module is a Git repository which contains at least the file Spacefile.yaml, and most often also Spacefile.sh/.bash.  A user creating a YAML structure could clone and include modules into the YAML file, reusing them.
 
+For more complex combinations of modules, there is also the concept of "Dimensions". **Space** can handle up to three dimensions. This is a cuboid X*Y*Z, where X, Y and Z are one or many nodes that will get run in combination.  
+An example of that is X could be a list of "things" to operate on, Y could be one or more "operations" to apply to each thing and Z could be one or more "hosts" to where these things exist.  
+The Z dimension nodes will typically provide an environment variable named CMDWRAP that would wrap the CMD inside another CMD, for example to run the given CMD on another host over SSH.  
+Each Dimension could have its own Namespace or share Namespaces. A Namespace is a loaded YAML structure. **Space** could, from a given first and optional second dimension, fetch the second or third dimension.
+
 When running **Space**, the following steps occur:  
-  1. Resolve the target node path.  
+  1. Resolve the target node path. Fetches and combines dimensions for combo nodes, if applicable.  
   2. Perform YAML preprocessing to resolve all the @-directives  
   3. Perform YAML parsing to prepare environment variables to the next stage  
   4. Set up environment variables  

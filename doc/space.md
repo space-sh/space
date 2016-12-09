@@ -481,8 +481,8 @@ When CMD points to a function name, that function will be parsed for Space heade
 
 ## NOTES
 **Space** is made to work with Bash version 3.2 and later.  
-**Space** uses some external programs for certain tasks, mostly coupled to tasks that involve disk and/or network access. These external programs are not all POSIX 1003.1 compliant but have been tested to work in a variety of platforms. For more information, search for the word EXTERNAL in the **Space** program and see how they are applied and used.
-
+**Space** uses some external programs for certain tasks, mostly coupled to tasks that involve disk and/or network access. These external programs are not all POSIX 1003.1 compliant but have been tested to work in a variety of platforms. For more information, search for the word EXTERNAL in the **Space** program and see how they are applied and used.  
+Optional programs that are used when available for improving user experience include: **curl**, **git**, **shasum**, **sha1sum**, **sha256sum**, **tput** and **wget**.
 
 ## EXAMPLE
 

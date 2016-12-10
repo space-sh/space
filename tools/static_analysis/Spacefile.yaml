@@ -1,0 +1,78 @@
+#
+# Copyright 2016 Blockie AB
+#
+# This file is part of Space.
+#
+# Space is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation version 3 of the License.
+#
+# Space is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with Space.  If not, see <http://www.gnu.org/licenses/>.
+#
+
+---
+_env:
+
+_info:
+    title: Static analysis
+    desc:|
+        Performs static analysis on shell scripts using external tools.
+
+shellcheck:
+    _info:
+        title: Run shellcheck against a shell script
+        desc:|
+            Takes a shell script code as input, run shellcheck analysis and output results to a file.
+            Parameters:
+                1: input shell script to analyze
+                2: output file
+            Example:
+                ./space -f ./tools/static_analysis/Spacefile.yaml /shellcheck/ -- "space" "checks.txt"
+    _env:
+        - CMD: _RUN_SHELLCHECK
+
+checkbashisms:
+    _info:
+        title: Run checkbashisms against a shell script
+        desc:|
+            Takes a shell script code as input, run checkbashisms analysis and output results to a file.
+            Parameters:
+                1: input shell script to analyze
+                2: output file
+            Example:
+                ./space -f ./tools/static_analysis/Spacefile.yaml /checkbashisms/ -- "space" "bashisms.txt"
+    _env:
+        - CMD: _RUN_CHECKBASHISMS
+
+all:
+    _info:
+        title: Run all static analysis tools against a shell script
+        desc:|
+            Takes a shell script code as input, run all static analysis tools available and output results to one separate file for each analysis.
+            Parameters:
+                1: input shell script to analyze
+                2: output file suffix where results will be saved to.
+            Example:
+                ./space -f ./tools/static_analysis/Spacefile.yaml /all/ -- "space" "results"
+    _env:
+        - CMD: _RUN_ALL
+
+all_recursively:
+    _info:
+        title: Run all static analysis tools recursively
+        desc:|
+            Runs all static analysis tools available recursively, starting in the current directory.
+            Outputs one file per analysis check to the output directory given as parameter and a summary at the end.
+            Parameters:
+                1: output directory to store analysis files. If the directory doesn't exit, it will be created.
+            Example:
+                ./space -f ./tools/static_analysis/Spacefile.yaml /all_recursively/ -- "results"
+    _env:
+        - CMD: _RUN_ALL_RECURSIVELY
+

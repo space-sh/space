@@ -3215,7 +3215,7 @@ _exec_dimensions()
     CMD=${CMDOVERRIDE:-${CMD-}}
 
     if [[ -z ${CMD-} ]]; then
-        _error "No CMD environment variable specified in YAML nodes nor on command line. Use -H to get help or -a -l to list all child nodes."
+        _error "No CMD environment variable specified in YAML nodes nor on command line. Use -h to get help or -a -l to list all child nodes."
         return 1
     fi
 

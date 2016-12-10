@@ -77,7 +77,10 @@ readonly _SPACEBIN=$0
 readonly _BASEDIR=$( cd "${_SPACEBIN%/*}" 2>/dev/null && pwd )
 # The $TERM used for tput.
 _TERM=${_TERM:-${TERM:-dumb}}
-
+readonly _USAGE="Usage:
+    space [-f|m namespace [-M modules] [-ep key=value] [-c cmd] [node] [-a]] [-vkKCBX value] [-dlShg] [-- args]
+    space [-hV]
+    space -U [module]"
 
 #
 # Output configuration
@@ -242,8 +245,8 @@ Space. (C) Blockie AB 2016, blockie.org. GPL version 3 licensed.
 
 See man pages and https://space.sh for more info.
 
-Usage:
-    space [-f/-m namespace [node] [-a]], etc [options] [-- further args to Bash function]
+$_USAGE
+
           -f  YAML file to load, relative or absolute path, defaults to: ./Spacefile.yaml.
               -f and -m options define namespaces in where to look for nodes, for a given dimension of nodes.
               There can be maximum three namespaces and three dimensions. One namespace can have more than one dimension.
@@ -2354,11 +2357,13 @@ _main()
                     ;;
                 \?)
                     _error "Unknown option -${OPTARG-}."
+                    _print "$_USAGE"
                     return 1
                     ;;
                 :)
                     if [[ $_BASH_COMPLETION == "0" ]]; then
                         _error "Option -${OPTARG-} requires an argument."
+                        _print "$_USAGE"
                         return 1
                     fi
                     (return 1)
@@ -2366,10 +2371,12 @@ _main()
             esac
             if (($? == 0)); then
                 _error "Unknown option $1."
+                _print "$_USAGE"
                 return 1
             elif (($OPTIND == 1)); then
                 # This happens when doing for example: -al
                 _error "Unknown option $1."
+                _print "$_USAGE"
                 return 1
             fi
             shift $((OPTIND-1))

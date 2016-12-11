@@ -1,5 +1,0 @@
-This directory contains all tests needed in order to check SpaceGal shell. Each directory marks a subsystem or category in which the tests are performed. All tests are described as Space modules.
-
-A complete test run can be performed with the following command:
-./space -f ./test/test_all.yaml /run/
-

@@ -28,7 +28,7 @@
 set -o nounset
 
 #
-# Pass custom parameter for Space in case Git is not available
+# -S: Pass custom parameter for Space in case Git is not available
 _SPACE_BIN="space"
 if ! command -v git >/dev/null; then
     _SPACE_BIN="space -S"
@@ -36,6 +36,35 @@ if ! command -v git >/dev/null; then
 else
     printf "\033[35mGit command is available.\033[0m\n"
 fi
+
+#
+# Test counter
+_test_counter=0
+_test_counter_ok=0
+
+#======================
+# _CHECK_CONTAINS
+#
+# Checks if a piece of data is part of a bigger string
+#
+# Parameters:
+#   1: the string to find
+#   2: the data to check against
+#
+# Returns:
+#   1 if it finds a match
+#
+#======================
+_CHECK_CONTAINS()
+{
+    local _contains="$1"
+    local _string="$2"
+    if [ -z "${_string##*$_contains*}" ]; then
+        return 1
+    else
+        return 0
+    fi
+}
 
 #======================
 # _RUN_CHECK_OK and FAIL
@@ -47,164 +76,251 @@ fi
 #   providing full command call via parameters.
 #   Makes it so that the test toolset can keep track of function calls.
 #
+# Parameters:
+#   1: message describing what the check is about
+#   2: expected message on stdout/err
+#   3: command line to test
 #======================
 _RUN_CHECK_OK()
 {
+    local _message_description=$1
+    shift
+    local _expected_message=$1
+    shift
+    local _command_line=$@
     local _status=
-    bash "$@" > /dev/null 2>&1
+    local _output=
+
+    _test_counter=$((_test_counter + 1 ))
+    _output=$(bash $_command_line 2>&1)
     _status="$?"
     if [ "$_status" -eq 0 ]; then
-        printf "\033[32m[OK] %s\033[0m\n" "$*"
+        _CHECK_CONTAINS "$_expected_message" "$_output"
+        if [ "$?" -eq 1 ]; then
+            printf "\033[32m[OK] %s\033[0m\n" "$_message_description"
+            if [ "$_test_counter_ok" -lt 255 ]; then
+                _test_counter_ok=$((_test_counter_ok + 1 ))
+            fi
+        else
+            printf "\033[31m[ERROR] %s\n\tCommand: \"%s\"\n\tExpected output to contain: \"%s\"\n\tOutput: \"%s\"\033[0m\n" "$_message_description" "$_command_line" "$_expected_message" "$_output"
+        fi
     else
-        printf "\033[31m[ERROR] %s. Expected it to succeed\033[0m\n" "$*"
-        exit 1
+        printf "\033[31m[ERROR] %s\n\tCommand: \"%s\"\n\tFailed with exit status (%s)\n\tOutput: \"%s\"\033[0m\n" "$_message_description" "$_command_line" "$_status" "$_output"
     fi
 }
 
 _RUN_CHECK_FAIL()
 {
+    local _message_description=$1
+    shift
+    local _expected_message=$1
+    shift
+    local _command_line=$@
     local _status=
-    bash "$@" > /dev/null 2>&1
+    local _output=
+
+    _test_counter=$((_test_counter + 1 ))
+    _output=$(bash $_command_line 2>&1)
     _status="$?"
     if [ "$_status" -eq 0 ]; then
-        printf "\033[31m[ERROR] %s. Expected it to fail\033[0m\n" "$*"
-        exit 1
+        printf "\033[31m[ERROR] %s\n\tCommand: \"%s\"\n\tFailed with exit status (%s)\n\tOutput: \"%s\"\033[0m\n" "$_message_description" "$_command_line" "$_status" "$_output"
     else
-        printf "\033[32m[OK] %s\033[0m\n" "$*"
+        _CHECK_CONTAINS "$_expected_message" "$_output"
+        if [ "$?" -eq 1 ]; then
+            printf "\033[32m[OK] %s\033[0m\n" "$_message_description"
+            if [ "$_test_counter_ok" -lt 255 ]; then
+                _test_counter_ok=$((_test_counter_ok + 1 ))
+            fi
+        else
+            printf "\033[31m[ERROR] %s\n\tCommand: \"%s\"\n\tExpected output to contain: \"%s\"\n\tOutput: \"%s\"\033[0m\n" "$_message_description" "$_command_line" "$_expected_message" "$_output"
+        fi
     fi
 }
 
-# Invalid space calls
-_RUN_CHECK_FAIL space
-_RUN_CHECK_FAIL $_SPACE_BIN -
-_RUN_CHECK_FAIL $_SPACE_BIN -6
-_RUN_CHECK_FAIL $_SPACE_BIN -Z
-_RUN_CHECK_FAIL $_SPACE_BIN -X6
-_RUN_CHECK_FAIL $_SPACE_BIN -- something1 otherthing2
+printf "\033[35mTesting Space parameter options...\033[0m\n"
 
-# Regular environment variable
-_RUN_CHECK_OK   $_SPACE_BIN -e dummyenv=mukyanjong    / -h
-# Malformed environment variable settings
-_RUN_CHECK_FAIL $_SPACE_BIN -e malformedEnv           / -h
+# Invalid Space calls
+_RUN_CHECK_FAIL "Test without parameters" "" $_SPACE_BIN
+_RUN_CHECK_FAIL "Test without parameters but arguments" "" $_SPACE_BIN -- something1 otherthing2
+_RUN_CHECK_FAIL "Test unknown option: dash only" "Unknown option -" $_SPACE_BIN -
+_RUN_CHECK_FAIL "Test unknown option: dash and number" "Unknown option -6" $_SPACE_BIN -6
+_RUN_CHECK_FAIL "Test unknown option: dash and unknown letter" "Unknown option -Z" $_SPACE_BIN -Z
+_RUN_CHECK_FAIL "Test unknown option: dash, known letter, invalid parameter" "Unknown -X argument 6" $_SPACE_BIN -X6
+_RUN_CHECK_FAIL "Test invalid node name" "Node name must begin with slash." $_SPACE_BIN badNodeName
 
-# Valid preprocessing variables
-_RUN_CHECK_OK $_SPACE_BIN -p var1=ready   / -h
-_RUN_CHECK_OK $_SPACE_BIN -p var1+=again  / -h
+# -f
+_RUN_CHECK_FAIL "Test -f switch: file does not exit" "YAML file UnknownFile.yaml does not exist" $_SPACE_BIN -f UnknownFile.yaml / -h
 
-# All verbosity levels
-_RUN_CHECK_OK   $_SPACE_BIN   / -h -v0
-_RUN_CHECK_OK   $_SPACE_BIN   / -h -v1
-_RUN_CHECK_OK   $_SPACE_BIN   / -h -v2
-_RUN_CHECK_OK   $_SPACE_BIN   / -h -v3
-_RUN_CHECK_OK   $_SPACE_BIN   / -h -v4
-_RUN_CHECK_FAIL $_SPACE_BIN   / -h -v6
+#
+# -m
+# Implicit protocol name
+_RUN_CHECK_FAIL "Test -m switch: URL missing repo/user combo" "Expected username and reponame" $_SPACE_BIN -m gitlab.com/space-sh
+_RUN_CHECK_FAIL "Test -m switch: IP missing repo/user combo" "Expected username and reponame" $_SPACE_BIN -m 192.168.0.1/username
+_RUN_CHECK_FAIL "Test -m switch: hostname missing repo/user combo" "Expected username and reponame" $_SPACE_BIN -m host/username
+_RUN_CHECK_FAIL "Test -m switch: hostname with slash missing repo/user combo" "Expected username and reponame" $_SPACE_BIN -m host/username/
+# Explicit protocol name
+_RUN_CHECK_FAIL "Test -m switch: Explicit protocol URL missing repo/user combo" "Expected username and reponame" $_SPACE_BIN -m ssh://host.com
+_RUN_CHECK_FAIL "Test -m switch: Explicit protocol IP missing repo/user combo" "Expected username and reponame" $_SPACE_BIN -m ssh://192.168.0.1
+_RUN_CHECK_FAIL "Test -m switch: Explicit protocol hostname missing repo/user combo" "Expected username and reponame" $_SPACE_BIN -m ssh://host/username
+_RUN_CHECK_FAIL "Test -m switch: Explicit protocol hostname with slash missing repo/user combo" "Expected username and reponame" $_SPACE_BIN -m ssh://host/username/
+# Missing domain name extension
+_RUN_CHECK_FAIL "Test -m switch: Implicit protocol, missing domain name extension" "Expected domain extension" $_SPACE_BIN -m host./user/repo / -h 
+_RUN_CHECK_FAIL "Test -m switch: Explicit protocol HTTPS, missing domain name extension" "Expected domain extension" $_SPACE_BIN -m https://host./user/repo / -h 
+_RUN_CHECK_FAIL "Test -m switch: Explicit protocol SSH, missing domain name extension" "Expected domain extension" $_SPACE_BIN -m ssh://host./user/repo / -h 
 
-# All caching modes
-_RUN_CHECK_OK   $_SPACE_BIN -C1   / -h
-_RUN_CHECK_OK   $_SPACE_BIN -C2   / -h
-_RUN_CHECK_FAIL $_SPACE_BIN -C3   / -h
+# -h: Help
+_RUN_CHECK_OK   "Test -h switch: contains basic program info" "Space. (C) Blockie AB 2016, blockie.org. GPL version 3 licensed." $_SPACE_BIN -h
+_RUN_CHECK_OK   "Test -h switch: contains usage section" "Usage:" $_SPACE_BIN -h
 
-# List mode
-_RUN_CHECK_OK $_SPACE_BIN /install/ -l
+# -e: Regular environment variable
+_RUN_CHECK_FAIL "Test -e switch: key=value" "No CMD environment variable specified in YAML nodes nor on command line." $_SPACE_BIN -e dummyenv=mukyanjong
+_RUN_CHECK_FAIL "Test -e switch: malformed pair" "Malformed -e switch" $_SPACE_BIN -e malformedEnv
 
-# Bash mode
-_RUN_CHECK_OK $_SPACE_BIN -B /install/ -h
+# -p: Valid preprocessing variables
+_RUN_CHECK_OK "Test -p switch: attribution" ""      $_SPACE_BIN -p var1=ready   / -h
+_RUN_CHECK_OK "Test -p switch: += attribution" ""   $_SPACE_BIN -p var1+=again  / -h
 
-# Dry run
-_RUN_CHECK_OK $_SPACE_BIN /install/ -d
+# -v: All verbosity levels
+_RUN_CHECK_OK   "Test -v0 switch" "" $_SPACE_BIN   / -h -v0
+_RUN_CHECK_OK   "Test -v1 switch" "" $_SPACE_BIN   / -h -v1
+_RUN_CHECK_OK   "Test -v2 switch" "" $_SPACE_BIN   / -h -v2
+_RUN_CHECK_OK   "Test -v3 switch" "" $_SPACE_BIN   / -h -v3
+_RUN_CHECK_OK   "Test -v4 switch" "Namespaces loaded" $_SPACE_BIN   / -h -v4
+_RUN_CHECK_FAIL "Test -v6: invalid switch" "Unknown -v argument 6" $_SPACE_BIN   / -h -v6
+
+# -C: All caching modes
+_RUN_CHECK_OK   "Test -C0 switch" "Deleting cache" $_SPACE_BIN -C0   / -h -v4
+_RUN_CHECK_OK   "Test -C1 switch" "Cache file not found" $_SPACE_BIN -C1   / -h -v4
+_RUN_CHECK_OK   "Test -C2 switch" "Write to cache file" $_SPACE_BIN -C2   / -h -v4
+_RUN_CHECK_FAIL "Test -C3: invalid switch" "Unknown -C argument 3" $_SPACE_BIN -C3   / -h -v4
+
+# -l: List mode
+_RUN_CHECK_OK "Test -l switch" "/install/" $_SPACE_BIN /install/ -l
+
+# -d: Dry run
+_RUN_CHECK_OK "Test -d switch" "# Script exported by:" $_SPACE_BIN /install/ -d
+_RUN_CHECK_OK "Test -d switch: shell mode" "#!/bin/env sh" $_SPACE_BIN /install/ -d
+
+# -B: Bash mode
+_RUN_CHECK_OK "Test -d switch: bash mode" "#!/bin/env bash" $_SPACE_BIN /install/ -d -B
 
 # Bash Completion expected to return 1
-_RUN_CHECK_FAIL $_SPACE_BIN -1
-_RUN_CHECK_FAIL $_SPACE_BIN -1 /install/
-_RUN_CHECK_FAIL $_SPACE_BIN -2
+_RUN_CHECK_FAIL "Test -1 switch: tab completion" "" $_SPACE_BIN -1
+_RUN_CHECK_FAIL "Test -1 switch with args" "" $_SPACE_BIN -1 /install/
+_RUN_CHECK_FAIL "Test -2 switch" "" $_SPACE_BIN -2
 
-# Help
-_RUN_CHECK_OK $_SPACE_BIN -h
+_RUN_CHECK_OK "Test -h switch" "" $_SPACE_BIN -h
 
-# helpversion
-_RUN_CHECK_OK $_SPACE_BIN -V
+# -V: helpversion
+_RUN_CHECK_OK "Test -V switch" "Space " $_SPACE_BIN -V
 
-# helpnode
-_RUN_CHECK_OK   $_SPACE_BIN / -h
-_RUN_CHECK_OK   $_SPACE_BIN /install/ -h
-_RUN_CHECK_OK   $_SPACE_BIN -f ./test/yaml/test.yaml /tests/ -h
-_RUN_CHECK_FAIL $_SPACE_BIN -f ./test/yaml/test.yaml wrongnode -h
-_RUN_CHECK_FAIL $_SPACE_BIN -f ./test/yaml/test.yaml /tests/wrongpath -h
+# -h: helpnode
+_RUN_CHECK_OK   "Test -h switch: root node" "SpaceGal shell installer" $_SPACE_BIN / -h
+_RUN_CHECK_OK   "Test -h switch: child node" "Install SpaceGal shell" $_SPACE_BIN /install/ -h
+_RUN_CHECK_OK   "Test -h switch: specifying file" "+ 0" $_SPACE_BIN -f ./test/yaml/test.yaml /tests/ -h
+_RUN_CHECK_FAIL "Test -h switch: specifying file with incorrect node" "Node name must begin with slash." $_SPACE_BIN -f ./test/yaml/test.yaml wrongnode -h
+_RUN_CHECK_FAIL "Test -h switch: specifying file with incorrect path" "Malformed node path" $_SPACE_BIN -f ./test/yaml/test.yaml /tests/wrongpath -h
 
 # prompt during preprocessing
-echo "input" | _RUN_CHECK_OK $_SPACE_BIN -C0 -f test/exit_status_cases/prompt.yaml /print_input/
+echo "input" | _RUN_CHECK_OK "Test @prompt" "Enter some input" $_SPACE_BIN -C0 -f test/exit_status_cases/prompt.yaml /print_input/
 
 # Misc base cases
-_RUN_CHECK_OK $_SPACE_BIN -C0 -f ./test/exit_status_cases/test.yaml / -h
-_RUN_CHECK_OK $_SPACE_BIN -C0 -f ./test/exit_status_cases/test.yaml /print_test/
+_RUN_CHECK_OK "Test misc base cases: root node" "+ print_test" $_SPACE_BIN -C0 -f ./test/exit_status_cases/test.yaml / -h
+_RUN_CHECK_OK "Test misc base cases: print_test node" "testing CMD node execution..." $_SPACE_BIN -C0 -f ./test/exit_status_cases/test.yaml /print_test/
 
 # Fail cloning repo
-_RUN_CHECK_FAIL $_SPACE_BIN -f ./test/exit_status_cases/fail_pp_clone.yaml / -h
+if command -v git >/dev/null; then
+    _RUN_CHECK_FAIL "Test @clone" "fatal: unable to access 'https://test/cases/wrongrepo/': Could not resolve host: test" $_SPACE_BIN -f ./test/exit_status_cases/fail_pp_clone.yaml / -h
+else
+    _RUN_CHECK_FAIL "Test @clone" "Could not clone module since Git is not installed" $_SPACE_BIN -f ./test/exit_status_cases/fail_pp_clone.yaml / -h
+fi
 
 # Fail include during preprocessing
-_RUN_CHECK_FAIL $_SPACE_BIN -f ./test/exit_status_cases/fail_pp_include_file.yaml / -h
-_RUN_CHECK_FAIL $_SPACE_BIN -f ./test/exit_status_cases/fail_pp_include_module.yaml / -h
-_RUN_CHECK_FAIL $_SPACE_BIN -f ./test/exit_status_cases/fail_pp_include_file_on_included.yaml / -h
+_RUN_CHECK_FAIL "Test preprocessor include file" "Could not find file \"NonExistentFile.yaml\"." $_SPACE_BIN -f ./test/exit_status_cases/fail_pp_include_file.yaml / -h
+_RUN_CHECK_FAIL "Test preprocessor include module" "Could not find file \"username/module\"." $_SPACE_BIN -f ./test/exit_status_cases/fail_pp_include_module.yaml / -h
+_RUN_CHECK_FAIL "Test preprocessor include on include file" "Could not find file \"fail_pp_file_include.yaml\"." $_SPACE_BIN -f ./test/exit_status_cases/fail_pp_include_file_on_included.yaml / -h
 
 # Malformed clone import name
-_RUN_CHECK_FAIL $_SPACE_BIN -f ./test/exit_status_cases/fail_pp_clone_malformed.yaml / -h
+if command -v git >/dev/null; then
+    _RUN_CHECK_FAIL "Test malformed clone import" "Could not Git clone" $_SPACE_BIN -f ./test/exit_status_cases/fail_pp_clone_malformed.yaml / -h
+else
+    _RUN_CHECK_FAIL "Test malformed clone import" "Could not fetch and unpack tarball" $_SPACE_BIN -f ./test/exit_status_cases/fail_pp_clone_malformed.yaml / -h
+fi
 
 # Fail assert during preprocessing
-_RUN_CHECK_FAIL $_SPACE_BIN -f ./test/exit_status_cases/fail_pp_assert.yaml / -h
+_RUN_CHECK_FAIL "Test @assert" "Assertion failed: nonempty" $_SPACE_BIN -f ./test/exit_status_cases/fail_pp_assert.yaml / -h
 
 #
 # Fail cloning module repository
-_RUN_CHECK_FAIL $_SPACE_BIN -m ssh://gitlab.com/space-sh/non-existent-repo/ / -h
-_RUN_CHECK_FAIL $_SPACE_BIN -m ssh://username@gitlab.com/space-sh/non-existent-repo/ / -h
-# Bad commit
-_RUN_CHECK_FAIL $_SPACE_BIN -m username/os:badversion3 / -h
+if command -v git >/dev/null; then
+    _RUN_CHECK_FAIL "Test @clone" "Could not Git clone" $_SPACE_BIN -m ssh://gitlab.com/space-sh/non-existent-repo/ / -h
+    _RUN_CHECK_FAIL "Test @clone" "Could not Git clone" $_SPACE_BIN -m ssh://username@gitlab.com/space-sh/non-existent-repo/ / -h
+else
+    _RUN_CHECK_FAIL "Test @clone" "Could not clone module since Git is not installed" $_SPACE_BIN -m ssh://gitlab.com/space-sh/non-existent-repo/ / -h
+    _RUN_CHECK_FAIL "Test @clone" "Could not clone module since Git is not installed" $_SPACE_BIN -m ssh://username@gitlab.com/space-sh/non-existent-repo/ / -h
+fi
 
+_RUN_CHECK_FAIL "Test module: bad commit" "Expected username and reponame" $_SPACE_BIN -m username/os:badversion3 / -h
 
 #
 # Modules
 #
-# Security check TODO: FIXME: point to trusted module
+# -k: Security check TODO: FIXME: point to trusted module
 #_RUN_CHECK_OK $_SPACE_BIN -C0 -k2 -m os / -h
-_RUN_CHECK_OK   $_SPACE_BIN   / -h -k0
-_RUN_CHECK_OK   $_SPACE_BIN   / -h -k1
-_RUN_CHECK_OK   $_SPACE_BIN   / -h -k2
-_RUN_CHECK_FAIL $_SPACE_BIN   / -h -k3
-_RUN_CHECK_FAIL $_SPACE_BIN   / -h -k6
+_RUN_CHECK_OK   "Test -k0 switch" "" $_SPACE_BIN   / -h -k0
+_RUN_CHECK_OK   "Test -k1 switch" "" $_SPACE_BIN   / -h -k1
+_RUN_CHECK_OK   "Test -k2 switch" "" $_SPACE_BIN   / -h -k2
+_RUN_CHECK_FAIL "Test -k3 switch: unknown" "Unknown -k argument 3" $_SPACE_BIN   / -h -k3
+_RUN_CHECK_FAIL "Test -k6 switch: unknown" "Unknown -k argument 6" $_SPACE_BIN   / -h -k6
 
-# # Signature check
-_RUN_CHECK_OK   $_SPACE_BIN   / -h -K0
-_RUN_CHECK_OK   $_SPACE_BIN   / -h -K1
+# -K: Signature check
+_RUN_CHECK_OK   "Test -K0 switch" "" $_SPACE_BIN   / -h -K0
+_RUN_CHECK_OK   "Test -K1 switch" "" $_SPACE_BIN   / -h -K1
 # TODO: FIXME: not available
 #_RUN_CHECK_OK   $_SPACE_BIN   / -h -K2
 #_RUN_CHECK_FAIL $_SPACE_BIN -C0 -K2 -S -m os / -h
-_RUN_CHECK_FAIL $_SPACE_BIN   / -h -K3
-_RUN_CHECK_FAIL $_SPACE_BIN   / -h -K6
-# Clone and load, adding a dummy CMDOVERRIDE
-_RUN_CHECK_OK $_SPACE_BIN -M os -c "# dummy command" / -h
-# Completion returns 1
-_RUN_CHECK_FAIL $_SPACE_BIN -3 -m os / -h
-# Multi
-_RUN_CHECK_OK $_SPACE_BIN -C0 -m sshd -m os -m file / -h
-# Cached
-_RUN_CHECK_OK $_SPACE_BIN -m sshd -m os -m file / -h
-# Bad cache
-_RUN_CHECK_FAIL $_SPACE_BIN -C6 -m sshd -m os -m file / -h
-# Too many namespaces
-_RUN_CHECK_FAIL $_SPACE_BIN -C0 -m os1 -m os2 -m os3 -m os4
-_RUN_CHECK_FAIL $_SPACE_BIN -C0 -f Spacefile.yaml -f Spacefile.yaml -f Spacefile.yaml -f Spacefile.yaml
+_RUN_CHECK_FAIL "Test -K3 switch: unknown" "Unknown -K argument 3" $_SPACE_BIN   / -h -K3
+_RUN_CHECK_FAIL "Test -K6 switch: unknown" "Unknown -K argument 6" $_SPACE_BIN   / -h -K6
 
-# Update one module
+# Clone and load, adding a dummy CMDOVERRIDE
+#_RUN_CHECK_OK "Test CMDOVERRIDE" "" $_SPACE_BIN -M os -c echo dummy_command / -h
+# Completion returns 1
+_RUN_CHECK_FAIL "Test -3 switch: completion" "" $_SPACE_BIN -3 -m os / -h
+# Multi modules
+_RUN_CHECK_OK "Test multi module: loading" "" $_SPACE_BIN -C0 -m sshd -m os -m file / -h
+# Multi modules Cached
+_RUN_CHECK_OK "Test multi module: cached" "" $_SPACE_BIN -m sshd -m os -m file / -h
+# Multi modules Bad cache
+_RUN_CHECK_FAIL "Test multi module: bad cache" "" $_SPACE_BIN -C6 -m sshd -m os -m file / -h
+# Multi -f/-m: Too many namespaces
+_RUN_CHECK_FAIL "Test multi module: too many namespaces" "Too many namespaces defined" $_SPACE_BIN -C0 -m os1 -m os2 -m os3 -m os4
+_RUN_CHECK_FAIL "Test multi module files: too many namespaces" "Too many namespaces defined" $_SPACE_BIN -C0 -f Spacefile.yaml -f Spacefile.yaml -f Spacefile.yaml -f Spacefile.yaml
+
+# -U: Update one module
 if command -v git >/dev/null; then
-    _RUN_CHECK_OK $_SPACE_BIN -U "os"
+    _RUN_CHECK_OK "Test -U switch: updating" "Updating space modules to pattern: ./gitlab.com/space-sh/os" $_SPACE_BIN -U "os"
+    _RUN_CHECK_OK "Test -U switch: updating" "Updating space modules to pattern: ./gitlab.com/space-sh/os" $_SPACE_BIN -U "gitlab.com/space-sh/os"
 fi
 
-# No dimensions
-_RUN_CHECK_FAIL $_SPACE_BIN -a
+# -a: No dimensions
+_RUN_CHECK_FAIL "Test -a switch: missing node" "-a flag must come after node." $_SPACE_BIN -a
 
 # Too many dimensions
-_RUN_CHECK_FAIL $_SPACE_BIN /a/ /b/ /c/ /d/
+_RUN_CHECK_FAIL "Test dimensions: too many arguments" "cannot exceed three in total" $_SPACE_BIN /a/ /b/ /c/ /d/
 
 #
-# YAML
-_RUN_CHECK_OK $_SPACE_BIN -f ./test/yaml/test.yaml /tests/0/ -a
+# -X: YAML
+_RUN_CHECK_OK "Test YAML loading" "" $_SPACE_BIN -f ./test/yaml/test.yaml /tests/0/ -a
+
+# Summary
+printf "\n===================\n"
+if [ "$_test_counter_ok" -eq "$_test_counter" ]; then
+    printf "\033[32mOK!\033[0m Completed %s out of %s tests.\n" "$_test_counter_ok" "$_test_counter"
+else
+    printf "\033[31mFAIL!\033[0m Completed %s out of %s tests.\n" "$_test_counter_ok" "$_test_counter"
+fi
+printf "===================\n"
+
+_exit_code=$((_test_counter - _test_counter_ok ))
+exit $_exit_code
 

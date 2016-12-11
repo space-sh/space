@@ -45,10 +45,13 @@ Note: this exact method does not check for the integrity of the downloaded .tar.
 
 
 ### First steps
-_Space_ is now installed. Run `space -h` anywhere to read the help instructions.
+_Space_ is now installed. Run `space -h` anywhere to read the help instructions.  
+For a simple module example, please refer to EXAMPLE section in the [user manual page](doc/space.md). For more advanced modules, check out the [Spacefile.yaml](Spacefile.yaml) and [Spacefile.sh](Spacefile.sh) files and the core modules located at [https://gitlab.com/space-sh](https://gitlab.com/space-sh).  
+
 For more information, please refer to the documentation files located in the `doc` directory or the man pages.  
 For the latest news and online reference, please visit [https://space.sh](https://space.sh).
 
+Further questions can be asked via the [GitLab Issues](https://gitlab.com/space-sh/space/issues) page.
 
 ## Contributing
 

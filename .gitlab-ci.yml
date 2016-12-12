@@ -16,36 +16,36 @@ bash32_base_tests:
   script:
     - which bash
     - bash --version
-    - bash space -f ./test/yaml/test.yaml /tests/0/ -a
     - bash test/test_install.sh
     - bash test/test_core.sh
+    - bash test/test_yaml.sh
 
 bash40_base_tests:
   image: bash:4.0
   script:
     - which bash
     - bash --version
-    - bash space -f ./test/yaml/test.yaml /tests/0/ -a
     - bash test/test_install.sh
     - bash test/test_core.sh
+    - bash test/test_yaml.sh
 
 bash44_base_tests:
   image: bash:4.4
   script:
     - which bash
     - bash --version
-    - bash space -f ./test/yaml/test.yaml /tests/0/ -a
     - bash test/test_install.sh
     - bash test/test_core.sh
+    - bash test/test_yaml.sh
 
 bashlatest_base_tests:
   image: bash:latest
   script:
     - which bash
     - bash --version
-    - bash space -f ./test/yaml/test.yaml /tests/0/ -a
     - bash test/test_install.sh
     - bash test/test_core.sh
+    - bash test/test_yaml.sh
 
 #=========================================
 # Full tests
@@ -63,6 +63,7 @@ alpine_test_all:
     - bash test/test_all_exit_status.sh
     - bash test/test_install.sh
     - bash test/test_core.sh
+    - bash test/test_yaml.sh
 
 debianjessie_test_all:
   image: debian:jessie
@@ -74,6 +75,7 @@ debianjessie_test_all:
     - bash test/test_all_exit_status.sh
     - bash test/test_install.sh
     - bash test/test_core.sh
+    - bash test/test_yaml.sh
 
 debianjessie_curl_test_all:
   image: debian:jessie
@@ -85,6 +87,7 @@ debianjessie_curl_test_all:
     - bash test/test_all_exit_status.sh
     - bash test/test_install.sh
     - bash test/test_core.sh
+    - bash test/test_yaml.sh
 
 debianjessie_wget_test_all:
   image: debian:jessie
@@ -96,6 +99,7 @@ debianjessie_wget_test_all:
     - bash test/test_all_exit_status.sh
     - bash test/test_install.sh
     - bash test/test_core.sh
+    - bash test/test_yaml.sh
 
 debianlatest_test_all:
   image: debian:latest
@@ -107,5 +111,6 @@ debianlatest_test_all:
     - bash test/test_all_exit_status.sh
     - bash test/test_install.sh
     - bash test/test_core.sh
+    - bash test/test_yaml.sh
 
 

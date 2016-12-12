@@ -309,9 +309,6 @@ _RUN_CHECK_FAIL "Test -a switch: missing node" "-a flag must come after node." $
 _RUN_CHECK_FAIL "Test dimensions: too many arguments" "cannot exceed three in total" $_SPACE_BIN /a/ /b/ /c/ /d/
 
 #
-# -X: YAML
-_RUN_CHECK_OK "Test YAML loading" "" $_SPACE_BIN -f ./test/yaml/test.yaml /tests/0/ -a
-
 # Summary
 printf "\n===================\n"
 if [ "$_test_counter_ok" -eq "$_test_counter" ]; then

@@ -9,3 +9,6 @@ Tests all front-facing commands and options that can be issued by a regular user
 ### test_core
 Tests all core program functionalities which relate to global state and OS-specific and shell-specific behaviours.
 
+### test_yaml
+Tests all YAML related operations.
+

@@ -1,0 +1,54 @@
+#
+# Copyright 2016 Blockie AB
+#
+# This file is part of Space.
+#
+# Space is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation version 3 of the License.
+#
+# Space is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with Space.  If not, see <http://www.gnu.org/licenses/>.
+#
+
+---
+_env:
+
+tests:
+  -
+    -
+      _env:
+        - CMD: _TEST_SOURCE_FILE_NON_EXISTANT_CHECK_FAILURE
+    -
+      _env:
+        - CMD: _TEST_SOURCE_FILE_NON_EXISTANT_CHECK_NO_TOUCH
+    -
+      _env:
+        - CMD: _TEST_SOURCE_FILE_ONE_CHECK_RETURN
+    -
+      _env:
+        - CMD: _TEST_SOURCE_FILE_ONE_CHECK_TOUCH
+    -
+      _env:
+        - CMD: _TEST_SOURCE_FILE_ONE_CHECK_SYNTAX_RETURN
+    -
+      _env:
+        - CMD: _TEST_SOURCE_FILE_ONE_CHECK_SYNTAX_TOUCH
+    -
+      _env:
+        - CMD: _TEST_SOURCE_FILE_MULTIPLE_CHECK_RETURN
+    -
+      _env:
+        - CMD: _TEST_SOURCE_FILE_MULTIPLE_CHECK_TOUCH
+    -
+      _env:
+        - CMD: _TEST_SOURCE_FILE_MULTIPLE_CHECK_SYNTAX_RETURN
+    -
+      _env:
+        - CMD: _TEST_SOURCE_FILE_MULTIPLE_CHECK_SYNTAX_TOUCH
+

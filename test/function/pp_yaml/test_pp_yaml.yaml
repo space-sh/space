@@ -1,0 +1,52 @@
+#
+# Copyright 2016 Blockie AB
+#
+# This file is part of Space.
+#
+# Space is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation version 3 of the License.
+#
+# Space is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with Space.  If not, see <http://www.gnu.org/licenses/>.
+#
+
+---
+_env:
+    - DEFINITION_ONE: "defined"
+
+tests:
+  -
+    -
+      _env:
+        - CMD: _TEST_PP_YAML_CHECK_STATUS_OK
+    -
+      _env:
+        - CMD: _TEST_PP_YAML_CHECK_PREPROCESSED_OK
+    -
+      _env:
+        - CMD: _TEST_PP_YAML_CHECK_STATUS_FAIL_1
+    -
+      _env:
+        - CMD: _TEST_PP_YAML_CHECK_STATUS_FAIL_2
+    -
+      _env:
+        - CMD: _TEST_PP_YAML_CHECK_STATUS_FAIL_3
+    -
+      _env:
+        - CMD: _TEST_PP_YAML_CHECK_STATUS_FAIL_4
+    -
+      _env:
+        - CMD: _TEST_PP_YAML_CHECK_FILTER_STATUS_OK
+    -
+      _env:
+        - CMD: _TEST_PP_YAML_CHECK_FILTER_PREPROCESSED_OK
+    -
+      _env:
+        - CMD: _TEST_PP_YAML_CHECK_INHERITED_INDENT_PREPROCESSED_OK
+

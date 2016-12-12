@@ -18,6 +18,7 @@ bash32_base_tests:
     - bash --version
     - bash test/test_install.sh
     - bash test/test_core.sh
+    - bash test/test_function.sh
     - bash test/test_yaml.sh
 
 bash40_base_tests:
@@ -27,6 +28,7 @@ bash40_base_tests:
     - bash --version
     - bash test/test_install.sh
     - bash test/test_core.sh
+    - bash test/test_function.sh
     - bash test/test_yaml.sh
 
 bash44_base_tests:
@@ -36,6 +38,7 @@ bash44_base_tests:
     - bash --version
     - bash test/test_install.sh
     - bash test/test_core.sh
+    - bash test/test_function.sh
     - bash test/test_yaml.sh
 
 bashlatest_base_tests:
@@ -45,6 +48,7 @@ bashlatest_base_tests:
     - bash --version
     - bash test/test_install.sh
     - bash test/test_core.sh
+    - bash test/test_function.sh
     - bash test/test_yaml.sh
 
 #=========================================
@@ -63,6 +67,7 @@ alpine_test_all:
     - bash test/test_all_exit_status.sh
     - bash test/test_install.sh
     - bash test/test_core.sh
+    - bash test/test_function.sh
     - bash test/test_yaml.sh
 
 debianjessie_test_all:
@@ -75,6 +80,7 @@ debianjessie_test_all:
     - bash test/test_all_exit_status.sh
     - bash test/test_install.sh
     - bash test/test_core.sh
+    - bash test/test_function.sh
     - bash test/test_yaml.sh
 
 debianjessie_curl_test_all:
@@ -87,6 +93,7 @@ debianjessie_curl_test_all:
     - bash test/test_all_exit_status.sh
     - bash test/test_install.sh
     - bash test/test_core.sh
+    - bash test/test_function.sh
     - bash test/test_yaml.sh
 
 debianjessie_wget_test_all:
@@ -99,6 +106,7 @@ debianjessie_wget_test_all:
     - bash test/test_all_exit_status.sh
     - bash test/test_install.sh
     - bash test/test_core.sh
+    - bash test/test_function.sh
     - bash test/test_yaml.sh
 
 debianlatest_test_all:
@@ -111,6 +119,7 @@ debianlatest_test_all:
     - bash test/test_all_exit_status.sh
     - bash test/test_install.sh
     - bash test/test_core.sh
+    - bash test/test_function.sh
     - bash test/test_yaml.sh
 
 

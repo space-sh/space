@@ -9,6 +9,12 @@ Tests all front-facing commands and options that can be issued by a regular user
 ### test_core
 Tests all core program functionalities which relate to global state and OS-specific and shell-specific behaviours.
 
+### test_function
+Tests different code paths, parameters and return values for Space functions. Unit tests.
+
+### test_install
+Verifies all the steps taken during Space installation process. Asserts that both system-wide and custom installs are working correctly.
+
 ### test_yaml
 Tests all YAML related operations.
 

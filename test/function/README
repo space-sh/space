@@ -1,0 +1,5 @@
+This directory contains unit tests for space functions.
+
+A single test can be run with the following command:
+space -f <path>/test_name.yaml /tests/0/ -a
+

@@ -1,0 +1,4 @@
+This directory contains unit tests for core program functionalities such as variable testing, OS-specific and shell related behaviours.
+
+A single test can be run with the following command:
+space -f <path>/test_name.yaml /tests/0/ -a

@@ -74,7 +74,7 @@ _TEST_PARSE_YAML_CHECK_PARSED_YAML_FAIL()
     local _yamlrows=("") _yamlfilelist=""
     local _yamlfile="./Spacefile.bash"
     local _PP_DIR=${_yamlfile%/*}
-    local _INCLUDEPATH=()
+    local _INCLUDEPATH=("")
     local _parsedyaml=("")
 
     _pp_yaml "_yamlrows" $_yamlfile

@@ -70,6 +70,20 @@ alpine_test_all:
     - bash test/test_function.sh
     - bash test/test_yaml.sh
 
+arch_test_all:
+  image: finalduty/archlinux:latest
+  script:
+    - pacman -Sy --noconfirm curl git
+    - mkdir ~/.ssh
+    - printf "Host *\n StrictHostKeyChecking no" > ~/.ssh/config
+    - which bash
+    - bash --version
+    - bash test/test_all_exit_status.sh
+    - bash test/test_install.sh
+    - bash test/test_core.sh
+    - bash test/test_function.sh
+    - bash test/test_yaml.sh
+
 debianjessie_test_all:
   image: debian:jessie
   script:

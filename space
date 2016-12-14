@@ -1654,6 +1654,12 @@ _module_clone()
             fi
         else
             # EXTERNAL: git, rm
+
+            # Expect url NOT to have the .git extension at this point. Append it now.
+            # Some host providers do support git cloning without .git at the end. Don't count on it.
+            # See also: "GIT URLS" in 'man git-clone'
+            _giturl="$_giturl".git
+
             _info "Git clone $_giturl into $_dir (commit: $_commit)"
             git clone -q "$_giturl" "$_dir" 2>&1
             if [[ $? != "0" ]]; then
@@ -1790,6 +1796,8 @@ _extract_repo_parts()
         if [[ $_mod =~ (.*://)?([-@:A-Za-z0-9.?]+)/([-A-Za-z0-9_]+)/([-A-Za-z0-9_:.]+) ]]; then
             _username=${BASH_REMATCH[3]}
             _reponame=${BASH_REMATCH[4]}
+            # Remove .git extension if exists
+            _reponame=${_reponame%.*}
         else
             _error "Expected username and reponame: $_mod. Format: (protocol)<domain>/<user_name>/<repo_name>. Examples: \"space -m gitlab.com/$_mod\" \"space -m https://gitlab.com/$_mod\""
             return 1
@@ -1802,6 +1810,9 @@ _extract_repo_parts()
         elif [[ $_mod =~ ^([-A-Za-z0-9_:.]*) ]]; then
             _reponame=${BASH_REMATCH[1]}
         fi
+
+        # Remove .git extension if exists
+        _reponame=${_reponame%.*}
 
         if [[ $_username == "space-sh" ]]; then
             _domain="gitlab.com"

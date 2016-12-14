@@ -230,7 +230,7 @@ _RUN_CHECK_OK "Test misc base cases: print_test node" "testing CMD node executio
 
 # Fail cloning repo
 if command -v git >/dev/null; then
-    _RUN_CHECK_FAIL "Test @clone" "fatal: unable to access 'https://test/cases/wrongrepo/'" $_SPACE_BIN -f ./test/exit_status_cases/fail_pp_clone.yaml / -h
+    _RUN_CHECK_FAIL "Test @clone" "fatal: unable to access 'https://test/cases/wrongrepo.git/'" $_SPACE_BIN -f ./test/exit_status_cases/fail_pp_clone.yaml / -h
 else
     _RUN_CHECK_FAIL "Test @clone" "Could not clone module since Git is not installed" $_SPACE_BIN -f ./test/exit_status_cases/fail_pp_clone.yaml / -h
 fi

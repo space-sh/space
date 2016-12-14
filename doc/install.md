@@ -27,22 +27,22 @@ Follow the example code below for downloading, extracting, verifying _GPG_ signa
 
 Using _curl_:
 ```
-curl -O https://space.sh/static/download/space-0.9.0/space-0.9.0.tar.gz
-curl -O https://space.sh/static/download/space-0.9.0/space-0.9.0.tar.gz.asc
-curl -O https://space.sh/static/download/space-0.9.0/space-0.9.0.sha
-curl -O https://space.sh/static/download/space-0.9.0/space-0.9.0.sha256
-curl -O https://space.sh/static/download/space-0.9.0/space-0.9.0.md5
-curl -O https://space.sh/static/download/space-0.9.0/install-0.9.0.sh
+curl -O https://space.sh/static/download/space-0.10.0/space-0.10.0.tar.gz
+curl -O https://space.sh/static/download/space-0.10.0/space-0.10.0.tar.gz.asc
+curl -O https://space.sh/static/download/space-0.10.0/space-0.10.0.sha
+curl -O https://space.sh/static/download/space-0.10.0/space-0.10.0.sha256
+curl -O https://space.sh/static/download/space-0.10.0/space-0.10.0.md5
+curl -O https://space.sh/static/download/space-0.10.0/install-0.10.0.sh
 ```
 
 Using _wget_:
 ```
-wget https://space.sh/static/download/space-0.9.0/space-0.9.0.tar.gz
-wget https://space.sh/static/download/space-0.9.0/space-0.9.0.tar.gz.asc
-wget https://space.sh/static/download/space-0.9.0/space-0.9.0.sha
-wget https://space.sh/static/download/space-0.9.0/space-0.9.0.sha256
-wget https://space.sh/static/download/space-0.9.0/space-0.9.0.md5
-wget https://space.sh/static/download/space-0.9.0/install-0.9.0.sh
+wget https://space.sh/static/download/space-0.10.0/space-0.10.0.tar.gz
+wget https://space.sh/static/download/space-0.10.0/space-0.10.0.tar.gz.asc
+wget https://space.sh/static/download/space-0.10.0/space-0.10.0.sha
+wget https://space.sh/static/download/space-0.10.0/space-0.10.0.sha256
+wget https://space.sh/static/download/space-0.10.0/space-0.10.0.md5
+wget https://space.sh/static/download/space-0.10.0/install-0.10.0.sh
 ```
 
 #### Verifying _GPG_ signature (recommended)
@@ -59,7 +59,7 @@ Releases are signed either by one of the following keys:
 
 It is then possible to verify the release signatures using the following command:
 ```
-gpg --verify space-0.9.0.tar.gz.asc space-0.9.0.tar.gz
+gpg --verify space-0.10.0.tar.gz.asc space-0.10.0.tar.gz
 ```
 
 #### Performing file integrity check (recommended)
@@ -69,8 +69,8 @@ Current generated hashes are: _SHA1_, _SHA256_ and _MD5_.
 
 Example checking _SHA256_:
 ```
-$ sha256sum -c space-0.9.0.sha256
-space-0.9.0.tar.gz: OK
+$ sha256sum -c space-0.10.0.sha256
+space-0.10.0.tar.gz: OK
 ```
 
 ### From source control

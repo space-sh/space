@@ -1,6 +1,6 @@
 # Space - Change log
 
-## [current]
+## [0.10.0] - 2016-12-14
 
 + Add spacedoc under ./tools as a _Space_ module for exporting code comments to formatted Markdown and HTML files.
 
@@ -37,7 +37,7 @@
 * Fix an issue that causes cloning a repository without explicitly providing ".git" as part of the repo name to fail in some circumstances
 
 
-## [0.9.0] - 2016-30-11
+## [0.9.0] - 2016-11-30
 
 First public version
 

@@ -22,7 +22,7 @@ _VALIDATE_VERSION()
     SPACE_CMDENV="_VERSION"
 
     # Check if version string is valid
-    if [[ "${_VERSION}" =~ ^[0-9].[0-9].[0-9] ]]; then
+    if [[ "${_VERSION}" =~ ^[0-9]+.[0-9]+.[0-9]+$ ]]; then
         PRINT "_VERSION test OK!" "success"
         return 0
     else

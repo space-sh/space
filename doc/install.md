@@ -13,8 +13,8 @@ The release files are expected to contain at least the following set of items:
   space-<version>.tar.gz.asc     # The tarball GPG signature
   install-<version>.sh           # The installer script
   space-<version>.md             # Code documentation
-  shasum: space-<version>.sha    # shasum hash
-  shasum: space-<version>.sha256 # shasum hash
+  space-<version>.sha            # shasum hash
+  space-<version>.sha256         # shasum hash
   space-<version>.md5            # MD5 hash
 ```
 

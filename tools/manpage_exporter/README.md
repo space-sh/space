@@ -17,3 +17,13 @@ Export HTML documentation page for some `input_file`:
 space -f ./tools/manpage_exporter/Spacefile.yaml /html/ -- <input_file>
 ```
 
+## Known issues
+
+### "`split': invalid byte sequence in US-ASCII (ArgumentError)"
+
+`ronn` might throw an error due to missing locale settings. Make sure UTF-8 encoding is set:
+```
+$ export LC_ALL=en_US.UTF-8
+$ export LANG=en_US.UTF-8
+```
+

@@ -85,7 +85,7 @@ SPACE_PACKER_MAKE()
 
     #
     # Define version
-    _version=$(space -V 2>&1)
+    _version=$(./space -V 2>&1)
 
     #
     # Get only the version number

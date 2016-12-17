@@ -44,8 +44,7 @@ printf "\n===== INSTRUCTIONS =====\n\n Inside SpaceBSD (Guest):
  # echo \"PasswordAuthentication yes\" >> /etc/ssh/sshd_config
  # echo \"PermitRootLogin yes\" >> /etc/ssh/sshd_config
  # service sshd start
- # service sshd enable
- # shutdown -h now
+ # shutdown -p now
 
  On host:
  $ VBoxManage startvm SpaceBSD --type headless

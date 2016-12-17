@@ -34,7 +34,7 @@
 
 * Fix a bug that prevents from specifying commit hashes and branch/tag names when cloning a module
 
-* Change module repo names to be stored as "<module>" instead of "<module>.git" when the ".git" extension is provided as part of the Git URL
+* Change module repo names to be stored as `<module>` instead of `<module>.git` when the ".git" extension is provided as part of the Git URL
 
 * Fix an issue that causes cloning a repository without explicitly providing ".git" as part of the repo name to fail in some circumstances
 

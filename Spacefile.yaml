@@ -29,7 +29,7 @@ _info:
 
 _dep_install:
     _info:
-        tite: Verify Space dependencies
+        title: Verify Space dependencies
     _env:
         - CMD: SPACE_DEP_INSTALL
 install:

@@ -22,7 +22,7 @@ _TEST_PARSE_YAML_CHECK_STATUS_OK()
     SPACE_CMDENV="_SPACEGAL_EOF_TAG"
 
     local _yamlrows=() _yamlfilelist=""
-    local _yamlfile="./Spacefile.yaml"
+    local _yamlfile="./test/function/test_spacefile.yml"
     local _PP_DIR=${_yamlfile%/*}
     local _INCLUDEPATH=("")
     local _parsedyaml=()
@@ -46,7 +46,7 @@ _TEST_PARSE_YAML_CHECK_PARSED_YAML_OK()
     SPACE_CMDENV="_SPACEGAL_EOF_TAG"
 
     local _yamlrows=() _yamlfilelist=""
-    local _yamlfile="./Spacefile.yaml"
+    local _yamlfile="./test/function/test_spacefile.yml"
     local _PP_DIR=${_yamlfile%/*}
     local _INCLUDEPATH=("")
     local _parsedyaml=()

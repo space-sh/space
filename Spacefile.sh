@@ -44,6 +44,25 @@ SPACE_DEP_INSTALL()
     fi
 }
 
+SPACE_BUILD()
+{
+    SPACE_CMDDEP="PRINT"
+
+    if ! command -v docker >/dev/null; then
+        PRINT "Docker is not installed. Failed to build container image." "error"
+        return 1
+    fi
+
+    local _version_file_path="./build/version.txt"
+    if [ ! -f "$_version_file_path" ]; then
+       PRINT "Build must be performed from Space root development directory" "error"
+       exit 1
+    fi
+
+    IMAGE_VERSION=$(cat "$_version_file_path")
+    docker build --build-arg VERSION=$IMAGE_VERSION -t registry.gitlab.com/space-sh/space -f ./build/Dockerfile .
+}
+
 SPACE_INSTALL()
 {
     SPACE_CMDDEP="PRINT SPACE_INSTALL_BIN"

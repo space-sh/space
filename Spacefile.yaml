@@ -32,6 +32,13 @@ _dep_install:
         title: Verify Space dependencies
     _env:
         - CMD: SPACE_DEP_INSTALL
+
+_build:
+    _info:
+        title: Build Space Docker image
+    _env:
+        - CMD: SPACE_BUILD
+
 install:
     _info:
         title: Install SpaceGal shell

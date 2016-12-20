@@ -2,6 +2,11 @@
 
 ## [current]
 
++ Add build node to base _Space_ module
+
++ Add build step for generating _Space_ Docker container image
+
+
 ## [0.10.0] - 2016-12-14
 
 + Add spacedoc under ./tools as a _Space_ module for exporting code comments to formatted Markdown and HTML files.

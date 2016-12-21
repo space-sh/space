@@ -53,13 +53,16 @@ SPACE_BUILD()
         return 1
     fi
 
-    local _version_file_path="./build/version.txt"
-    if [ ! -f "$_version_file_path" ]; then
+    if [ ! -f "./space" ]; then
        PRINT "Build must be performed from Space root development directory" "error"
        exit 1
     fi
 
-    IMAGE_VERSION=$(cat "$_version_file_path")
+    IMAGE_VERSION=$(./space -V 2>&1);
+    for version_part in $IMAGE_VERSION; do
+        IMAGE_VERSION=$version_part;
+    done;
+
     docker build --build-arg VERSION=$IMAGE_VERSION -t registry.gitlab.com/space-sh/space -f ./build/Dockerfile .
 }
 

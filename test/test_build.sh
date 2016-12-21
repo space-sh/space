@@ -26,6 +26,7 @@
 #======================
 
 set -o nounset
+set -o pipefail
 
 if ! command -v docker >/dev/null; then
     printf "\033[35mDocker command is not available.\033[0m\n"
@@ -37,15 +38,35 @@ fi
 CI_REGISTRY_IMAGE="registry.gitlab.com/space-sh/space"
 IMAGE_VERSION="latest"
 
-printf "Checking base binaries...\n"
 cat ./test/build/check_base_binaries.sh | docker run --rm -i $CI_REGISTRY_IMAGE:$IMAGE_VERSION /bin/bash
+if [ "$?" -eq 0 ]; then
+    printf "\033[32m[OK] Base binaries\033[0m\n"
+else
+    printf "\033[31m[OK] Base binaries\033[0m\n"
+    exit 1
+fi
 
-printf "Checking base libraries\n"
 cat ./test/build/check_base_libraries.sh | docker run --rm -i $CI_REGISTRY_IMAGE:$IMAGE_VERSION /bin/bash
+if [ "$?" -eq 0 ]; then
+    printf "\033[32m[OK] Base libraries\033[0m\n"
+else
+    printf "\033[31m[ERROR] Base libraries\033[0m\n"
+    exit 1
+fi
 
-printf "Checking lua binaries...\n"
 cat ./test/build/check_lua_binaries.sh | docker run --rm -i $CI_REGISTRY_IMAGE:$IMAGE_VERSION /bin/bash
+if [ "$?" -eq 0 ]; then
+    printf "\033[32m[OK] Lua binaries\033[0m\n"
+else
+    printf "\033[31m[ERROR] Lua binaries\033[0m\n"
+    exit 1
+fi
 
-printf "Checking lua libraries...\n"
 cat ./test/build/check_lua_libraries.sh | docker run --rm -i $CI_REGISTRY_IMAGE:$IMAGE_VERSION /bin/bash
+if [ "$?" -eq 0 ]; then
+    printf "\033[32m[OK] Lua libraries\033[0m\n"
+else
+    printf "\033[31m[ERROR] Lua libraries\033[0m\n"
+    exit 1
+fi
 

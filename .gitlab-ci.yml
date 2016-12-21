@@ -197,10 +197,7 @@ image_test:
   script:
     - export IMAGE_VERSION=$(cat ./build/version.txt)
     - docker pull $CI_REGISTRY_IMAGE:$IMAGE_VERSION
-    - cat ./test/build/check_base_binaries.sh | docker run --rm -i $CI_REGISTRY_IMAGE:$IMAGE_VERSION /bin/bash
-    - cat ./test/build/check_base_libraries.sh | docker run --rm -i $CI_REGISTRY_IMAGE:$IMAGE_VERSION /bin/bash
-    - cat ./test/build/check_lua_binaries.sh | docker run --rm -i $CI_REGISTRY_IMAGE:$IMAGE_VERSION /bin/bash
-    - cat ./test/build/check_lua_libraries.sh | docker run --rm -i $CI_REGISTRY_IMAGE:$IMAGE_VERSION /bin/bash
+    - bash test/test_build.sh
   only:
     - tags
 

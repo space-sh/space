@@ -390,6 +390,7 @@ _EXPORT_MODULE()
         fi
     done < <(space -f "${_doc_program_name/.sh/.yaml}" / -h 2>&1)
 
+    printf "\n" >> "${_doc_program_name}_README"
     cat "${_doc_program_name}_doc.md" >> "${_doc_program_name}_README"
 
     PRINT "Removing intermediate file \"${_doc_program_name}_doc.md\""

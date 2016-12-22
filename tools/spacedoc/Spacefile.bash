@@ -374,7 +374,7 @@ _EXPORT_MODULE()
     while read -r _line
     do
         if [[ "$_line" =~ (\+\ )(.*) ]]; then
-            printf "## " >> "${_doc_program_name}_README" 2>&1
+            printf "\n## " >> "${_doc_program_name}_README" 2>&1
             space -f "${_doc_program_name/.sh/.yaml}" "/${BASH_REMATCH[2]}/" -h >> "${_doc_program_name}_README" 2>&1
         else
             if [ "$_line_counter" -ne 0 ]; then

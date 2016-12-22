@@ -366,7 +366,9 @@ _EXPORT_MODULE()
     fi
 
     PRINT "Generating composed output..."
-    local _skipped_first_line=0
+    local _line_counter=0
+    local _current_dir_name="$(basename $PWD)"
+    local _build_status_badge="[![build status](https://gitlab.com/space-sh/"${_current_dir_name}"/badges/master/build.svg)](https://gitlab.com/space-sh/"${_current_dir_name}"/commits/master)"
     printf "# " > "${_doc_program_name}_README" 2>&1
 
     while read -r _line
@@ -375,10 +377,15 @@ _EXPORT_MODULE()
             printf "## " >> "${_doc_program_name}_README" 2>&1
             space -f "${_doc_program_name/.sh/.yaml}" "/${BASH_REMATCH[2]}/" -h >> "${_doc_program_name}_README" 2>&1
         else
-            if [ "$_skipped_first_line" -ne 0 ]; then
-                printf "%s\n" "${_line}" >> "${_doc_program_name}_README"
+            if [ "$_line_counter" -ne 0 ]; then
+                if [ "$_line_counter" -eq 1 ]; then
+                    printf "%s | %s\n" "${_line}" "$_build_status_badge" >> "${_doc_program_name}_README"
+                    _line_counter=2
+                else
+                    printf "%s\n" "${_line}" >> "${_doc_program_name}_README"
+                fi
             else
-                _skipped_first_line=1
+                _line_counter=1
             fi
         fi
     done < <(space -f "${_doc_program_name/.sh/.yaml}" / -h 2>&1)

@@ -369,13 +369,15 @@ _EXPORT_MODULE()
     local _line_counter=0
     local _current_dir_name="$(basename $PWD)"
     local _build_status_badge="[![build status](https://gitlab.com/space-sh/"${_current_dir_name}"/badges/master/build.svg)](https://gitlab.com/space-sh/"${_current_dir_name}"/commits/master)"
+    local _spacefile_extension=".${_doc_program_name##*.}"
+
     printf "# " > "${_doc_program_name}_README" 2>&1
 
     while read -r _line
     do
         if [[ "$_line" =~ (\+\ )(.*) ]]; then
             printf "\n## " >> "${_doc_program_name}_README" 2>&1
-            space -f "${_doc_program_name/.sh/.yaml}" "/${BASH_REMATCH[2]}/" -h >> "${_doc_program_name}_README" 2>&1
+            space -f "${_doc_program_name/${_spacefile_extension}/.yaml}" "/${BASH_REMATCH[2]}/" -h >> "${_doc_program_name}_README" 2>&1
         else
             if [ "$_line_counter" -ne 0 ]; then
                 if [ "$_line_counter" -eq 1 ]; then
@@ -388,7 +390,7 @@ _EXPORT_MODULE()
                 _line_counter=1
             fi
         fi
-    done < <(space -f "${_doc_program_name/.sh/.yaml}" / -h 2>&1)
+    done < <(space -f "${_doc_program_name/${_spacefile_extension}/.yaml}" / -h 2>&1)
 
     printf "\n" >> "${_doc_program_name}_README"
     cat "${_doc_program_name}_doc.md" >> "${_doc_program_name}_README"

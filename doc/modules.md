@@ -5,7 +5,6 @@ _Space_ modules.
 ## Module writing and maintenance checklist
 
 1. Perform module static analysis
-
 ```
 space -m spacechecker /run/ -- .
 ```

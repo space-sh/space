@@ -4210,7 +4210,7 @@ _cmd_extract()
             unset _spacelines
 
             # Check if this function is a compile time wrapper for another function,
-            # if so we want to evaluate it now.
+            # if so we want to evaluate it now to let it do its variable manipulation.
             #if [[ -n ${SPACE_CMDFORK} ]]; then
                 # TODO: fork many commands from this command, by adding
                 # to _space_cmds.
@@ -4219,7 +4219,12 @@ _cmd_extract()
                 local _SPACE_ARGS=$SPACE_CMDARGS
                 local _fns=
                 printf -v _fns "%s\n" "${_fnlines[@]-:}"
-                _fns="_wrapper () {"$'\n'"${_fns}}"$'\n'"_wrapper ${_SPACE_ARGS}"$'\n'
+                local _export_vars=""
+                if [ -n "${SPACE_CMDENV}" ]; then
+                    # We will provide this in case SPACE_CMDARGS uses any of them.
+                    _cmd_export_vars "${SPACE_CMDENV}"
+                fi
+                _fns="_wrapper () {"$'\n'"${_fns}}"$'\n'"${_export_vars}"$'\n'"_wrapper ${_SPACE_ARGS}"$'\n'
                 eval "$_fns"
                 if (( $? > 0 )); then
                     _error "Error in wrapper function: ${_space_cmd}."

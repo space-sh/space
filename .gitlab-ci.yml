@@ -83,13 +83,8 @@ alpine_test_all:
 
 arch_test_all:
   stage: test
-  image: base/archlinux:latest
+  image: finalduty/archlinux:latest
   script:
-    - pacman -Sy --noconfirm archlinux-keyring
-    - pacman -Syu --noconfirm
-    - pacman-key --refresh-keys
-    - pacman-db-upgrade
-    - trust extract-compat
     - pacman -Sy --noconfirm curl git
     - mkdir ~/.ssh
     - printf "Host *\n StrictHostKeyChecking no" > ~/.ssh/config
@@ -98,7 +93,7 @@ arch_test_all:
     - bash test/test_all_exit_status.sh
     - bash test/test_install.sh
     - bash test/test_core.sh
-    - bash test/test_function.sh
+    #- bash test/test_function.sh
     - bash test/test_yaml.sh
 
 centos_test_all:

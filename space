@@ -75,8 +75,7 @@ readonly _VERSION="0.10.0"
 readonly _SPACEBIN=$0
 # Absolute path to the directory where space is located.
 readonly _BASEDIR=$( cd "${_SPACEBIN%/*}" 2>/dev/null && pwd )
-# The $TERM used for tput.
-_TERM=${_TERM:-${TERM:-dumb}}
+# Usage help string
 readonly _USAGE="Usage:
     space [-f|m namespace [-M modules] [-ep key=value] [-c cmd] [node] [-a]] [-vkKCBX value] [-dlShg] [-- args]
     space [-hV]
@@ -129,12 +128,13 @@ _SOURCE_FILES=()
 _SOURCE_FILES_TOTAL=("${0}")
 # Internal variable automatically set when Bash completion is performed.
 _BASH_COMPLETION=0
-readonly _COLOR_RED="1"
-readonly _COLOR_GREEN="2"
-readonly _COLOR_YELLOW="3"
-readonly _COLOR_CYAN="6"
-readonly _COLOR_PURPLE="5"
-readonly _COLOR_DARK_GRAY="7"
+readonly _COLOR_DEFAULT="\033[0m"
+readonly _COLOR_FG_RED="\033[31m"
+readonly _COLOR_FG_GREEN="\033[32m"
+readonly _COLOR_FG_YELLOW="\033[33m"
+readonly _COLOR_FG_MAGENTA="\033[35m"
+readonly _COLOR_FG_CYAN="\033[36m"
+readonly _COLOR_FG_WHITE="\033[37m"
 
 # Override column position for print function
 _PRINT_COLUMN_POSITION="0"
@@ -150,14 +150,6 @@ unset CMDOUTER
 unset CMDREDIR
 unset CMDWRAP # CMDWRAP is the only environment variable allowed to be inherited downwards in node structures.
 unset CMDOVERRIDE
-
-# Define a tput function if it is lacking.
-if ! command -v tput >/dev/null; then
-tput()
-{
-    echo -n ""
-}
-fi
 
 # Figure out if there's a shasum executable in the OS.
 # We use this for caching purposes, so not required.
@@ -1996,16 +1988,15 @@ _enter_gui_mode()
 PRINT()
 {
     SPACE_CMDENV="PRINT_LEVEL=\${PRINT_LEVEL-4} _PRINT_COLUMN_POSITION"
-    local color=0 header=''
-    [ "${2-info}" = "error" ] && [ "${PRINT_LEVEL-4}" -gt 0 ] && header="[ERROR] " && color=1
-    [ "${2-info}" = "security" ] && [ "${PRINT_LEVEL-4}" -gt 0 ] && header="[SECUR] " && color=5;
-    [ "${2-info}" = "warning" ] && [ "${PRINT_LEVEL-4}" -gt 1 ] && header="[WARN]  " && color=3
-    [ "${2-info}" = "success" ] && [ "${PRINT_LEVEL-4}" -gt 2 ] && header="[SUCCE] " && color=2
-    [ "${2-info}" = "info" ] && [ "${PRINT_LEVEL-4}" -gt 3 ] && header="[INFO]  " && color=7
-    [ "${2-info}" = "debug" ] && [ "${PRINT_LEVEL-4}" -gt 4 ] && header="[DBG ]  " && color=7
+    local color="\033[0m" header=''
+    [ "${2-info}" = "error" ] && [ "${PRINT_LEVEL-4}" -gt 0 ] && header="[ERROR] " && color="\033[31m"
+    [ "${2-info}" = "security" ] && [ "${PRINT_LEVEL-4}" -gt 0 ] && header="[SECUR] " && color="\033[35m"
+    [ "${2-info}" = "warning" ] && [ "${PRINT_LEVEL-4}" -gt 1 ] && header="[WARN]  " && color="\033[33m"
+    [ "${2-info}" = "success" ] && [ "${PRINT_LEVEL-4}" -gt 2 ] && header="[SUCCE] " && color="\033[32m"
+    [ "${2-info}" = "info" ] && [ "${PRINT_LEVEL-4}" -gt 3 ] && header="[INFO]  " && color="\033[37m"
+    [ "${2-info}" = "debug" ] && [ "${PRINT_LEVEL-4}" -gt 4 ] && header="[DBG ]  " && color="\033[37m"
     [ -z "${header}" ] && return 0
-    [ "${SPACE_FNNAME-}" != "" ] && ( [ $(command -v tput) > /dev/null ] && printf "\033[${_PRINT_COLUMN_POSITION}G%s\n" "$(tput -T"${TERM-dumb}" setaf ${color})${header}${SPACE_FNNAME}: ${1}$(tput -T"${TERM-dumb}" sgr0)" >&${3-2}) || ( [ $(command -v tput) > /dev/null ] && printf "\033[${_PRINT_COLUMN_POSITION}G%s\n" "$(tput -T"${TERM-dumb}" setaf ${color})${header}${1}$(tput -T"${TERM-dumb}" sgr0)" >&${3-2} )
-    [ "${SPACE_FNNAME-}" != "" ] && ( [ ! $(command -v tput) > /dev/null ] && printf "\033[${_PRINT_COLUMN_POSITION}G%s\n" "${header}${SPACE_FNNAME}: ${1}" >&${3-2} ) || ( [ ! $(command -v tput) > /dev/null ] && printf "\033[${_PRINT_COLUMN_POSITION}G%s\n" "${header}${1}" >&${3-2} )
+    [ "${SPACE_FNNAME-}" != "" ] && ( printf "\033[${_PRINT_COLUMN_POSITION}G${color}%s%s: %s\033[0m\n" "${header}" "${SPACE_FNNAME}" "${1}" >&${3-2}) || ( printf "\033[${_PRINT_COLUMN_POSITION}G${color}%s%s\033[0m\n" "${header}" "${1}" >&${3-2} )
     :
 }
 
@@ -2041,27 +2032,27 @@ _security()
                *  to the Space.sh site to see that everything else is OK.      *
                *****************************************************************
 _EOF
-    _print "$(tput -T${_TERM} setaf "$_COLOR_PURPLE")[security] $_msg$(tput -T${_TERM} sgr0)"
+    _print "${_COLOR_FG_MAGENTA}[security] $_msg${_COLOR_DEFAULT}"
 }
 
 _error()
 {
     if (( $_VERBOSITY >= 1 )); then
-        _print "$(tput -T${_TERM} setaf "$_COLOR_RED")[error] $@$(tput -T${_TERM} sgr0)"
+        _print "${_COLOR_FG_RED}[error] $@${_COLOR_DEFAULT}"
     fi
 }
 
 _warning()
 {
     if (( $_VERBOSITY >= 2 )); then
-        _print "$(tput -T${_TERM} setaf "$_COLOR_YELLOW")[warn]  $@$(tput -T${_TERM} sgr0)"
+        _print "${_COLOR_FG_YELLOW}[warn]  $@${_COLOR_DEFAULT}"
     fi
 }
 
 _info()
 {
     if (( $_VERBOSITY >= 3 )); then
-        _print "$(tput -T${_TERM} setaf "$_COLOR_DARK_GRAY")[info]  $@$(tput -T${_TERM} sgr0)"
+        _print "${_COLOR_FG_WHITE}[info]  $@${_COLOR_DEFAULT}"
     fi
 }
 
@@ -2070,9 +2061,9 @@ _runinfo()
     if (( $_VERBOSITY >= 3 )); then
         local _msg=$1
         shift
-        local _color=${1-2}
+        local _color=${1-$_COLOR_DEFAULT}
         shift || :
-        _print "$(tput -T${_TERM} setaf $_color)[run]   $_msg$(tput -T${_TERM} sgr0)"
+        _print "$_color[run]   $_msg${_COLOR_DEFAULT}"
     fi
 }
 

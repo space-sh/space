@@ -6,6 +6,8 @@
 
 + Add build step for generating _Space_ Docker container image
 
+- Remove `tput` program usage
+
 
 ## [0.10.0] - 2016-12-14
 

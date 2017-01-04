@@ -93,7 +93,7 @@ arch_test_all:
     - bash test/test_all_exit_status.sh
     - bash test/test_install.sh
     - bash test/test_core.sh
-    #- bash test/test_function.sh
+    - bash test/test_function.sh
     - bash test/test_yaml.sh
 
 centos_test_all:

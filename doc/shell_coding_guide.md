@@ -73,7 +73,7 @@ Always start with an underscore and split words with subsequent underscores. Var
 #### Comments
 Always add comments for global variables and constants.
 Examples:
-```
+```sh
 # Set to "1" to allow this and that
 # and also that other thing
 _GLOBAL_LIKE_THIS="1"
@@ -112,7 +112,7 @@ Use `_count=$(( _count + 1 ))`.
 Function names should always be lower case. Private functions should start with an underscore.
 Do not use "function" as it is an unneeded flourish.
 Example:
-```
+```sh
 example()
 {
     #...
@@ -129,7 +129,7 @@ Function description should be straight to the point, with optional usage instru
 Implementation details should be closer to the implementation choices instead.
 Example, parameters, expected environment variable and return values must be described whenever applicable.
 
-```
+```sh
 ###################
 # FUNCTION_NAME
 #
@@ -170,7 +170,7 @@ Avoid usage of `&& ||` construct as if it was `if then else`.
 Always check for exit status code using `$?`, where applicable.
 Use shorthand operators for testing string and conditions in general.
 Example:
-```
+```sh
 ìf [ -z "${my_str}" ]; then
     _strlen_is_zero
 fi
@@ -184,7 +184,7 @@ Avoid polluting `stdout`. Prefer the default mode to be lean and add the ability
 ### Command substitution
 Use `$(command)` instead of \`command\` and always separate declaration from assignment.
 Example:
-```
+```sh
 _output=
 _output=$(mycommand arg1 arg2)
 ```
@@ -227,7 +227,7 @@ Always perform static analysis of code on a regular basis.
 
 ### Checkbashisms
 Run:
-```
+```sh
 checkbashisms myprogram.sh
 ```
 
@@ -236,12 +236,12 @@ https://launchpad.net/ubuntu/+source/devscripts/
 
 ### Shellcheck
 Analysis against POSIX rules:
-```
+```sh
 shellcheck --shell=sh myprogram.sh
 ```
 
 Analysis against Bash-specific constructs:
-```
+```sh
 shellcheck --shell=bash myprogram.bash
 ```
 

@@ -2032,27 +2032,35 @@ _security()
                *  to the Space.sh site to see that everything else is OK.      *
                *****************************************************************
 _EOF
-    _print "${_COLOR_FG_MAGENTA}[security] $_msg${_COLOR_DEFAULT}"
+    printf "${_COLOR_FG_MAGENTA}"
+    _print "[security] $_msg"
+    printf "${_COLOR_DEFAULT}"
 }
 
 _error()
 {
     if (( $_VERBOSITY >= 1 )); then
-        _print "${_COLOR_FG_RED}[error] $@${_COLOR_DEFAULT}"
+        printf "${_COLOR_FG_RED}"
+        _print "[error] $@"
+        printf "${_COLOR_DEFAULT}"
     fi
 }
 
 _warning()
 {
     if (( $_VERBOSITY >= 2 )); then
-        _print "${_COLOR_FG_YELLOW}[warn]  $@${_COLOR_DEFAULT}"
+        printf "${_COLOR_FG_YELLOW}"
+        _print "[warn]  $@"
+        printf "${_COLOR_DEFAULT}"
     fi
 }
 
 _info()
 {
     if (( $_VERBOSITY >= 3 )); then
-        _print "${_COLOR_FG_WHITE}[info]  $@${_COLOR_DEFAULT}"
+        printf "${_COLOR_FG_WHITE}"
+        _print "[info]  $@"
+        printf "${_COLOR_DEFAULT}"
     fi
 }
 
@@ -2063,7 +2071,9 @@ _runinfo()
         shift
         local _color=${1-$_COLOR_DEFAULT}
         shift || :
-        _print "$_color[run]   $_msg${_COLOR_DEFAULT}"
+        printf "${_color}"
+        _print "[run]   $_msg"
+        printf "${_COLOR_DEFAULT}"
     fi
 }
 

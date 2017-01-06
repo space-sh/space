@@ -4121,8 +4121,6 @@ fi
             _sh="env bash"
         fi
         ${_sh} -c "$_export_cmd"
-        local _status=$?
-        return $_status
     fi
 }
 

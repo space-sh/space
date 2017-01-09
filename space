@@ -2000,22 +2000,6 @@ PRINT()
     :
 }
 
-#===========
-# SUBST
-#
-# Substitute text in place.
-#
-# Parameters:
-#   $1 variable name to substitute in.
-#   $2 text to substitute.
-#   $3 text to insert.
-#
-#===========
-SUBST()
-{
-    eval "${1}=\${${1}//\${2}/\${3}}"
-}
-
 _print()
 {
     printf "%s\n" "$*" >&2

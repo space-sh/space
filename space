@@ -4032,7 +4032,7 @@ _execute()
                     fi
 
                     local _export_vars=""
-                    _cmd_export_vars "${_fn_env}"
+                    _cmd_export_vars "${_fn_env}" "${_fn_name}"
 
                     push "_fn_def"
                     push "_fn_call"
@@ -4045,7 +4045,7 @@ _execute()
         fi
 
         local _export_vars=""
-        _cmd_export_vars "${_fn_env}"
+        _cmd_export_vars "${_fn_env}" "${_fn_name}"
 
         while ((_wrappers>0)); do
             ((_wrappers-=1))
@@ -4221,7 +4221,7 @@ _cmd_extract()
                 local _export_vars=""
                 if [ -n "${SPACE_CMDENV}" ]; then
                     # We will provide this in case SPACE_CMDARGS uses any of them.
-                    _cmd_export_vars "${SPACE_CMDENV}"
+                    _cmd_export_vars "${SPACE_CMDENV}" "${_fn_name}"
                 fi
                 _fns="_wrapper () {"$'\n'"${_fns}}"$'\n'"${_export_vars}"$'\n'"_wrapper ${_SPACE_ARGS}"$'\n'
                 eval "$_fns"
@@ -4379,7 +4379,10 @@ _cmd_export_vars()
     local _fn_env="${1}"
     shift
 
-    trap '_error "Problem when evaluating SPACE_CMD(OUTER)ENV header variables. Look for unbound variable or syntax error."; trap - EXIT; return 1; ' EXIT
+    local _fn_name="${1}"
+    shift
+
+    trap '_error "Problem when evaluating SPACE_CMD(OUTER)ENV header variables associated with ${_fn_name}. Look for unbound variable or syntax error in named function or in its chain of functions."; trap - EXIT; return 1; ' EXIT
     if [[ -n ${_fn_env} ]]; then
         local _fn_env_item= _k1= _k2= _v= _done=""
         for _fn_env_item in ${_fn_env}; do
@@ -4396,7 +4399,7 @@ _cmd_export_vars()
             if [[ -n ${_k2} ]]; then
                 eval "_v=\"${_k2}\""
                 if [ "$?" != "0" ]; then
-                    _error "Problem when evaluating SPACE_CMD(OUTER)ENV header variables. Look for unbound variable or syntax error."
+                    _error "Problem when evaluating SPACE_CMD(OUTER)ENV header variables associated with ${_fn_name}. Look for unbound variable or syntax error in named function or in its chain of functions."
                     trap - EXIT
                     return 1
                 fi

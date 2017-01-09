@@ -4070,11 +4070,10 @@ _execute()
 
         _export_cmd="${_cmd_options}${_export_cmd}${_wrapped_fn_def}${_export_vars}${_fn_def}${_fn_outer_header}${_fn_call}${_fn_outer_footer}"$'\n'
 
-            _export_cmd="${_export_cmd}"$'\n''_status="$?"
-if [ "'${CMDSILENT:-0}'" -eq 0 -a "${_status}" -ne "'${CMDEXIT:-0}'" ]; then
-    type PRINT >/dev/null 2>&1 &&
-        PRINT "'${_fn_name}' exited with status: ${_status}." "error" ||
-        printf "%s\n" "[ERROR] '${_fn_name}' exited with status: ${_status}." >&2
+        _export_cmd="${_export_cmd}"'
+# Space shows error message, if non clear exit.
+_status="$?"; if [ "'${CMDSILENT:-0}'" -eq 0 ] && [ "${_status}" -ne "'${CMDEXIT:-0}'" ]; then
+    printf "'${_COLOR_FG_RED}'"; printf "%s\n" "[ERROR] Script exited with status: ${_status}." >&2; printf "'${_COLOR_DEFAULT}'"
     exit "$(( ${_status} > 0 ? ${_status} : 1 ))"
 fi
 '
@@ -4691,7 +4690,7 @@ _get_fn()
             if [ "${#BASH_REMATCH[1]}" -eq 0 -o "${BASH_REMATCH[1]}" = $'\n' ]; then
                 _content="${BASH_REMATCH[2]}"
                 _content="${_content%%$'\n'\}$'\n'*}"
-                eval "${_varbody}=\${_content}$'\n'"
+                eval "${_varbody}=\${_content}"
                 eval "${_varname}=\${_cmdname}"
                 return 0
             fi

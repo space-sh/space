@@ -4050,6 +4050,10 @@ _execute()
         if [[ -n ${_fn_outer} ]]; then
             _fn_outer_header=${_fn_outer%_CMD_*}
             _fn_outer_footer=${_fn_outer#*_CMD_}
+            if [ "${_fn_outer_header}" = "${_fn_outer_footer}" ]; then
+                _error "Outer command has no _CMD_ tag."
+                return 1
+            fi
         fi
 
         _export_cmd="${_cmd_options}${_export_cmd}${_wrapped_fn_def}${_export_vars}${_fn_def}${_fn_outer_header}${_fn_call}${_fn_outer_footer}"$'\n'

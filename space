@@ -3927,7 +3927,7 @@ _execute()
                 local _item=
                 for _item in ${_fn_cmdouterdep}; do
                     if [[ ! ${_fn_deps} =~ (^|[\ ])${_item}($|[\ ]) ]]; then
-                        _cmd_add_fn_dep "${_fn_cmdouterdep}" "SPACE_CMDOUTER"
+                        _cmd_add_fn_dep "${_item}" "SPACE_CMDOUTER"
                         (( $? > 0 )) && return 1
                     fi
                 done
@@ -4007,7 +4007,7 @@ _execute()
                             local _item=
                             for _item in ${_fn_cmdouterdep}; do
                                 if [[ ! ${_fn_deps} =~ (^|[\ ])${_item}($|[\ ]) ]]; then
-                                    _cmd_add_fn_dep "${_fn_cmdouterdep}" "SPACE_CMDOUTER"
+                                    _cmd_add_fn_dep "${_item}" "SPACE_CMDOUTER"
                                     (( $? > 0 )) && return 1
                                 fi
                             done
@@ -4219,9 +4219,61 @@ _cmd_extract()
                 local _fn_def=
                 local _fn_env="${SPACE_CMDENV}"
                 printf -v _fn_def "%s\n" "${_fnlines[@]-:}"
-                _fn_def="${_fn_name} ()"$'\n'"{"$'\n'"${_fn_def}""}"$'\n\n'
+                _fn_def="${_fn_name}()"$'\n'"{"$'\n'"${_fn_def}""}"$'\n\n'
                 _cmd_add_fn_dep "${SPACE_CMDDEP}" "${_fn_name}"
                 if (( $? > 0 )); then trap - EXIT; return 1; fi
+
+                # If SPACE_CMDOUTER, then get that body and it's headers DEP/ENV values.
+                # And we'll isolate this in a function to not pollute env variables.
+                function _space_context2()
+                {
+                    # Isolate all SPACE header variables to not get overwritten,
+                    # except SPACE_CMDOUTERDEP and SPACE_CMDOUTERENV.
+                    local SPACE_CMDDEP= SPACE_CMDENV= SPACE_CMDREDIR=
+                    local SPACE_CMDWRAP= SPACE_CMD= SPACE_CMDARGS="${SPACE_CMDARGS}"
+                    if [ -n "${SPACE_CMDOUTER}" ]; then
+                        # The command is referring to an OUTER command.
+                        # We will fetch the outer command's body and it's SPACE headers:
+                        # SPACE_CMDDEP, SPACE_CMDENV.
+                        local _fn_name= _fn_body=
+                        _get_fn "$SPACE_CMDOUTER" "_fn_name" "_fn_body"
+                        if (( $? > 0 )); then
+                            _error "Function $SPACE_CMDOUTER is not declared or syntax error."
+                            trap - EXIT
+                            return 1
+                        fi
+                        local _fnlines=()
+                        local _spacelines=()
+                        _cmd_extract_space_header "${_fn_body}" "${_fn_name}" "0" "1"
+                        (( $? > 0 )) && { trap - EXIT; return 1; }
+                        local _fn_def=
+                        printf -v _fn_def "%s\n" "${_fnlines[@]-:}"
+                        SPACE_CMDOUTER="${_fn_name} ()"$'\n'"{"$'\n'"${_fn_def}""}"$'\n'"${_fn_name}"$'\n\n'
+                        # If we have any SPACE_ variables we evaluate them together
+                        # with the function arguments.
+                        if (( ${#_spacelines[@]} > 0 )); then
+                            local _SPACE_ARGS=$SPACE_CMDARGS
+                            local _fns=
+                            printf -v _fns "    %s\n" "${_spacelines[@]}"
+                            _fns="_set_args () {"$'\n'"${_fns}}"$'\n'"_set_args ${_SPACE_ARGS}"$'\n'
+                            eval "$_fns"
+                            if (( $? > 0 )); then
+                                _error "Could not evaluate function header of ${SPACE_CMDOUTEr} to set SPACE_ variables."
+                                trap - EXIT
+                                return 1
+                            fi
+                            unset _fns
+                        fi
+                        unset _spacelines
+                        SPACE_CMDOUTERENV="${SPACE_CMDENV}"
+                        SPACE_CMDOUTERDEP="${SPACE_CMDDEP}"
+                    fi
+                }
+                SPACE_CMDOUTERDEP=
+                SPACE_CMDOUTERENV=
+                _space_context2
+                if (( $? > 0 )); then trap - EXIT; return 1; fi
+
                 _add_cmd "${_fn_name}" "${_fn_def}" "${SPACE_CMDARGS}" "${SPACE_CMDREDIR}" "${SPACE_CMDOUTER}" "${SPACE_CMDWRAP}" "${SPACE_CMDDEP}" "${_fn_env}" "${SPACE_CMDOUTERDEP}" "${SPACE_CMDOUTERENV}" 
                 unset _fn_def
                 break
@@ -4253,6 +4305,9 @@ _cmd_extract_space_header ()
     local _cmd_args_count="${1-}"
     shift || :
 
+    local is_outercmd="${1-}"
+    shift || :
+
     # NOTE: This is a special case for now.
     # We do not want this line in the PRINT function.
     # But we do want it in all the other functions exported, for PRINT to use.
@@ -4265,6 +4320,19 @@ _cmd_extract_space_header ()
         if [[ $_isheader == "1" ]]; then
             if [[ $_line =~ ^[\ ]*(SPACE_[^=]+)=(.+) ]]; then
                 local _spacevar=${BASH_REMATCH[1]}
+                if [ "${is_outercmd}" = "1" ]; then
+                    if [[ ${_spacevar} == "SPACE_CMDENV" ]]; then
+                        # Always overwritten.
+                        _spacelines+=("SPACE_CMDENV=${BASH_REMATCH[2]}")
+                    elif [[ ${_spacevar} == "SPACE_CMDDEP" ]]; then
+                        # Always overwritten.
+                        _spacelines+=("SPACE_CMDDEP=${BASH_REMATCH[2]}")
+                    else
+                        _error "Unknown SPACE HEADER variable: ${_spacevar}, in OUTER function: ${_fn_name}."
+                        return 1
+                    fi
+                    continue
+                fi
                 if [[ ${_spacevar} == "SPACE_SIGNATURE" ]]; then
                     if [[ -n ${_cmd_args_count-} ]]; then
                         # Check so that signature matches.
@@ -4325,12 +4393,6 @@ _cmd_extract_space_header ()
                     elif [[ ${_spacevar} == "SPACE_CMD" ]]; then
                         # Always overwritten.
                         _spacelines+=("SPACE_CMD=${BASH_REMATCH[2]}")
-                    elif [[ ${_spacevar} == "SPACE_CMDOUTERENV" ]]; then
-                        # Always overwritten.
-                        _spacelines+=("SPACE_CMDOUTERENV=${BASH_REMATCH[2]}")
-                    elif [[ ${_spacevar} == "SPACE_CMDOUTERDEP" ]]; then
-                        # Always overwritten.
-                        _spacelines+=("SPACE_CMDOUTERDEP=${BASH_REMATCH[2]}")
                     else
                         _error "Unknown SPACE HEADER variable: ${_spacevar}, in function: ${_fn_name}."
                         return 1
@@ -4422,6 +4484,13 @@ _cmd_add_fn_dep()
     while (( _i < ${#_arr[@]} )); do
         _fn_dep_item=${_arr[$_i]}
         (( _i += 1 ))
+        # Check so that this function does not already exists in $_fn_def
+        # to avoid multiple occurrences.
+        if [[ ${_fn_def} =~ (.?)${_fn_dep_item}[\ ]*\(\)$'\n'\{[\ ]*$'\n' ]]; then
+            if [ "${#BASH_REMATCH[1]}" -eq 0 -o "${BASH_REMATCH[1]}" = $'\n' ]; then
+                continue
+            fi
+        fi
         _get_fn "${_fn_dep_item}" "_fn_dep_name" "_fn_dep_body"
         if (( $? > 0 )); then
             _error "Dependency function not found or syntax error: ${_fn_dep_item}. Referred from function: ${_fn_name}."
@@ -4441,7 +4510,7 @@ _cmd_add_fn_dep()
         unset _fns
         local _fns=
         printf -v _fns "%s\n" "${_fnlines[@]-:}"
-        _fn_def="${_fn_def}${_fn_dep_name} ()"$'\n'"{"$'\n'"${_fns}}"$'\n\n'
+        _fn_def="${_fn_def}${_fn_dep_name}()"$'\n'"{"$'\n'"${_fns}}"$'\n\n'
         unset _fns
         if [[ -n ${SPACE_CMDENV} ]]; then
             _fn_env="${_fn_env} ${SPACE_CMDENV}"
@@ -4669,7 +4738,7 @@ _get_fn()
     local _i=$((${#_SOURCE_FILES_TOTAL[@]}-1))
     while [ "${_i}" -gt -1 ]; do
         _file="${_SOURCE_FILES_TOTAL[$_i]}"
-        local _content="$(cat ${_file})"
+        local _content="$(cat ${_file})"$'\n'  # We add a '\n' so that pattern matching below works properly.
         if [[ ${_content} =~ (.?)${_cmdname}[\ ]*\(\)$'\n'\{[\ ]*$'\n'(.*$'\n') ]]; then
             if [ "${#BASH_REMATCH[1]}" -eq 0 -o "${BASH_REMATCH[1]}" = $'\n' ]; then
                 _content="${BASH_REMATCH[2]}"

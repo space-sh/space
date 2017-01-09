@@ -691,7 +691,7 @@ _source_file()
         unset _i
         _debug "Source file \"$_filepath\""
         local _status=0
-        trap '_status=$?; trap - ERR; return 0;' ERR
+        trap '_status=$?; trap - ERR;' ERR
         # DIR is a "global" variable which could be used to get the directory
         # for the current file being sourced.
         # shellcheck disable=2034

@@ -3885,6 +3885,7 @@ _execute()
         local SPACE_CMD=$CMD                # Inherited value from YAML.
         local SPACE_CMDREDIR=${CMDREDIR-}   # Inherited value from YAML.
         local SPACE_CMDOUTER=${CMDOUTER-}   # Inherited value from YAML.
+        local SPACE_CMDOUTERARGS=${CMDOUTERARGS-}   # Inherited value from YAML.
         local SPACE_CMDWRAP=${CMDWRAP-}     # Inherited value from YAML.
         local SPACE_CMDENV=
         local SPACE_CMDARGS=${_cmd_args_str}
@@ -3973,6 +3974,7 @@ _execute()
                     local SPACE_CMD="${_fn_wrap_item}"
                     local SPACE_CMDREDIR=
                     local SPACE_CMDOUTER=
+                    local SPACE_CMDOUTERARGS=
                     local SPACE_CMDWRAP=
                     local SPACE_CMDDEP=
                     local SPACE_CMDENV=
@@ -4120,6 +4122,7 @@ fi
 # - SPACE_CMDENV
 # - SPACE_CMDREDIR
 # - SPACE_CMDOUTER
+# - SPACE_CMDOUTERARGS
 # - SPACE_CMDARGS
 # - SPACE_CMDWRAP
 #
@@ -4175,7 +4178,7 @@ _cmd_extract()
             local _space_cmd=$SPACE_CMD
             local _fnlines=()
             local _spacelines=()
-            _cmd_extract_space_header "${_fn_body}" "${_fn_name}" "${_cmd_args_count}"
+            _cmd_extract_space_header "${_fn_body}" "${_fn_name}" "${_cmd_args_count}" "0" "${SPACE_CMDARGS}"
             (( $? > 0 )) && { trap - EXIT; return 1; }
 
             # If we have any SPACE_ variables we evaluate them together
@@ -4246,23 +4249,27 @@ _cmd_extract()
                             trap - EXIT
                             return 1
                         fi
+                        local _args=()
+                        _split_quoted "_args" "${SPACE_CMDOUTERARGS}"
+                        local _cmd_args_count=${#_args[@]};
+                        unset _args
                         local _fnlines=()
                         local _spacelines=()
-                        _cmd_extract_space_header "${_fn_body}" "${_fn_name}" "0" "1"
+                        _cmd_extract_space_header "${_fn_body}" "${_fn_name}" "${_cmd_args_count}" "1" "${SPACE_CMDOUTERARGS}"
                         (( $? > 0 )) && { trap - EXIT; return 1; }
                         local _fn_def=
                         printf -v _fn_def "%s\n" "${_fnlines[@]-:}"
-                        SPACE_CMDOUTER="${_fn_name} ()"$'\n'"{"$'\n'"${_fn_def}""}"$'\n'"${_fn_name}"$'\n\n'
+                        SPACE_CMDOUTER="${_fn_name} ()"$'\n'"{"$'\n'"${_fn_def}""}"$'\n'"${_fn_name} ${SPACE_CMDOUTERARGS}"$'\n\n'
                         # If we have any SPACE_ variables we evaluate them together
                         # with the function arguments.
                         if (( ${#_spacelines[@]} > 0 )); then
-                            local _SPACE_ARGS=$SPACE_CMDARGS
+                            local _SPACE_ARGS=$SPACE_CMDOUTERARGS
                             local _fns=
                             printf -v _fns "    %s\n" "${_spacelines[@]}"
                             _fns="_set_args () {"$'\n'"${_fns}}"$'\n'"_set_args ${_SPACE_ARGS}"$'\n'
                             eval "$_fns"
                             if (( $? > 0 )); then
-                                _error "Could not evaluate function header of ${SPACE_CMDOUTEr} to set SPACE_ variables."
+                                _error "Could not evaluate function header of ${SPACE_CMDOUTER} to set SPACE_ variables."
                                 trap - EXIT
                                 return 1
                             fi
@@ -4273,8 +4280,8 @@ _cmd_extract()
                         SPACE_CMDOUTERDEP="${SPACE_CMDDEP}"
                     fi
                 }
-                SPACE_CMDOUTERDEP=
-                SPACE_CMDOUTERENV=
+                local SPACE_CMDOUTERDEP=
+                local SPACE_CMDOUTERENV=
                 _space_context2
                 if (( $? > 0 )); then trap - EXIT; return 1; fi
 
@@ -4312,6 +4319,9 @@ _cmd_extract_space_header ()
     local is_outercmd="${1-}"
     shift || :
 
+    local _given_args="${1-}"
+    shift || :
+
     # NOTE: This is a special case for now.
     # We do not want this line in the PRINT function.
     # But we do want it in all the other functions exported, for PRINT to use.
@@ -4324,19 +4334,6 @@ _cmd_extract_space_header ()
         if [[ $_isheader == "1" ]]; then
             if [[ $_line =~ ^[\ ]*(SPACE_[^=]+)=(.+) ]]; then
                 local _spacevar=${BASH_REMATCH[1]}
-                if [ "${is_outercmd}" = "1" ]; then
-                    if [[ ${_spacevar} == "SPACE_CMDENV" ]]; then
-                        # Always overwritten.
-                        _spacelines+=("SPACE_CMDENV=${BASH_REMATCH[2]}")
-                    elif [[ ${_spacevar} == "SPACE_CMDDEP" ]]; then
-                        # Always overwritten.
-                        _spacelines+=("SPACE_CMDDEP=${BASH_REMATCH[2]}")
-                    else
-                        _error "Unknown SPACE HEADER variable: ${_spacevar}, in OUTER function: ${_fn_name}."
-                        return 1
-                    fi
-                    continue
-                fi
                 if [[ ${_spacevar} == "SPACE_SIGNATURE" ]]; then
                     if [[ -n ${_cmd_args_count-} ]]; then
                         # Check so that signature matches.
@@ -4356,10 +4353,22 @@ _cmd_extract_space_header ()
                         _signature2=${_signature2//[^\ ]}
                         (( _sigcount += ${#_signature2} ))
                         if (( _sigcount > _cmd_args_count )); then
-                            _error "Missing $((_sigcount-_cmd_args_count)) argument(s). Function $_space_cmd has the signature: ${_signature}, but only these arguments where provided: ${SPACE_CMDARGS}."
+                            _error "Missing $((_sigcount-_cmd_args_count)) argument(s). Function $_space_cmd has the signature: ${_signature}, but only these arguments where provided: ${_given_args}."
                             return 1
                         fi
                     fi
+                elif [ "${is_outercmd}" = "1" ]; then
+                    if [[ ${_spacevar} == "SPACE_CMDENV" ]]; then
+                        # Always overwritten.
+                        _spacelines+=("SPACE_CMDENV=${BASH_REMATCH[2]}")
+                    elif [[ ${_spacevar} == "SPACE_CMDDEP" ]]; then
+                        # Always overwritten.
+                        _spacelines+=("SPACE_CMDDEP=${BASH_REMATCH[2]}")
+                    else
+                        _error "Unknown SPACE HEADER variable: ${_spacevar}, in OUTER function: ${_fn_name}."
+                        return 1
+                    fi
+                    continue
                 else
                     if [[ ${_spacevar} == "SPACE_CMDENV" ]]; then
                         # Always overwritten.
@@ -4377,6 +4386,9 @@ _cmd_extract_space_header ()
                         if [[ -z ${SPACE_CMDOUTER} ]]; then
                             _spacelines+=("SPACE_CMDOUTER=${BASH_REMATCH[2]}")
                         fi
+                    elif [[ ${_spacevar} == "SPACE_CMDOUTERARGS" ]]; then
+                        # Always overwritten.
+                        _spacelines+=("SPACE_CMDOUTERARGS=${BASH_REMATCH[2]}")
                     elif [[ ${_spacevar} == "SPACE_CMDARGS" ]]; then
                         # Always overwritten.
                         _spacelines+=("SPACE_CMDARGS=${BASH_REMATCH[2]}")
@@ -4504,7 +4516,7 @@ _cmd_add_fn_dep()
         # We set some space header variable to non empty because we do not
         # want them returned in _spacelines.
         local SPACE_CMDDEP= SPACE_CMDENV= SPACE_CMDREDIR=1
-        local SPACE_CMDWRAP=1 SPACE_CMD=1 SPACE_CMDOUTER=1 SPACE_CMDARGS=1
+        local SPACE_CMDWRAP=1 SPACE_CMD=1 SPACE_CMDOUTER=1 SPACE_CMDARGS=1 SPACE_CMDOUTERARGS=1
         _cmd_extract_space_header "${_fn_dep_body}" "${_fn_dep_name}"
         (( $? > 0 )) && return 1
         local _fns=

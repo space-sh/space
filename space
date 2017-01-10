@@ -1618,6 +1618,27 @@ _module_clone()
                     # EXTERNAL: mktemp, tar, curl/wget
                     local _tmpdir=$(mktemp -d 2>/dev/null || mktemp -d -t 'sometmpdir')
                     (( $? > 0 )) && { _error "Could not mktemp."; return 1; }
+                    local _status_code=0
+                    local _versionurl="$_giturl/raw/master/stable.txt"
+                    if [ "$_HTTPBIN" = "curl" ]; then
+                        _status_code=$($_HTTPBIN -sL --write-out %{http_code} --silent --output "$_tmpdir/stable.txt" $_versionurl)
+                        if [ "$_status_code" -eq 200 ]; then
+                            # EXTERNAL: cat
+                            _commit=$(cat "$_tmpdir/stable.txt")
+                        else
+                            _commit="master"
+                        fi
+                        rm "$_tmpdir/stable.txt"
+                    elif [ "$_HTTPBIN" = "wget" ]; then
+                        _status_code=$($_HTTPBIN -O "$_tmpdir/stable.txt" $_versionurl)
+                        if [ "$_status_code" -eq 0 ]; then
+                            # EXTERNAL: cat
+                            _commit=$(cat "$_tmpdir/stable.txt")
+                        else
+                            _commit="master"
+                        fi
+                        rm "$_tmpdir/stable.txt"
+                    fi
                     if [[ $_d == "github.com" ]]; then
                         local _durl="$_giturl/archive/${_commit}.tar.gz"
                     elif [[ $_d == "gitlab.com" ]]; then
@@ -1652,13 +1673,30 @@ _module_clone()
             # See also: "GIT URLS" in 'man git-clone'
             _giturl="$_giturl".git
 
-            _info "Git clone $_giturl into $_dir (commit: $_commit)"
+            _info "Git clone $_giturl into $_dir"
             git clone -q "$_giturl" "$_dir" 2>&1
             if [[ $? != "0" ]]; then
                 _error "Could not Git clone $_giturl."
                 return 1
             fi
-            ( cd "$_dir" && git checkout "$_commit" >&2 )
+            cd "$_dir"
+            if [ "$?" != "0" ]; then
+                _error "Could not enter directory: $_dir"
+                return 1
+            fi
+            if [ "$_commit" = "" ]; then
+                if [ -f "./stable.txt" ]; then
+                    # EXTERNAL: cat
+                    _commit=$(cat "./stable.txt")
+                    _info "Set to latest stable version: $_commit"
+                else
+                    _commit="master"
+                    _info "Set to current version: $_commit"
+                fi
+            else
+                _info "Set to version: $_commit"
+            fi
+            git checkout "$_commit" > /dev/null 2>&1
             if [[ $? != "0" ]]; then
                 _error "Could not Git checkout $_commit of $_repofullname. Will delete directory."
                 ( rm -rf "$_dir" >&2 )
@@ -1734,7 +1772,7 @@ _extract_repo_parts()
     _domainuser=
     _username="space-sh"
     _reponame=""
-    _commit="master"
+    _commit=""
     _str_commit=
     _repofullname=
 
@@ -1789,7 +1827,7 @@ _extract_repo_parts()
             _username=${BASH_REMATCH[3]}
             _reponame=${BASH_REMATCH[4]}
             # Remove .git extension if exists
-            _reponame=${_reponame%.*}
+            _reponame=${_reponame%.git}
         else
             _error "Expected username and reponame: $_mod. Format: (protocol)<domain>/<user_name>/<repo_name>. Examples: \"space -m gitlab.com/$_mod\" \"space -m https://gitlab.com/$_mod\""
             return 1
@@ -1804,7 +1842,7 @@ _extract_repo_parts()
         fi
 
         # Remove .git extension if exists
-        _reponame=${_reponame%.*}
+        _reponame=${_reponame%.git}
 
         if [[ $_username == "space-sh" ]]; then
             _domain="gitlab.com"
@@ -1819,12 +1857,12 @@ _extract_repo_parts()
         _reponame=${BASH_REMATCH[1]}
         _commit=${BASH_REMATCH[2]}
     fi
-    if [[ $_protocol == "" || $_domain == "" || $_username == "" || $_reponame == "" || $_commit == "" ]]; then
+    if [[ $_protocol == "" || $_domain == "" || $_username == "" || $_reponame == "" ]]; then
         _error "Malformed import name: $_mod. Format: (protocol)<domain>/<user_name>/<repo_name>. Examples: \"space -m gitlab.com/<user_name>/<repo_name>\" \"space -m https://gitlab.com/<user_name>/<repo_name>\""
         return 1
     fi
-    if [[ $_commit == "master" ]]; then
-        # We skip commit name if it is master.
+    if [ -z "$_commit" ]; then
+        # We skip commit name if it is empty
         _str_commit=""
     else
         _str_commit=":$_commit"
@@ -2548,7 +2586,6 @@ _main()
         else
             # Load module.
             local _module=$_path
-            [[ $_module =~ ([^:]+):master$ ]] && _module=${BASH_REMATCH[1]}
             _debug "Include module $_module"
             clone "${_module}"
             (( $? > 0 )) && return 1
@@ -3488,8 +3525,31 @@ _update_modules()
                             _module_check_banlist "$_giturl"
                             (( $? > 0 )) && return 1
                         fi
-                        git pull 2>&1
-                        (( $? > 0 )) && return 1
+                        local _current_version=""
+                        local _new_version="master"
+                        if [ -f "./stable.txt" ]; then
+                            # EXTERNAL: cat
+                            _current_version=$(cat "./stable.txt")
+                        fi
+                        ( git checkout master && git pull ) > /dev/null 2>&1
+                        if [ "$?" -gt 0 ]; then
+                            _error "Failed to checkout and pull master branch"
+                            return 1
+                        fi
+                        if [ -f "./stable.txt" ]; then
+                            # EXTERNAL: cat
+                            _new_version=$(cat "./stable.txt")
+                            if [ "$_current_version" != "$_new_version" ]; then
+                                _info "Updating to version: $_new_version"
+                            else
+                                _info "Keeping version: $_new_version"
+                            fi
+                            git checkout "$_new_version" > /dev/null 2>&1
+                            if [ "$?" != "0" ]; then
+                                _error "Could not Git checkout $_new_version of $_reponame."
+                                return 1
+                            fi
+                        fi
                         if [[ -f .gitmodules ]]; then
                             git submodule update >&2
                             if (( $? > 0 )); then

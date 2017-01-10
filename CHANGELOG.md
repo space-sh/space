@@ -6,7 +6,27 @@
 
 + Add build step for generating _Space_ Docker container image
 
++ Add support for accessing CMDENV in wrapper functions
+
++ Optimize overhead caused by PRINT in export status check code
+
++ Add a break on error when chaining commands evaluate, during `cmd_extract`
+
++ Add SPACE_CMDOUTERARGS
+
++ Add support for modules cloning and updating latest stable version by default
+
+* Fix a bug that causes sourced files not to quit on syntax error
+
+* Change error messages around SPACE header variables to be more descriptive
+
+* Fix bugs in dependency inclusion of functions
+
+* Fix reponame splitting for every dot, which causes module versions that include a dot not do be properly identified
+
 - Remove `tput` program usage
+
+- Remove `SUBST` function in favor of the string module
 
 
 ## [0.10.0] - 2016-12-14

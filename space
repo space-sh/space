@@ -2025,16 +2025,18 @@ _enter_gui_mode()
 #=====
 PRINT()
 {
-    SPACE_CMDENV="PRINT_LEVEL=\${PRINT_LEVEL-4} _PRINT_COLUMN_POSITION"
-    local color="\033[0m" header=''
-    [ "${2-info}" = "error" ] && [ "${PRINT_LEVEL-4}" -gt 0 ] && header="[ERROR] " && color="\033[31m"
-    [ "${2-info}" = "security" ] && [ "${PRINT_LEVEL-4}" -gt 0 ] && header="[SECUR] " && color="\033[35m"
-    [ "${2-info}" = "warning" ] && [ "${PRINT_LEVEL-4}" -gt 1 ] && header="[WARN]  " && color="\033[33m"
-    [ "${2-info}" = "success" ] && [ "${PRINT_LEVEL-4}" -gt 2 ] && header="[SUCCE] " && color="\033[32m"
-    [ "${2-info}" = "info" ] && [ "${PRINT_LEVEL-4}" -gt 3 ] && header="[INFO]  " && color="\033[37m"
-    [ "${2-info}" = "debug" ] && [ "${PRINT_LEVEL-4}" -gt 4 ] && header="[DBG ]  " && color="\033[37m"
+    SPACE_CMDENV="PRINT_LEVEL=\${PRINT_LEVEL:-4} _PRINT_COLUMN_POSITION"
+    local color="\033[0m"
+    local header=''
+    local color_def="\033[0m"
+    [ "${2-info}" = "error" ] && [ "${PRINT_LEVEL:-4}" -gt 0 ] && header="[ERROR] " && color="\033[31m"
+    [ "${2-info}" = "security" ] && [ "${PRINT_LEVEL:-4}" -gt 0 ] && header="[SECUR] " && color="\033[35m"
+    [ "${2-info}" = "warning" ] && [ "${PRINT_LEVEL:-4}" -gt 1 ] && header="[WARN]  " && color="\033[33m"
+    [ "${2-info}" = "success" ] && [ "${PRINT_LEVEL:-4}" -gt 2 ] && header="[OK]    " && color="\033[32m"
+    [ "${2-info}" = "info" ] && [ "${PRINT_LEVEL:-4}" -gt 3 ] && header="[INFO]  " && color="\033[37m"
+    [ "${2-info}" = "debug" ] && [ "${PRINT_LEVEL:-4}" -gt 4 ] && header="[DEBUG] " && color="" && color_def=""
     [ -z "${header}" ] && return 0
-    [ "${SPACE_FNNAME-}" != "" ] && ( printf "\033[${_PRINT_COLUMN_POSITION}G${color}%s%s: %s\033[0m\n" "${header}" "${SPACE_FNNAME}" "${1}" >&${3-2}) || ( printf "\033[${_PRINT_COLUMN_POSITION}G${color}%s%s\033[0m\n" "${header}" "${1}" >&${3-2} )
+    [ "${SPACE_FNNAME-}" != "" ] && ( printf "\033[${_PRINT_COLUMN_POSITION}G${color}%s%s: %s\033[0m\n" "${header}" "${SPACE_FNNAME}" "${1}" >&${3-2}) || ( printf "\033[${_PRINT_COLUMN_POSITION}G${color}%s%s${color_def}\n" "${header}" "${1}" >&${3-2} )
     :
 }
 

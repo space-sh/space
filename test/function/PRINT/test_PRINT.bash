@@ -34,11 +34,11 @@ _TEST_PRINT()
     elif [ "$_level" = "warning" ]; then
         _level_tag="\[WARN\]"
     elif [ "$_level" = "success" ]; then
-        _level_tag="\[SUCCE\]"
+        _level_tag="\[OK\]"
     elif [ "$_level" = "info" ]; then
         _level_tag="\[INFO\]"
     elif [ "$_level" = "debug" ]; then
-        _level_tag="\[DBG \]"
+        _level_tag="\[DEBUG\]"
     fi
 
     #

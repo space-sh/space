@@ -139,7 +139,7 @@ fi
 
 # Also check for generated man page. Not really generated man but dummy from doc/space.md
 cp doc/space.md space.1
-_RUN_CHECK_OK "Test space install: no parameters" "\[OK\] SPACE_INSTALL_BIN:" space /install/
+_RUN_CHECK_OK "Test space install: no parameters" "\[OK\]    SPACE_INSTALL_BIN:" space /install/
 
 which space > /dev/null 2>&1
 if [ "$?" -eq 0 ]; then
@@ -156,7 +156,7 @@ _RUN_CHECK_OK "Test space -V: repeating test" "Space " space -V
 
 # Pass no args but set PREFIX first
 export PREFIX=$(pwd)
-_RUN_CHECK_OK "Test space install: PREFIX set" "\[OK\] SPACE_INSTALL_BIN:" space /install/
+_RUN_CHECK_OK "Test space install: PREFIX set" "\[OK\]    SPACE_INSTALL_BIN:" space /install/
 _RUN_CHECK_OK "Test space -V: PREFIX" "Space " ./bin/space -V
 if [ -f "$(pwd)"/share/man/man1/space.1 ]; then
     printf "\033[32m[OK] Test space man is installed: PREFIX\033[0m\n"
@@ -166,7 +166,7 @@ else
 fi
 
 # Pass binprefix only - to local dir relative.
-_RUN_CHECK_OK "Test space install: BIN_DEST set to relative path" "\[OK\] SPACE_INSTALL_BIN:" space /install/ -- ./relativedir
+_RUN_CHECK_OK "Test space install: BIN_DEST set to relative path" "\[OK\]    SPACE_INSTALL_BIN:" space /install/ -- ./relativedir
 _RUN_CHECK_OK "Test space -V: relative path" "Space " ./relativedir/bin/space -V
 if [ -f "$(pwd)"/relativedir/share/man/man1/space.1 ]; then
     printf "\033[32m[OK] Test space man is installed: relative path\033[0m\n"
@@ -176,7 +176,7 @@ else
 fi
 
 # Pass binprefix only - to local dir absolute
-_RUN_CHECK_OK "Test space install: BIN_DEST set to absolute path" "\[OK\] SPACE_INSTALL_BIN:" space /install/ -- "$(pwd)"/absolutedir
+_RUN_CHECK_OK "Test space install: BIN_DEST set to absolute path" "\[OK\]    SPACE_INSTALL_BIN:" space /install/ -- "$(pwd)"/absolutedir
 _RUN_CHECK_OK "Test space -V: absolute path" "Space " ./absolutedir/bin/space -V
 if [ -f "$(pwd)"/absolutedir/share/man/man1/space.1 ]; then
     printf "\033[32m[OK] Test space man is installed: absolute path\033[0m\n"
@@ -186,7 +186,7 @@ else
 fi
 
 # Pass binprefix + acprefix
-_RUN_CHECK_OK "Test space install: BIN_DEST and AC_DEST set" "\[OK\] SPACE_INSTALL_BIN:" space /install/ -- "$(pwd)"/customdir "$(pwd)"/customdir
+_RUN_CHECK_OK "Test space install: BIN_DEST and AC_DEST set" "\[OK\]    SPACE_INSTALL_BIN:" space /install/ -- "$(pwd)"/customdir "$(pwd)"/customdir
 _RUN_CHECK_OK "Test space -V: BIN and AC set" "Space " ./absolutedir/bin/space -V
 if [ -f "$(pwd)"/customdir/space ]; then
     printf "\033[32m[OK] Test space completion is installed: BIN and AC set\033[0m\n"

@@ -28,7 +28,7 @@ _TEST_SOURCE_FILE_NON_EXISTANT_CHECK_FAILURE()
 
     # Expect failure
     if [ "$?" -eq 1 ]; then
-        PRINT "_source_file OK!" "success"
+        PRINT "_source_file OK!" "ok"
         return 0
     else
         PRINT "_source_file failed!" "error"
@@ -48,7 +48,7 @@ _TEST_SOURCE_FILE_NON_EXISTANT_CHECK_NO_TOUCH()
 
     # Assert that _SOURCE_FILES_TOTAL has remained untouched
     if [ "${#_SOURCE_FILES_TOTAL[*]}" -eq 0 ]; then
-        PRINT "_source_file OK!" "success"
+        PRINT "_source_file OK!" "ok"
         return 0
     else
         PRINT "_source_file failed!" "error"
@@ -69,7 +69,7 @@ _TEST_SOURCE_FILE_ONE_CHECK_RETURN()
 
     # Check if return status is OK
     if [ "$?" -eq 0 ]; then
-        PRINT "_source_file OK!" "success"
+        PRINT "_source_file OK!" "ok"
         return 0
     else
         PRINT "_source_file failed!" "error"
@@ -90,7 +90,7 @@ _TEST_SOURCE_FILE_ONE_CHECK_TOUCH()
 
     # Check _SOURCE_FILES_TOTAL has been updated, holding exactly one record
     if [ "${#_SOURCE_FILES_TOTAL[*]}" -eq 1 ]; then
-        PRINT "_source_file OK!" "success"
+        PRINT "_source_file OK!" "ok"
         return 0
     else
         PRINT "_source_file failed!" "error"
@@ -111,7 +111,7 @@ _TEST_SOURCE_FILE_ONE_CHECK_SYNTAX_RETURN()
 
     # Expects failure
     if [ "$?" -eq 1 ]; then
-        PRINT "_source_file OK!" "success"
+        PRINT "_source_file OK!" "ok"
         return 0
     else
         PRINT "_source_file failed!" "error"
@@ -132,7 +132,7 @@ _TEST_SOURCE_FILE_ONE_CHECK_SYNTAX_TOUCH()
 
     # Check _SOURCE_FILES_TOTAL has NOT been touched
     if [ "${#_SOURCE_FILES_TOTAL[*]}" -eq 0 ]; then
-        PRINT "_source_file OK!" "success"
+        PRINT "_source_file OK!" "ok"
         return 0
     else
         PRINT "_source_file failed!" "error"
@@ -154,7 +154,7 @@ _TEST_SOURCE_FILE_MULTIPLE_CHECK_RETURN()
 
     # Check if return status is OK
     if [ "$?" -eq 0 ]; then
-        PRINT "_source_file OK!" "success"
+        PRINT "_source_file OK!" "ok"
         return 0
     else
         PRINT "_source_file failed!" "error"
@@ -176,7 +176,7 @@ _TEST_SOURCE_FILE_MULTIPLE_CHECK_TOUCH()
 
     # Check _SOURCE_FILES_TOTAL has been updated, holding multiple records
     if [ "${#_SOURCE_FILES_TOTAL[*]}" -eq 3 ]; then
-        PRINT "_source_file OK!" "success"
+        PRINT "_source_file OK!" "ok"
         return 0
     else
         PRINT "_source_file failed!" "error"
@@ -201,7 +201,7 @@ _TEST_SOURCE_FILE_MULTIPLE_CHECK_SYNTAX_RETURN()
 
     # Expect failure
     if [ "$?" -eq 1 ]; then
-        PRINT "_source_file OK!" "success"
+        PRINT "_source_file OK!" "ok"
         return 0
     else
         PRINT "_source_file failed!" "error"
@@ -224,7 +224,7 @@ _TEST_SOURCE_FILE_MULTIPLE_CHECK_SYNTAX_TOUCH()
 
     # Check _SOURCE_FILES_TOTAL has been updated with only one failure
     if [ "${#_SOURCE_FILES_TOTAL[*]}" -eq 2 ]; then
-        PRINT "_source_file OK!" "success"
+        PRINT "_source_file OK!" "ok"
         return 0
     else
         PRINT "_source_file failed!" "error"

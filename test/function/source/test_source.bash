@@ -27,7 +27,7 @@ _TEST_SOURCE_ONE_CHECK_STATUS()
 
     # Check return is OK
     if [ "$?" -eq 0 ]; then
-        PRINT "_source OK!" "success"
+        PRINT "_source OK!" "ok"
         return 0
     else
         PRINT "_source failed!" "error"
@@ -46,7 +46,7 @@ _TEST_SOURCE_ONE_CHECK_STATE_CHANGED()
 
     # Check SOURCE_FILES has been filled
     if [ "${#_SOURCE_FILES[@]}" -eq 1 ]; then
-        PRINT "_source OK!" "success"
+        PRINT "_source OK!" "ok"
         return 0
     else
         PRINT "_source failed!" "error"
@@ -65,7 +65,7 @@ _TEST_SOURCE_ONE_CHECK_EXPECTED_OUTPUT()
 
     # Check expected output matches current SOURCE_FILES
     if [ "${_SOURCE_FILES[*]}" = "${_expected_output[*]}" ]; then
-        PRINT "_source OK!" "success"
+        PRINT "_source OK!" "ok"
         return 0
     else
         PRINT "_source failed!" "error"
@@ -88,7 +88,7 @@ _TEST_SOURCE_MULTIPLE_CHECK_STATUS()
 
     # Check return is OK
     if [ "$?" -eq 0 ]; then
-        PRINT "_source OK!" "success"
+        PRINT "_source OK!" "ok"
         return 0
     else
         PRINT "_source failed!" "error"
@@ -111,7 +111,7 @@ _TEST_SOURCE_MULTIPLE_CHECK_STATE_CHANGED()
 
     # Check SOURCE_FILES has been filled
     if [ "${#_SOURCE_FILES[@]}" -eq 5 ]; then
-        PRINT "_source OK!" "success"
+        PRINT "_source OK!" "ok"
         return 0
     else
         PRINT "_source failed!" "error"
@@ -134,7 +134,7 @@ _TEST_SOURCE_MULTIPLE_CHECK_EXPECTED_OUTPUT()
 
     # Check expected output matches current SOURCE_FILES
     if [ "${_SOURCE_FILES[*]}" = "${_expected_output[*]}" ]; then
-        PRINT "_source OK!" "success"
+        PRINT "_source OK!" "ok"
         return 0
     else
         PRINT "_source failed!" "error"

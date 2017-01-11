@@ -26,7 +26,7 @@ _TEST_COPY()
     _copy "_test_storage" "/_somespace/node1/node3/Test_nO_d3"
 
     if [ ${_test_storage} = "Passed" ]; then
-        PRINT "_copy OK!" "success"
+        PRINT "_copy OK!" "ok"
         return 0
     else
         PRINT "_copy failed!" "error"

@@ -23,7 +23,7 @@ _VALIDATE_BASEDIR()
 
     # Check if BASEDIR path is valid
     if [[ "${_BASEDIR}" =~ ^\/.*$ ]]; then
-        PRINT "_BASEDIR test OK!" "success"
+        PRINT "_BASEDIR test OK!" "ok"
         return 0
     else
         PRINT "_BASEDIR value=[${_BASEDIR}] doesn't match expected format" "error"

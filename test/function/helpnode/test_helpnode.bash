@@ -70,7 +70,7 @@ _TEST_HELPNODE_EMPTY_STRING_PARAMETER()
         PRINT "Testing: $(cat ${_tmp_file_name})"
         PRINT "Expected: $_expected_string"
         if [ "$(cat ${_tmp_file_name})" = "$_expected_string" ]; then
-            PRINT "_helpnode OK!" "success"
+            PRINT "_helpnode OK!" "ok"
             # remove tmp file
             rm "$_tmp_file_name"
             return 0
@@ -82,7 +82,7 @@ _TEST_HELPNODE_EMPTY_STRING_PARAMETER()
         fi
     fi
 
-    PRINT "_helpnode OK!" "success"
+    PRINT "_helpnode OK!" "ok"
 }
 
 _TEST_HELPNODE_WITH_PARAMETER()
@@ -139,7 +139,7 @@ _TEST_HELPNODE_WITH_PARAMETER()
         PRINT "Testing: $(cat ${_tmp_file_name})"
         PRINT "Expected: $_expected_string"
         if [ "$(cat ${_tmp_file_name})" = "$_expected_string" ]; then
-            PRINT "_helpnode OK!" "success"
+            PRINT "_helpnode OK!" "ok"
             # remove tmp file
             rm "$_tmp_file_name"
             return 0
@@ -151,6 +151,6 @@ _TEST_HELPNODE_WITH_PARAMETER()
         fi
     fi
 
-    PRINT "_helpnode OK!" "success"
+    PRINT "_helpnode OK!" "ok"
 }
 

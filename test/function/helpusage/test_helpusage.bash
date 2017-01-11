@@ -59,7 +59,7 @@ _TEST_HELPUSAGE()
         local _count2=$(grep -c "Usage:" "${_tmp_file_name}")
         PRINT "Trying to look for predefined strings..."
         if [ "$_count1" -gt 0 ] && [ "$_count2" -gt 0 ]; then
-            PRINT "_helpusage OK!" "success"
+            PRINT "_helpusage OK!" "ok"
             # remove tmp file
             rm "$_tmp_file_name"
             return 0

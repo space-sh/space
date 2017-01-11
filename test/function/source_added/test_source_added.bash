@@ -42,7 +42,7 @@ _TEST_SOURCE_ADDED_SINGLE_CHECK_STATUS()
 
     # Check return is OK
     if [ "$?" -eq 0 ]; then
-        PRINT "_source_added OK!" "success"
+        PRINT "_source_added OK!" "ok"
     else
         PRINT "_source_added failed!" "error"
         return "$?"
@@ -75,7 +75,7 @@ _TEST_SOURCE_ADDED_SINGLE_CHECK_STATE_CHANGED_0()
 
     # Check global var has been reset
     if [ "${#_SOURCE_FILES[@]}" -eq 0 ]; then
-        PRINT "_source_added OK!" "success"
+        PRINT "_source_added OK!" "ok"
     else
         PRINT "_source_added failed!" "error"
         return "$?"
@@ -108,7 +108,7 @@ _TEST_SOURCE_ADDED_SINGLE_CHECK_STATE_CHANGED_1()
 
     # Check _source_file has been called to do the actual job
     if [ "$_MOCK_ADDED_COUNT" -eq 1 ]; then
-        PRINT "_source_added OK!" "success"
+        PRINT "_source_added OK!" "ok"
     else
         PRINT "_source_added failed!" "error"
         return "$?"
@@ -141,7 +141,7 @@ _TEST_SOURCE_ADDED_MULTIPLE_CHECK_STATUS()
 
     # Check return is OK
     if [ "$?" -eq 0 ]; then
-        PRINT "_source_added OK!" "success"
+        PRINT "_source_added OK!" "ok"
     else
         PRINT "_source_added failed!" "error"
         return "$?"
@@ -174,7 +174,7 @@ _TEST_SOURCE_ADDED_MULTIPLE_CHECK_STATE_CHANGED_0()
 
     # Check global var has been reset
     if [ "${#_SOURCE_FILES[@]}" -eq 0 ]; then
-        PRINT "_source_added OK!" "success"
+        PRINT "_source_added OK!" "ok"
     else
         PRINT "_source_added failed!" "error"
         return "$?"
@@ -207,7 +207,7 @@ _TEST_SOURCE_ADDED_MULTIPLE_CHECK_STATE_CHANGED_1()
 
     # Check _source_file has been called to do the actual job
     if [ "$_MOCK_ADDED_COUNT" -eq 2 ]; then
-        PRINT "_source_added OK!" "success"
+        PRINT "_source_added OK!" "ok"
     else
         PRINT "_source_added failed!" "error"
         return "$?"

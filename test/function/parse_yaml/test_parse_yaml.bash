@@ -32,7 +32,7 @@ _TEST_PARSE_YAML_CHECK_STATUS_OK()
 
     # Check return status is good
     if [ "$?" -eq 0 ]; then
-        PRINT "_parse_yaml OK!" "success"
+        PRINT "_parse_yaml OK!" "ok"
         return 0
     else
         PRINT "_parse_yaml failed!" "error"
@@ -58,7 +58,7 @@ _TEST_PARSE_YAML_CHECK_PARSED_YAML_OK()
 
     # Check return status is good
     if [ "${_parsedyaml[*]}" = "${_expected_result}" ]; then
-        PRINT "_parse_yaml OK!" "success"
+        PRINT "_parse_yaml OK!" "ok"
         return 0
     else
         PRINT "_parse_yaml failed!" "error"
@@ -82,7 +82,7 @@ _TEST_PARSE_YAML_CHECK_PARSED_YAML_FAIL()
 
     # Expect empty parse
     if [ "${_parsedyaml[0]}" = "" ]; then
-        PRINT "_parse_yaml OK!" "success"
+        PRINT "_parse_yaml OK!" "ok"
         return 0
     else
         PRINT "_parse_yaml failed!" "error"

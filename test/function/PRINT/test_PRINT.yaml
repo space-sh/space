@@ -32,7 +32,7 @@ tests:
         - CMD: _TEST_PRINT_LEVEL_WARNING
     -
       _env:
-        - CMD: _TEST_PRINT_LEVEL_SUCCESS
+        - CMD: _TEST_PRINT_LEVEL_OK
     -
       _env:
         - CMD: _TEST_PRINT_LEVEL_INFO

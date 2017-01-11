@@ -25,7 +25,7 @@ _TEST_SORT_PAD_SINGLE_DIGIT()
 
     _sort_pad "_padded_value" "$_value"
     if [ "$_padded_value" = "0000000002" ]; then
-        PRINT "_sort_pad OK!" "success"
+        PRINT "_sort_pad OK!" "ok"
         return 0
     else
         PRINT "_sort_pad failed!" "error"
@@ -42,7 +42,7 @@ _TEST_SORT_PAD_SINGLE_CHARACTER()
 
     _sort_pad "_padded_value" "$_value"
     if [ "$_padded_value" = "k" ]; then
-        PRINT "_sort_pad OK!" "success"
+        PRINT "_sort_pad OK!" "ok"
         return 0
     else
         PRINT "_sort_pad failed!" "error"
@@ -59,7 +59,7 @@ _TEST_SORT_PAD_10_DIGITS()
 
     _sort_pad "_padded_value" "$_value"
     if [ "$_padded_value" = "0000000002" ]; then
-        PRINT "_sort_pad OK!" "success"
+        PRINT "_sort_pad OK!" "ok"
         return 0
     else
         PRINT "_sort_pad failed!" "error"
@@ -76,7 +76,7 @@ _TEST_SORT_PAD_10_CHARACTERS()
 
     _sort_pad "_padded_value" "$_value"
     if [ "$_padded_value" = "abeOPuzMvk" ]; then
-        PRINT "_sort_pad OK!" "success"
+        PRINT "_sort_pad OK!" "ok"
         return 0
     else
         PRINT "_sort_pad failed!" "error"
@@ -93,7 +93,7 @@ _TEST_SORT_PAD_20_DIGITS()
 
     _sort_pad "_padded_value" "$_value"
     if [ "$_padded_value" = "0000000002" ]; then
-        PRINT "_sort_pad OK!" "success"
+        PRINT "_sort_pad OK!" "ok"
         return 0
     else
         PRINT "_sort_pad failed!" "error"
@@ -110,7 +110,7 @@ _TEST_SORT_PAD_20_CHARACTERS()
 
     _sort_pad "_padded_value" "$_value"
     if [ "$_padded_value" = "abeOPuzMvkUOPQWEZADs" ]; then
-        PRINT "_sort_pad OK!" "success"
+        PRINT "_sort_pad OK!" "ok"
         return 0
     else
         PRINT "_sort_pad failed!" "error"

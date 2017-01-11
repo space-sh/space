@@ -31,7 +31,7 @@ _TEST_PP_YAML_CHECK_STATUS_OK()
 
     # Check return status is good
     if [ "$?" -eq 0 ]; then
-        PRINT "_pp_yaml OK!" "success"
+        PRINT "_pp_yaml OK!" "ok"
         return 0
     else
         PRINT "_pp_yaml failed!" "error"
@@ -55,7 +55,7 @@ _TEST_PP_YAML_CHECK_PREPROCESSED_OK()
 
     # Check return matches expected output
     if [ "${_yamlrows[*]}" = "${_expected_output}" ]; then
-        PRINT "_pp_yaml OK!" "success"
+        PRINT "_pp_yaml OK!" "ok"
         return 0
     else
         PRINT "_pp_yaml failed!" "error"
@@ -78,7 +78,7 @@ _TEST_PP_YAML_CHECK_STATUS_FAIL_1()
 
     # Expecting failure here
     if [ "$?" -eq 1 ]; then
-        PRINT "_pp_yaml OK!" "success"
+        PRINT "_pp_yaml OK!" "ok"
         return 0
     else
         PRINT "_pp_yaml failed!" "error"
@@ -101,7 +101,7 @@ _TEST_PP_YAML_CHECK_STATUS_FAIL_2()
 
     # Expecting failure here
     if [ "$?" -eq 2 ]; then
-        PRINT "_pp_yaml OK!" "success"
+        PRINT "_pp_yaml OK!" "ok"
         return 0
     else
         PRINT "_pp_yaml failed!" "error"
@@ -124,7 +124,7 @@ _TEST_PP_YAML_CHECK_STATUS_FAIL_3()
 
     # Expecting failure here
     if [ "$?" -eq 3 ]; then
-        PRINT "_pp_yaml OK!" "success"
+        PRINT "_pp_yaml OK!" "ok"
         return 0
     else
         PRINT "_pp_yaml failed!" "error"
@@ -147,7 +147,7 @@ _TEST_PP_YAML_CHECK_STATUS_FAIL_4()
 
     # Expecting failure here
     if [ "$?" -eq 4 ]; then
-        PRINT "_pp_yaml OK!" "success"
+        PRINT "_pp_yaml OK!" "ok"
         return 0
     else
         PRINT "_pp_yaml failed!" "error"
@@ -170,7 +170,7 @@ _TEST_PP_YAML_CHECK_FILTER_STATUS_OK()
 
     # Check return status is good
     if [ "$?" -eq 0 ]; then
-        PRINT "_pp_yaml OK!" "success"
+        PRINT "_pp_yaml OK!" "ok"
         return 0
     else
         PRINT "_pp_yaml failed!" "error"
@@ -194,7 +194,7 @@ _TEST_PP_YAML_CHECK_FILTER_PREPROCESSED_OK()
 
     # Check return matches expected output
     if [ "${_yamlrows[*]}" = "${_expected_output}" ]; then
-        PRINT "_pp_yaml OK!" "success"
+        PRINT "_pp_yaml OK!" "ok"
         return 0
     else
         PRINT "_pp_yaml failed!" "error"
@@ -218,7 +218,7 @@ _TEST_PP_YAML_CHECK_INHERITED_INDENT_PREPROCESSED_OK()
 
     # Check return matches expected output
     if [ "${_yamlrows[*]}" = "${_expected_output}" ]; then
-        PRINT "_pp_yaml OK!" "success"
+        PRINT "_pp_yaml OK!" "ok"
         return 0
     else
         PRINT "_pp_yaml failed!" "error"

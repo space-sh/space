@@ -26,7 +26,7 @@ SPACE_INSTALL_BIN()
         PRINT "[${_bin_full_path}]  FAILED" "error"
         return 1
     fi
-    PRINT "[${_bin_full_path}]  OK" "success"
+    PRINT "[${_bin_full_path}]  OK" "ok"
 }
 
 SPACE_DEP_INSTALL()
@@ -40,7 +40,7 @@ SPACE_DEP_INSTALL()
         PRINT "Git is not installed, you will have to install it using your package manager." "error"
         return 1
     else
-        PRINT "Dependencies found." "success"
+        PRINT "Dependencies found." "ok"
     fi
 }
 
@@ -183,7 +183,7 @@ SPACE_INSTALL()
             if [ "$?" -gt 0 ]; then
                 PRINT "[${_mandest}/${_man_file_name}]  FAILED to install man page. Skipping..." "warning"
             else
-                PRINT "[${_mandest}/${_man_file_name}]  OK" "success"
+                PRINT "[${_mandest}/${_man_file_name}]  OK" "ok"
             fi
         else
             PRINT "[${_mandest}/${_man_file_name}]  FAILED to find destination directory: $_mandest. Skipping..." "warning"
@@ -202,7 +202,7 @@ SPACE_INSTALL()
                 PRINT "[${_acdest}/space]  FAILED" "warning"
                 PRINT "Auto completion will not work because destination doesn't exist: [${_acdest}]. Make sure the destination directory is valid and bash-completion is installed. After that, repeat the installation process if bash completion is desired." "warning"
             else
-                PRINT "[${_acdest}/space]  OK" "success"
+                PRINT "[${_acdest}/space]  OK" "ok"
                 PRINT "You might want to re-login into bash to get the bash completion loaded."
             fi
         else

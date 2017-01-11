@@ -29,7 +29,7 @@ _TEST_YAML_GET_ROW_CHECK_STATUS_OK()
 
     # Check return status is good
     if [ "$?" -eq 0 ]; then
-        PRINT "_yaml_get_row OK!" "success"
+        PRINT "_yaml_get_row OK!" "ok"
         return 0
     else
         PRINT "_yaml_get_row failed!" "error"
@@ -50,7 +50,7 @@ _TEST_YAML_GET_ROW_CHECK_PREPROCESS_STATUS_OK()
 
     # Expect failure here
     if [ "$?" -eq 0 ]; then
-        PRINT "_yaml_get_row OK!" "success"
+        PRINT "_yaml_get_row OK!" "ok"
         return 0
     else
         PRINT "_yaml_get_row failed!" "error"
@@ -72,7 +72,7 @@ _TEST_YAML_GET_ROW_CHECK_RETURNED_ROW_OK()
 
     # Check returned row matches expected output
     if [ "$_row" = "testing anOther_row:" ]; then
-        PRINT "_yaml_get_row OK!" "success"
+        PRINT "_yaml_get_row OK!" "ok"
         return 0
     else
         PRINT "_yaml_get_row failed!" "error"
@@ -94,7 +94,7 @@ _TEST_YAML_GET_ROW_CHECK_RETURNED_PREPROCESS_ROW_OK()
 
     # Check returned row matches expected output
     if [ "$_row" = "A: test data is good" ]; then
-        PRINT "_yaml_get_row OK!" "success"
+        PRINT "_yaml_get_row OK!" "ok"
         return 0
     else
         PRINT "_yaml_get_row failed!" "error"

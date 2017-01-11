@@ -142,6 +142,14 @@ Non zero on failure
 ## ENVIRONMENT
     The following environment variables are used and can be overwritten before starting **Space**:
 
+### $SPACE_LOG_ENABLE_COLORS
+Enables colored message output.
+Default: 1
+
+### $SPACE_LOG_LEVEL
+Set level of logging in interval [0,5].
+Default: 4
+
 ### $SPACE_MODULES_SHARED
 The directory for shared resources i.e. modules.  
 Default: ~/.space/space_modules

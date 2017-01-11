@@ -85,6 +85,12 @@ readonly _USAGE="Usage:
 # Output configuration
 #
 
+# Set log level in interval [0,5]
+_LOG_LEVEL=${SPACE_LOG_LEVEL:-4}
+
+# Enable colored message output
+_LOG_ENABLE_COLORS=${SPACE_LOG_ENABLE_COLORS:-1}
+
 # The verbosity level: 0-4 [none-everything]
 _VERBOSITY=3
 # Set to 1 to output the preprocessed YAML result.
@@ -2009,7 +2015,6 @@ _enter_gui_mode()
 # PRINT
 #
 # Redirects a message to a file descriptor.
-# Defaults to option PRINT_LEVEL=4, which can be configured to behave differently by setting a value in the interval [0,5] before calling this function.
 # In the occasion SPACE_FNNAME is set, its value gets prefixed to the final message output.
 # This function is meant to be exported.
 #
@@ -2019,24 +2024,25 @@ _enter_gui_mode()
 #   $3: file descriptor where the message will be redirected to. Defaults to "2"
 #
 # Expects:
-#   PRINT_LEVEL
+#   _LOG_ENABLE_COLORS
+#   _LOG_LEVEL
 #   SPACE_FNNAME
 #
 #=====
 PRINT()
 {
-    SPACE_CMDENV="PRINT_LEVEL=\${PRINT_LEVEL:-4} _PRINT_COLUMN_POSITION"
+    SPACE_CMDENV="_LOG_ENABLE_COLORS _LOG_LEVEL _PRINT_COLUMN_POSITION"
     local color="\033[0m"
     local header=''
-    local color_def="\033[0m"
-    [ "${2-info}" = "error" ] && [ "${PRINT_LEVEL:-4}" -gt 0 ] && header="[ERROR] " && color="\033[31m"
-    [ "${2-info}" = "security" ] && [ "${PRINT_LEVEL:-4}" -gt 0 ] && header="[SEC] " && color="\033[35m"
-    [ "${2-info}" = "warning" ] && [ "${PRINT_LEVEL:-4}" -gt 1 ] && header="[WARN]  " && color="\033[33m"
-    [ "${2-info}" = "success" ] && [ "${PRINT_LEVEL:-4}" -gt 2 ] && header="[OK]    " && color="\033[32m"
-    [ "${2-info}" = "info" ] && [ "${PRINT_LEVEL:-4}" -gt 3 ] && header="[INFO]  " && color="\033[37m"
-    [ "${2-info}" = "debug" ] && [ "${PRINT_LEVEL:-4}" -gt 4 ] && header="[DEBUG] " && color="" && color_def=""
+    [ "${2-info}" = "error" ] && [ "${_LOG_LEVEL:-4}" -gt 0 ] && header="[ERROR] " && color="\033[31m"
+    [ "${2-info}" = "security" ] && [ "${_LOG_LEVEL:-4}" -gt 0 ] && header="[SEC]   " && color="\033[35m"
+    [ "${2-info}" = "warning" ] && [ "${_LOG_LEVEL:-4}" -gt 1 ] && header="[WARN]  " && color="\033[33m"
+    [ "${2-info}" = "ok" ] && [ "${_LOG_LEVEL:-4}" -gt 2 ] && header="[OK]    " && color="\033[32m"
+    [ "${2-info}" = "info" ] && [ "${_LOG_LEVEL:-4}" -gt 3 ] && header="[INFO]  " && color="\033[37m"
+    [ "${2-info}" = "debug" ] && [ "${_LOG_LEVEL:-4}" -gt 4 ] && header="[DEBUG] " && color=""
     [ -z "${header}" ] && return 0
-    [ "${SPACE_FNNAME-}" != "" ] && ( printf "\033[${_PRINT_COLUMN_POSITION}G${color}%s%s: %s\033[0m\n" "${header}" "${SPACE_FNNAME}" "${1}" >&${3-2}) || ( printf "\033[${_PRINT_COLUMN_POSITION}G${color}%s%s${color_def}\n" "${header}" "${1}" >&${3-2} )
+    [ "${SPACE_FNNAME-}" != "" ] && ( [ "${_LOG_ENABLE_COLORS}" = "1" ] && printf "\033[${_PRINT_COLUMN_POSITION}G${color}%s%s: %s\033[0m\n" "${header}" "${SPACE_FNNAME}" "${1}" >&${3-2}) || ( [ "${_LOG_ENABLE_COLORS}" = "1" ] && printf "\033[${_PRINT_COLUMN_POSITION}G${color}%s%s\033[0m\n" "${header}" "${1}" >&${3-2} )
+    [ "${SPACE_FNNAME-}" != "" ] && ( [ "${_LOG_ENABLE_COLORS}" != "1" ] && printf "%s%s: %s\n" "${header}" "${SPACE_FNNAME}" "${1}" >&${3-2}) || ( [ "${_LOG_ENABLE_COLORS}" != "1" ] && printf "%s%s\n" "${header}" "${1}" >&${3-2} )
     :
 }
 
@@ -2056,35 +2062,35 @@ _security()
                *  to the Space.sh site to see that everything else is OK.      *
                *****************************************************************
 _EOF
-    printf "${_COLOR_FG_MAGENTA}"
-    _print "[security] $_msg"
-    printf "${_COLOR_DEFAULT}"
+    [ "$_LOG_ENABLE_COLORS" = "1" ] && printf "${_COLOR_FG_MAGENTA}"
+    _print "[SEC]   $_msg"
+    [ "$_LOG_ENABLE_COLORS" = "1" ] && printf "${_COLOR_DEFAULT}"
 }
 
 _error()
 {
     if (( $_VERBOSITY >= 1 )); then
-        printf "${_COLOR_FG_RED}"
-        _print "[error] $@"
-        printf "${_COLOR_DEFAULT}"
+        [ "$_LOG_ENABLE_COLORS" = "1" ] && printf "${_COLOR_FG_RED}"
+        _print "[ERROR] $@"
+        [ "$_LOG_ENABLE_COLORS" = "1" ] && printf "${_COLOR_DEFAULT}"
     fi
 }
 
 _warning()
 {
     if (( $_VERBOSITY >= 2 )); then
-        printf "${_COLOR_FG_YELLOW}"
-        _print "[warn]  $@"
-        printf "${_COLOR_DEFAULT}"
+        [ "$_LOG_ENABLE_COLORS" = "1" ] && printf "${_COLOR_FG_YELLOW}"
+        _print "[WARN]  $@"
+        [ "$_LOG_ENABLE_COLORS" = "1" ] && printf "${_COLOR_DEFAULT}"
     fi
 }
 
 _info()
 {
     if (( $_VERBOSITY >= 3 )); then
-        printf "${_COLOR_FG_WHITE}"
-        _print "[info]  $@"
-        printf "${_COLOR_DEFAULT}"
+        [ "$_LOG_ENABLE_COLORS" = "1" ] && printf "${_COLOR_FG_WHITE}"
+        _print "[INFO]  $@"
+        [ "$_LOG_ENABLE_COLORS" = "1" ] && printf "${_COLOR_DEFAULT}"
     fi
 }
 
@@ -2095,16 +2101,16 @@ _runinfo()
         shift
         local _color=${1-$_COLOR_DEFAULT}
         shift || :
-        printf "${_color}"
-        _print "[run]   $_msg"
-        printf "${_COLOR_DEFAULT}"
+        [ "$_LOG_ENABLE_COLORS" = "1" ] && printf "${_color}"
+        _print "[RUN]   $_msg"
+        [ "$_LOG_ENABLE_COLORS" = "1" ] && printf "${_COLOR_DEFAULT}"
     fi
 }
 
 _debug()
 {
     if (( $_VERBOSITY >= 4 )); then
-        _print "[debug] $@"
+        _print "[DEBUG] $@"
     fi
 }
 
@@ -4125,7 +4131,7 @@ _execute()
         _export_cmd="${_export_cmd}"'
 # Space shows error message, if non clear exit.
 _status="$?"; if [ "'${CMDSILENT:-0}'" -eq 0 ] && [ "${_status}" -ne "'${CMDEXIT:-0}'" ]; then
-    printf "'${_COLOR_FG_RED}'"; printf "%s\n" "[ERROR] Script exited with status: ${_status}." >&2; printf "'${_COLOR_DEFAULT}'"
+    [ "'${_LOG_ENABLE_COLORS}'" = "1" ] && printf "'${_COLOR_FG_RED}'"; printf "%s\n" "[ERROR] Script exited with status: ${_status}." >&2; [ "'${_LOG_ENABLE_COLORS}'" = "1" ] && printf "'${_COLOR_DEFAULT}'"
     exit "$(( ${_status} > 0 ? ${_status} : 1 ))"
 fi
 '

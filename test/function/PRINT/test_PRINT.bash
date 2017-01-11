@@ -20,7 +20,7 @@ _TEST_PRINT()
 {
     SPACE_CMDDEP="PRINT"
 
-    PRINT_LEVEL=5
+    _LOG_LEVEL=5
 
     local _tmp_file_name="./tmp_test_PRINT"
 
@@ -33,7 +33,7 @@ _TEST_PRINT()
         _level_tag="\[SEC\]"
     elif [ "$_level" = "warning" ]; then
         _level_tag="\[WARN\]"
-    elif [ "$_level" = "success" ]; then
+    elif [ "$_level" = "ok" ]; then
         _level_tag="\[OK\]"
     elif [ "$_level" = "info" ]; then
         _level_tag="\[INFO\]"
@@ -83,7 +83,7 @@ _TEST_PRINT()
         fi
 
         if [ "$_extracted_tag" = "${_level_tag//\\}" ]; then
-            PRINT "PRINT $_level OK!" "success"
+            PRINT "PRINT $_level OK!" "ok"
             # remove tmp file
             rm "$_tmp_file_name"
             return 0
@@ -118,11 +118,11 @@ _TEST_PRINT_LEVEL_WARNING()
     _TEST_PRINT "warning"
 }
 
-_TEST_PRINT_LEVEL_SUCCESS()
+_TEST_PRINT_LEVEL_OK()
 {
     SPACE_CMDDEP="_TEST_PRINT"
 
-    _TEST_PRINT "success"
+    _TEST_PRINT "ok"
 }
 
 _TEST_PRINT_LEVEL_INFO()

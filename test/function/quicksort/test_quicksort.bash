@@ -30,7 +30,7 @@ _TEST_QUICKSORT()
     _quicksort "${_unsorted_array[@]}"
 
     if [[ "${_quicksort_output[*]}" == "${_sorted_array[*]}" ]]; then
-        PRINT "_quicksort OK!" "success"
+        PRINT "_quicksort OK!" "ok"
         return 0
     else
         PRINT "_quicksort failed!" "error"

@@ -62,7 +62,7 @@ _TEST_HELPVERSION()
         # Check version indeed matches a version pattern
         PRINT "Trying to match results with expected version format..."
         if [[ "$_version" =~ ^(Space )+[0-9]+\.[0-9]+\.[0-9] ]]; then
-            PRINT "_helpversion OK!" "success"
+            PRINT "_helpversion OK!" "ok"
             # remove tmp file
             rm "$_tmp_file_name"
             return 0

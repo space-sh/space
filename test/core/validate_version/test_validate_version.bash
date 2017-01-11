@@ -23,7 +23,7 @@ _VALIDATE_VERSION()
 
     # Check if version string is valid
     if [[ "${_VERSION}" =~ ^[0-9]+.[0-9]+.[0-9]+$ ]]; then
-        PRINT "_VERSION test OK!" "success"
+        PRINT "_VERSION test OK!" "ok"
         return 0
     else
         PRINT "_VERSION value=[${_VERSION}] doesn't match expected format" "error"

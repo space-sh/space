@@ -25,7 +25,7 @@ _READ_PROGRAM_NAME_SOURCE()
     if [ "${_BIN_NAME}" = "space" ]; then
         _BASE_PATH="$( cd "${_SPACEBIN%/*}" 2>/dev/null ; pwd )"
         PRINT "Base path = ${_BASE_PATH}"
-        PRINT "_SPACEBIN test OK!" "success"
+        PRINT "_SPACEBIN test OK!" "ok"
         return 0
     else
         PRINT "_SPACEBIN value=[${_BIN_NAME}] doesn't match expected value [space]" "error"

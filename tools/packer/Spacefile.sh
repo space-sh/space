@@ -190,7 +190,7 @@ SPACE_PACKER_MAKE()
     #
     # Ready
     if [ "$?" -eq 0 ]; then
-        PRINT "Release package has been created at $_release_dir" "success"
+        PRINT "Release package has been created at $_release_dir" "ok"
     else
         PRINT "Failed to sign the package. Generated files can still be found at $_release_dir" "error"
     fi

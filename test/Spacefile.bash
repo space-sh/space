@@ -84,7 +84,7 @@ _TEST_ALL_RECURSIVELY()
 
         PRINT "----------------"
         PRINT "Test summary:"
-        PRINT "OK:      $(echo "$_num_ok")" "success"
+        PRINT "OK:      $(echo "$_num_ok")" "ok"
         PRINT "WARNING: $(echo "$_num_warn")" "warning"
         PRINT "ERROR:   $(echo "$_num_error")" "error"
         PRINT "----------------"

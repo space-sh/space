@@ -40,7 +40,7 @@ _CHECK_EXIT_STATUS()
             _exit_status=$((_exit_status + 1 ))
         fi
     else
-        PRINT "  [OK!]" "success"
+        PRINT "  [OK!]" "ok"
     fi
 
 }

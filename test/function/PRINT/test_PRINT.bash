@@ -30,7 +30,7 @@ _TEST_PRINT()
     if [ "$_level" = "error" ]; then
         _level_tag="\[ERROR\]"
     elif [ "$_level" = "security" ]; then
-        _level_tag="\[SECUR\]"
+        _level_tag="\[SEC\]"
     elif [ "$_level" = "warning" ]; then
         _level_tag="\[WARN\]"
     elif [ "$_level" = "success" ]; then

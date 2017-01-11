@@ -78,7 +78,7 @@ _TEST_ALL_RECURSIVELY()
 
         # Count occurrences
         # EXTERNAL: grep
-        local _num_ok=$(grep -c "SUCCE" "$_output_file_name")
+        local _num_ok=$(grep -c "OK" "$_output_file_name")
         local _num_warn=$(grep -c "WARN" "$_output_file_name")
         local _num_error=$(grep -c "ERROR" "$_output_file_name")
 

@@ -2030,7 +2030,7 @@ PRINT()
     local header=''
     local color_def="\033[0m"
     [ "${2-info}" = "error" ] && [ "${PRINT_LEVEL:-4}" -gt 0 ] && header="[ERROR] " && color="\033[31m"
-    [ "${2-info}" = "security" ] && [ "${PRINT_LEVEL:-4}" -gt 0 ] && header="[SECUR] " && color="\033[35m"
+    [ "${2-info}" = "security" ] && [ "${PRINT_LEVEL:-4}" -gt 0 ] && header="[SEC] " && color="\033[35m"
     [ "${2-info}" = "warning" ] && [ "${PRINT_LEVEL:-4}" -gt 1 ] && header="[WARN]  " && color="\033[33m"
     [ "${2-info}" = "success" ] && [ "${PRINT_LEVEL:-4}" -gt 2 ] && header="[OK]    " && color="\033[32m"
     [ "${2-info}" = "info" ] && [ "${PRINT_LEVEL:-4}" -gt 3 ] && header="[INFO]  " && color="\033[37m"

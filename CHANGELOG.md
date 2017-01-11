@@ -16,6 +16,10 @@
 
 + Add support for modules cloning and updating latest stable version by default
 
++ Add SPACE_LOG_ENABLE_COLORS environment variable setting
+
++ Add SPACE_LOG_LEVEL environment variable setting
+
 * Fix a bug that causes sourced files not to quit on syntax error
 
 * Change error messages around SPACE header variables to be more descriptive

@@ -3613,9 +3613,15 @@ _update_modules()
                             # EXTERNAL: cat
                             _current_version=$(cat "./stable.txt")
                         fi
-                        ( git checkout master && git pull ) > /dev/null 2>&1
+                        git checkout master > /dev/null 2>&1
                         if [ "$?" -gt 0 ]; then
-                            _error "Failed to checkout and pull master branch"
+                            _error "Failed to checkout master branch"
+                            return 1
+                        fi
+                        local _git_pull_output=
+                        _git_pull_output=$(git pull 2>&1)
+                        if [ "$?" -gt 0 ]; then
+                            _error "Failed to pull master branch"
                             return 1
                         fi
                         if [ -f "./stable.txt" ]; then
@@ -3630,6 +3636,12 @@ _update_modules()
                             if [ "$?" != "0" ]; then
                                 _error "Could not Git checkout $_new_version of $_reponame."
                                 return 1
+                            fi
+                        else
+                            if [ "$_git_pull_output" = "Already up-to-date." ]; then
+                                _info "Already up-to-date"
+                            else
+                                _info "Updated to latest master"
                             fi
                         fi
                         if [[ -f .gitmodules ]]; then

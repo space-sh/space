@@ -99,9 +99,11 @@ Always quote strings.
 
 #### Environment variables
 Never starts with an underscore. Always upper case, using underscores for splitting words.
+Prefer reading an environment variable and storing it into another variable before modifying.
 
 #### Default values
 Whenever relevant, have default values set. Example: `_HOST_PORT=${_HOST_PORT-80}`
+In that case, if `_HOST_PORT` is set to empty `_HOST_PORT=`, the value will remain null. For setting a default value for cases where a variable might be unset or empty, use the `:-` instead.
 
 #### Arithmetic expressions
 Use `_count=$(( _count + 1 ))`.
@@ -175,6 +177,9 @@ Example:
     _strlen_is_zero
 fi
 ```
+
+Prefer using `= "1"` instead of `-eq` for comparing public user settings and flags, for instance "0" and "1". In the event an user provides a non-integer as argument, for example `_ENABLE_THIS_SETTING="NO"`, a comparison using `=` operator would not break the code.
+
 
 #### Silence
 Avoid polluting `stdout`. Prefer the default mode to be lean and add the ability to control a debug or verbose option in case the user wants more information. In that case, always send user-relevant information to `stderr`.

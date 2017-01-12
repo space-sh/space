@@ -65,7 +65,7 @@ Bug reports and suggestions can be filed at the project [GitLab Issues](https://
 
 ## Authors
 
-Copyright 2016 Blockie AB [Blockie.org](https://blockie.org)
+Copyright 2016-2017 Blockie AB [Blockie.org](https://blockie.org)
 
 
 ## License

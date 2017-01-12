@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #
-# Copyright 2016 Blockie AB
+# Copyright 2016-2017 Blockie AB
 #
 # This file is part of Space.
 #

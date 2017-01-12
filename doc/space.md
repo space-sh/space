@@ -555,7 +555,7 @@ Maicon Filippsen (filippsen@blockie.org).
 Please refer to the official source code repository for filing issues: https://gitlab.com/space-sh/space/issues
 
 ## COPYRIGHT
-Copyright 2016 Blockie AB Blockie.org
+Copyright 2016-2017 Blockie AB Blockie.org
 
 ## SEE ALSO
 ash(1), dash(1), bash(1), sh(1)  

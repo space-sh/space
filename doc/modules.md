@@ -43,3 +43,5 @@ GENERATE_VARIABLES=0 GENERATE_TOC=0 space -f ../space/tools/spacedoc/Spacefile.y
 
 8. Add continuous integration targets for running tests on external test and build servers
 
+9. Always take careful action when making decisions based on data gathered, be it locally or remotely, because data could be tampered, misdirected or turned into malicious by third party operators.
+

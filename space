@@ -2147,6 +2147,75 @@ prompt()
 #==========
 _main()
 {
+    # First thing we do is to try to figure out if
+    # space was invoked as an interpretor using a shebang.
+    # If that's so then the following code will modify the positional parameters
+    # to fit space normal invocation.
+    #
+    # Note: Shebang behaviour might vary on different platforms:
+    #   This is tested only on Linux so far.
+    #   What could differ is that $1 would be many args instead of one,
+    #   and that the chaining of shebang's might not work.
+    #   ref: http://www.in-ulm.de/~mascheck/various/shebang/
+    local _isshebang=0
+    if [ "$#" -gt 0 ]; then
+        if [ -f "${1}" ]; then
+            # First argument is a file, inject "-f" switch as $1, and continue
+            set -- "-f" "$@"
+            _isshebang=1
+        elif [ "$#" -gt 1 ] && [ -f "${2}" ]; then
+            # Second argument is a file, now check if first argument is more than
+            # a -f switch, and if so, we have things to figure out.
+            if [ "${1}" != "-f" ]; then
+                _isshebang=1
+                # Break $1 into parts.
+                local _args_shebang=()
+                _split_quoted "_args_shebang" "${1}"
+                local _filename="${2}"
+                shift 2
+                local _args=("$@")
+                local _newargs=()
+
+                # Go through all _args_shebang up til any "--".
+                local _shebang__=-1
+                local _rowindex=
+                for ((_rowindex=0; _rowindex<${#_args_shebang[@]}; _rowindex+=1 )); do
+                    if [[ ${_args_shebang[$_rowindex]} == "--" ]]; then
+                        _shebang__=$_rowindex
+                        break
+                    else
+                        _newargs=("${_newargs[@]}" "${_args_shebang[$_rowindex]}")
+                    fi
+                done
+
+                # Go through all _args up til any "--".
+                local _hadargs=0
+                for ((_rowindex=0; _rowindex<${#_args[@]}; _rowindex+=1 )); do
+                    if [[ ${_args[$_rowindex]} == "--" ]]; then
+                        # We have -- args.
+                        # Add filename as first -- args
+                        _hadargs=1
+                        _newargs=("${_newargs[@]}" "--" "${_filename}")
+                        # Keep on adding args.
+                    else
+                        _newargs=("${_newargs[@]}" "${_args[$_rowindex]}")
+                    fi
+                done
+
+                # If -- args not added, see if we have from shebang args.
+                if [ "${_hadargs}" = 0 ]; then
+                    _newargs=("${_newargs[@]}" "--" "${_filename}")
+                   if [ "${_shebang__}" -gt "-1" ]; then
+                       _newargs=("${_newargs[@]}" "${_args_shebang[@]:$((_shebang__+1))}")
+                   fi
+                fi
+                while shift; do :; done
+                set -- "${_newargs[@]}"
+                unset _args_shebang _filename _args _newargs _shebang__ _rowindex _hadargs
+            fi
+        fi
+    fi
+
     local _loadmodules="" # -M
     local _envE=()        # -e
     local _envP=()        # -p
@@ -2430,7 +2499,11 @@ _main()
             local _node=${_node//\"}
             local _node=${_node//\\}
             if [[ ${_node:0:1} != "/" ]]; then
-                _error "Node name must begin with slash. Cowboy slash is OK."
+                if [ "${_isshebang}" = 1 ]; then
+                    _error "Cannot understand the argument '${_node}'. Did you mean: -- ${_node}?"
+                else
+                    _error "Node name '${_node}' must begin and end with slash. Cowboy slash (lonesome single slash) is OK."
+                fi
                 return 1
             fi
             if [[ $_node =~ [\ ] ]]; then
@@ -2447,6 +2520,7 @@ _main()
         fi
     done
     unset _o
+    unset _isshebang
 
     if [[ $_BASH_COMPLETION != "0" ]]; then
         # Reset some switches that will get in our way when auto completing.

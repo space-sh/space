@@ -20,6 +20,10 @@
 
 + Add SPACE_LOG_LEVEL environment variable setting
 
++ Add more descriptive update messages (-U switch)
+
++ Add `#!` shebang line support `#!/usr/bin/env space [args]`
+
 * Fix a bug that causes sourced files not to quit on syntax error
 
 * Change error messages around SPACE header variables to be more descriptive

@@ -146,7 +146,7 @@ _RUN_CHECK_FAIL "Test unknown option: dash only" "Unknown option -" $_SPACE_BIN 
 _RUN_CHECK_FAIL "Test unknown option: dash and number" "Unknown option -6" $_SPACE_BIN -6
 _RUN_CHECK_FAIL "Test unknown option: dash and unknown letter" "Unknown option -Z" $_SPACE_BIN -Z
 _RUN_CHECK_FAIL "Test unknown option: dash, known letter, invalid parameter" "Unknown -X argument 6" $_SPACE_BIN -X6
-_RUN_CHECK_FAIL "Test invalid node name" "Node name must begin with slash." $_SPACE_BIN badNodeName
+_RUN_CHECK_FAIL "Test invalid node name" "must begin and end with slash" $_SPACE_BIN badNodeName
 
 # -f
 _RUN_CHECK_FAIL "Test -f switch: file does not exit" "YAML file UnknownFile.yaml does not exist" $_SPACE_BIN -f UnknownFile.yaml / -h
@@ -218,7 +218,7 @@ _RUN_CHECK_OK "Test -V switch" "Space " $_SPACE_BIN -V
 _RUN_CHECK_OK   "Test -h switch: root node" "SpaceGal shell installer" $_SPACE_BIN / -h
 _RUN_CHECK_OK   "Test -h switch: child node" "Install SpaceGal shell" $_SPACE_BIN /install/ -h
 _RUN_CHECK_OK   "Test -h switch: specifying file" "+ 0" $_SPACE_BIN -f ./test/yaml/test.yaml /tests/ -h
-_RUN_CHECK_FAIL "Test -h switch: specifying file with incorrect node" "Node name must begin with slash." $_SPACE_BIN -f ./test/yaml/test.yaml wrongnode -h
+_RUN_CHECK_FAIL "Test -h switch: specifying file with incorrect node" "must begin and end with slash" $_SPACE_BIN -f ./test/yaml/test.yaml wrongnode -h
 _RUN_CHECK_FAIL "Test -h switch: specifying file with incorrect path" "Malformed node path" $_SPACE_BIN -f ./test/yaml/test.yaml /tests/wrongpath -h
 
 # prompt during preprocessing

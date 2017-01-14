@@ -2157,6 +2157,40 @@ _main()
     #   What could differ is that $1 would be many args instead of one,
     #   and that the chaining of shebang's might not work.
     #   ref: http://www.in-ulm.de/~mascheck/various/shebang/
+
+    # New note: Here we try to detect wether if's a FreeBSD/OSX type of shebang
+    # and modify the parameters to look like a Linux shebang.
+    if [ "$#" -gt 0 ]; then
+        if [ "${1}" = "!" ]; then
+            # This is shebang where all args are seperated.
+            # We want to remove the first and last arg containing "!" which
+            # denotes the start and end of shebang arguments.
+            # First one is easy.
+            shift
+            local _args=()
+            while [ $? -eq 0 ]; do
+                local _arg="${1}"
+                if [ "${_arg}" = "!" ]; then
+                    shift
+                    break
+                fi
+                _args=("${_args[@]}" "${_arg}")
+                shift
+            done
+            # Re-set all args now, but shebang args as big one arg this time.
+            set -- "${_args[*]}" "$@"
+            unset _args _arg
+        elif [ "${1:0:2}" = "! " ]; then
+            # This is shebang where all args are one, but we expected them to be separated.
+            # We'll just cut away "! " and " !" from start and end of $1 and send it along.
+            local _arg1="${1:2:$((${#1} - 4))}"
+            # Repopulate the positional arguments.
+            shift
+            set -- "${_arg1}" "$@"
+            unset _arg1
+        fi
+    fi
+
     local _isshebang=0
     if [ "$#" -gt 0 ]; then
         if [ -f "${1}" ]; then

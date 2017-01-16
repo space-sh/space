@@ -18,8 +18,8 @@
 
 _TEST_YAML_GET_ROW_CHECK_STATUS_OK()
 {
-    SPACE_CMDDEP="PRINT _yaml_get_row"
-    SPACE_CMDENV=""
+    SPACE_DEP="PRINT _yaml_get_row"
+    SPACE_ENV=""
 
     local _row_index=0
     local _preprocess=0
@@ -39,8 +39,8 @@ _TEST_YAML_GET_ROW_CHECK_STATUS_OK()
 
 _TEST_YAML_GET_ROW_CHECK_PREPROCESS_STATUS_OK()
 {
-    SPACE_CMDDEP="PRINT _yaml_get_row"
-    SPACE_CMDENV=""
+    SPACE_DEP="PRINT _yaml_get_row"
+    SPACE_ENV=""
 
     local _row_index=0
     local _preprocess=1
@@ -60,8 +60,8 @@ _TEST_YAML_GET_ROW_CHECK_PREPROCESS_STATUS_OK()
 
 _TEST_YAML_GET_ROW_CHECK_RETURNED_ROW_OK()
 {
-    SPACE_CMDDEP="PRINT _yaml_get_row"
-    SPACE_CMDENV=""
+    SPACE_DEP="PRINT _yaml_get_row"
+    SPACE_ENV=""
 
     local _row_index=3
     local _preprocess=0
@@ -82,8 +82,8 @@ _TEST_YAML_GET_ROW_CHECK_RETURNED_ROW_OK()
 
 _TEST_YAML_GET_ROW_CHECK_RETURNED_PREPROCESS_ROW_OK()
 {
-    SPACE_CMDDEP="PRINT _yaml_get_row"
-    SPACE_CMDENV=""
+    SPACE_DEP="PRINT _yaml_get_row"
+    SPACE_ENV=""
 
     local _row_index=1
     local _preprocess=1

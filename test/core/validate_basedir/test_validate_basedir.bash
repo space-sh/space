@@ -18,8 +18,8 @@
 
 _VALIDATE_BASEDIR()
 {
-    SPACE_CMDDEP="PRINT"
-    SPACE_CMDENV="_BASEDIR"
+    SPACE_DEP="PRINT"
+    SPACE_ENV="_BASEDIR"
 
     # Check if BASEDIR path is valid
     if [[ "${_BASEDIR}" =~ ^\/.*$ ]]; then

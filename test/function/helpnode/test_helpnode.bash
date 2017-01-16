@@ -18,8 +18,8 @@
 
 _TEST_HELPNODE_EMPTY_STRING_PARAMETER()
 {
-    SPACE_CMDDEP="PRINT _helpnode _print _copy _list"
-    SPACE_CMDENV="_YAML_PREFIX _YAML_NAMESPACE"
+    SPACE_DEP="PRINT _helpnode _print _copy _list"
+    SPACE_ENV="_YAML_PREFIX _YAML_NAMESPACE"
 
     local _tmp_file_name="./tmp_test_helpnode"
 
@@ -87,8 +87,8 @@ _TEST_HELPNODE_EMPTY_STRING_PARAMETER()
 
 _TEST_HELPNODE_WITH_PARAMETER()
 {
-    SPACE_CMDDEP="PRINT _helpnode _print _copy _list"
-    SPACE_CMDENV="_YAML_PREFIX _YAML_NAMESPACE"
+    SPACE_DEP="PRINT _helpnode _print _copy _list"
+    SPACE_ENV="_YAML_PREFIX _YAML_NAMESPACE"
 
     local _tmp_file_name="./tmp_test_helpnode"
 

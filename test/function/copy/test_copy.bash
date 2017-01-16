@@ -18,8 +18,8 @@
 
 _TEST_COPY()
 {
-    SPACE_CMDDEP="PRINT _copy"
-    SPACE_CMDENV="_YAML_PREFIX _YAML_NAMESPACE"
+    SPACE_DEP="PRINT _copy"
+    SPACE_ENV="_YAML_PREFIX _YAML_NAMESPACE"
 
     local _sg1_0a95somespace_node1_node3_Test0a95nO0a95d3="Passed"
     local _test_storage=

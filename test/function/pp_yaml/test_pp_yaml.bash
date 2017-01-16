@@ -18,8 +18,8 @@
 
 _TEST_PP_YAML_CHECK_STATUS_OK()
 {
-    SPACE_CMDDEP="PRINT _yaml_get_multiline _yaml_get_next _yaml_get_row _yaml_find_nextindent _module_find_yaml _error _print _debug _pp_yaml"
-    SPACE_CMDENV="_SPACEGAL_EOF_TAG _VERBOSITY _COLOR_FG_RED _COLOR_DEFAULT"
+    SPACE_DEP="PRINT _yaml_get_multiline _yaml_get_next _yaml_get_row _yaml_find_nextindent _module_find_yaml _error _print _debug _pp_yaml"
+    SPACE_ENV="_SPACEGAL_EOF_TAG _VERBOSITY _COLOR_FG_RED _COLOR_DEFAULT"
 
     local _yamlrows=() _yamlfilelist=""
     local _yamlfile="./test/function/pp_yaml/good_config.yml"
@@ -41,8 +41,8 @@ _TEST_PP_YAML_CHECK_STATUS_OK()
 
 _TEST_PP_YAML_CHECK_PREPROCESSED_OK()
 {
-    SPACE_CMDDEP="PRINT _yaml_get_multiline _yaml_get_next _yaml_get_row _yaml_find_nextindent _module_find_yaml _error _print _debug _pp_yaml"
-    SPACE_CMDENV="_SPACEGAL_EOF_TAG _VERBOSITY _COLOR_FG_RED _COLOR_DEFAULT"
+    SPACE_DEP="PRINT _yaml_get_multiline _yaml_get_next _yaml_get_row _yaml_find_nextindent _module_find_yaml _error _print _debug _pp_yaml"
+    SPACE_ENV="_SPACEGAL_EOF_TAG _VERBOSITY _COLOR_FG_RED _COLOR_DEFAULT"
 
     local _yamlrows=() _yamlfilelist=""
     local _yamlfile="./test/function/pp_yaml/good_config.yml"
@@ -65,8 +65,8 @@ _TEST_PP_YAML_CHECK_PREPROCESSED_OK()
 
 _TEST_PP_YAML_CHECK_STATUS_FAIL_1()
 {
-    SPACE_CMDDEP="PRINT _yaml_get_multiline _yaml_get_next _yaml_get_row _yaml_find_nextindent _pp_yaml"
-    SPACE_CMDENV="_SPACEGAL_EOF_TAG _COLOR_FG_RED _COLOR_DEFAULT"
+    SPACE_DEP="PRINT _yaml_get_multiline _yaml_get_next _yaml_get_row _yaml_find_nextindent _pp_yaml"
+    SPACE_ENV="_SPACEGAL_EOF_TAG _COLOR_FG_RED _COLOR_DEFAULT"
 
     local _yamlrows=() _yamlfilelist=""
     local _yamlfile="./this_file_does_not_exist.yml"
@@ -88,8 +88,8 @@ _TEST_PP_YAML_CHECK_STATUS_FAIL_1()
 
 _TEST_PP_YAML_CHECK_STATUS_FAIL_2()
 {
-    SPACE_CMDDEP="PRINT _yaml_get_multiline _yaml_get_next _yaml_get_row _yaml_find_nextindent _module_find_yaml _error _print _pp_yaml"
-    SPACE_CMDENV="_SPACEGAL_EOF_TAG _VERBOSITY _COLOR_FG_RED _COLOR_DEFAULT"
+    SPACE_DEP="PRINT _yaml_get_multiline _yaml_get_next _yaml_get_row _yaml_find_nextindent _module_find_yaml _error _print _pp_yaml"
+    SPACE_ENV="_SPACEGAL_EOF_TAG _VERBOSITY _COLOR_FG_RED _COLOR_DEFAULT"
 
     local _yamlrows=() _yamlfilelist=""
     local _yamlfile="./test/function/pp_yaml/bad_include.yml"
@@ -111,8 +111,8 @@ _TEST_PP_YAML_CHECK_STATUS_FAIL_2()
 
 _TEST_PP_YAML_CHECK_STATUS_FAIL_3()
 {
-    SPACE_CMDDEP="PRINT _yaml_get_multiline _yaml_get_next _yaml_get_row _yaml_find_nextindent _module_find_yaml _error _print _pp_yaml"
-    SPACE_CMDENV="_SPACEGAL_EOF_TAG _VERBOSITY _COLOR_FG_RED _COLOR_DEFAULT"
+    SPACE_DEP="PRINT _yaml_get_multiline _yaml_get_next _yaml_get_row _yaml_find_nextindent _module_find_yaml _error _print _pp_yaml"
+    SPACE_ENV="_SPACEGAL_EOF_TAG _VERBOSITY _COLOR_FG_RED _COLOR_DEFAULT"
 
     local _yamlrows=() _yamlfilelist=""
     local _yamlfile="./test/function/pp_yaml/bad_clone.yml"
@@ -134,8 +134,8 @@ _TEST_PP_YAML_CHECK_STATUS_FAIL_3()
 
 _TEST_PP_YAML_CHECK_STATUS_FAIL_4()
 {
-    SPACE_CMDDEP="PRINT _yaml_get_multiline _yaml_get_next _yaml_get_row _yaml_find_nextindent _module_find_yaml _error _print _debug _pp_yaml"
-    SPACE_CMDENV="_SPACEGAL_EOF_TAG _VERBOSITY _COLOR_FG_RED _COLOR_DEFAULT"
+    SPACE_DEP="PRINT _yaml_get_multiline _yaml_get_next _yaml_get_row _yaml_find_nextindent _module_find_yaml _error _print _debug _pp_yaml"
+    SPACE_ENV="_SPACEGAL_EOF_TAG _VERBOSITY _COLOR_FG_RED _COLOR_DEFAULT"
 
     local _yamlrows=() _yamlfilelist=""
     local _yamlfile="./test/function/pp_yaml/bad_assert.yml"
@@ -157,8 +157,8 @@ _TEST_PP_YAML_CHECK_STATUS_FAIL_4()
 
 _TEST_PP_YAML_CHECK_FILTER_STATUS_OK()
 {
-    SPACE_CMDDEP="PRINT _yaml_get_multiline _yaml_get_next _yaml_get_row _yaml_find_nextindent _module_find_yaml _error _print _debug _pp_yaml"
-    SPACE_CMDENV="_SPACEGAL_EOF_TAG _VERBOSITY _COLOR_FG_RED _COLOR_DEFAULT"
+    SPACE_DEP="PRINT _yaml_get_multiline _yaml_get_next _yaml_get_row _yaml_find_nextindent _module_find_yaml _error _print _debug _pp_yaml"
+    SPACE_ENV="_SPACEGAL_EOF_TAG _VERBOSITY _COLOR_FG_RED _COLOR_DEFAULT"
 
     local _yamlrows=() _yamlfilelist=""
     local _yamlfile="./test/function/pp_yaml/good_config.yml"
@@ -180,8 +180,8 @@ _TEST_PP_YAML_CHECK_FILTER_STATUS_OK()
 
 _TEST_PP_YAML_CHECK_FILTER_PREPROCESSED_OK()
 {
-    SPACE_CMDDEP="PRINT _yaml_get_multiline _yaml_get_next _yaml_get_row _yaml_find_nextindent _module_find_yaml _error _print _debug _pp_yaml"
-    SPACE_CMDENV="_SPACEGAL_EOF_TAG _VERBOSITY _COLOR_FG_RED _COLOR_DEFAULT"
+    SPACE_DEP="PRINT _yaml_get_multiline _yaml_get_next _yaml_get_row _yaml_find_nextindent _module_find_yaml _error _print _debug _pp_yaml"
+    SPACE_ENV="_SPACEGAL_EOF_TAG _VERBOSITY _COLOR_FG_RED _COLOR_DEFAULT"
 
     local _yamlrows=() _yamlfilelist=""
     local _yamlfile="./test/function/pp_yaml/good_config.yml"
@@ -204,8 +204,8 @@ _TEST_PP_YAML_CHECK_FILTER_PREPROCESSED_OK()
 
 _TEST_PP_YAML_CHECK_INHERITED_INDENT_PREPROCESSED_OK()
 {
-    SPACE_CMDDEP="PRINT _yaml_get_multiline _yaml_get_next _yaml_get_row _yaml_find_nextindent _module_find_yaml _error _print _debug _pp_yaml"
-    SPACE_CMDENV="_SPACEGAL_EOF_TAG _VERBOSITY _COLOR_FG_RED _COLOR_DEFAULT"
+    SPACE_DEP="PRINT _yaml_get_multiline _yaml_get_next _yaml_get_row _yaml_find_nextindent _module_find_yaml _error _print _debug _pp_yaml"
+    SPACE_ENV="_SPACEGAL_EOF_TAG _VERBOSITY _COLOR_FG_RED _COLOR_DEFAULT"
 
     local _yamlrows=() _yamlfilelist=""
     local _yamlfile="./test/function/pp_yaml/good_config.yml"

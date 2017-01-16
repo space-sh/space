@@ -18,7 +18,7 @@
 
 _TEST_SORT_PAD_SINGLE_DIGIT()
 {
-    SPACE_CMDDEP="PRINT _sort_pad"
+    SPACE_DEP="PRINT _sort_pad"
 
     local _value="2"
     local _padded_value=
@@ -35,7 +35,7 @@ _TEST_SORT_PAD_SINGLE_DIGIT()
 
 _TEST_SORT_PAD_SINGLE_CHARACTER()
 {
-    SPACE_CMDDEP="PRINT _sort_pad"
+    SPACE_DEP="PRINT _sort_pad"
 
     local _value="k"
     local _padded_value=
@@ -52,7 +52,7 @@ _TEST_SORT_PAD_SINGLE_CHARACTER()
 
 _TEST_SORT_PAD_10_DIGITS()
 {
-    SPACE_CMDDEP="PRINT _sort_pad"
+    SPACE_DEP="PRINT _sort_pad"
 
     local _value="0000000002"
     local _padded_value=
@@ -69,7 +69,7 @@ _TEST_SORT_PAD_10_DIGITS()
 
 _TEST_SORT_PAD_10_CHARACTERS()
 {
-    SPACE_CMDDEP="PRINT _sort_pad"
+    SPACE_DEP="PRINT _sort_pad"
 
     local _value="abeOPuzMvk"
     local _padded_value=
@@ -86,7 +86,7 @@ _TEST_SORT_PAD_10_CHARACTERS()
 
 _TEST_SORT_PAD_20_DIGITS()
 {
-    SPACE_CMDDEP="PRINT _sort_pad"
+    SPACE_DEP="PRINT _sort_pad"
 
     local _value="00000000000000000002"
     local _padded_value=
@@ -103,7 +103,7 @@ _TEST_SORT_PAD_20_DIGITS()
 
 _TEST_SORT_PAD_20_CHARACTERS()
 {
-    SPACE_CMDDEP="PRINT _sort_pad"
+    SPACE_DEP="PRINT _sort_pad"
 
     local _value="abeOPuzMvkUOPQWEZADs"
     local _padded_value=

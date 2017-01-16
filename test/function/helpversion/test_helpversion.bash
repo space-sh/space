@@ -18,8 +18,8 @@
 
 _TEST_HELPVERSION()
 {
-    SPACE_CMDDEP="PRINT _helpversion"
-    SPACE_CMDENV="_VERSION"
+    SPACE_DEP="PRINT _helpversion"
+    SPACE_ENV="_VERSION"
 
     local _tmp_file_name="./tmp_test_helpversion"
 

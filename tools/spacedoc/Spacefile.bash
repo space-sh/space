@@ -22,8 +22,8 @@
 
 _GENERATE_DOC()
 {
-    SPACE_CMDDEP="_to_lower"
-    SPACE_CMDENV="GENERATE_TOC GENERATE_VARIABLES"
+    SPACE_DEP="_to_lower"
+    SPACE_ENV="GENERATE_TOC GENERATE_VARIABLES"
 
     if [ "$#" -eq 0 ]; then
         PRINT "Expecting documentation name as parameter" "error"
@@ -278,7 +278,7 @@ _GENERATE_DOC()
 
 _EXPORT_MARKDOWN()
 {
-    SPACE_CMDDEP="PRINT _GENERATE_DOC"
+    SPACE_DEP="PRINT _GENERATE_DOC"
 
     if [ "$#" -eq 0 ]; then
         PRINT "missing input file to generate documentation from" "error"
@@ -306,7 +306,7 @@ _EXPORT_MARKDOWN()
 
 _EXPORT_HTML()
 {
-    SPACE_CMDDEP="_EXPORT_MARKDOWN PRINT"
+    SPACE_DEP="_EXPORT_MARKDOWN PRINT"
 
     if [ "$#" -eq 0 ]; then
         PRINT "missing input file to generate documentation from" "error"
@@ -341,7 +341,7 @@ _EXPORT_HTML()
 
 _EXPORT_MODULE()
 {
-    SPACE_CMDDEP="PRINT _GENERATE_DOC"
+    SPACE_DEP="PRINT _GENERATE_DOC"
 
     if [ "$#" -eq 0 ]; then
         PRINT "missing input file to generate documentation from" "error"

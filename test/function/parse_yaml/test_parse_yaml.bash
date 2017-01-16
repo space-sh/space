@@ -18,8 +18,8 @@
 
 _TEST_PARSE_YAML_CHECK_STATUS_OK()
 {
-    SPACE_CMDDEP="PRINT _yaml_get_multiline _yaml_get_next _yaml_get_row _yaml_find_nextindent _pp_yaml _parse_yaml"
-    SPACE_CMDENV="_SPACEGAL_EOF_TAG"
+    SPACE_DEP="PRINT _yaml_get_multiline _yaml_get_next _yaml_get_row _yaml_find_nextindent _pp_yaml _parse_yaml"
+    SPACE_ENV="_SPACEGAL_EOF_TAG"
 
     local _yamlrows=() _yamlfilelist=""
     local _yamlfile="./test/function/test_spacefile.yml"
@@ -42,8 +42,8 @@ _TEST_PARSE_YAML_CHECK_STATUS_OK()
 
 _TEST_PARSE_YAML_CHECK_PARSED_YAML_OK()
 {
-    SPACE_CMDDEP="PRINT _yaml_get_multiline _yaml_get_next _yaml_get_row _yaml_find_nextindent _pp_yaml _parse_yaml"
-    SPACE_CMDENV="_SPACEGAL_EOF_TAG"
+    SPACE_DEP="PRINT _yaml_get_multiline _yaml_get_next _yaml_get_row _yaml_find_nextindent _pp_yaml _parse_yaml"
+    SPACE_ENV="_SPACEGAL_EOF_TAG"
 
     local _yamlrows=() _yamlfilelist=""
     local _yamlfile="./test/function/test_spacefile.yml"
@@ -68,8 +68,8 @@ _TEST_PARSE_YAML_CHECK_PARSED_YAML_OK()
 
 _TEST_PARSE_YAML_CHECK_PARSED_YAML_FAIL()
 {
-    SPACE_CMDDEP="PRINT _yaml_get_multiline _yaml_get_next _yaml_get_row _yaml_find_nextindent _pp_yaml _parse_yaml"
-    SPACE_CMDENV="_SPACEGAL_EOF_TAG"
+    SPACE_DEP="PRINT _yaml_get_multiline _yaml_get_next _yaml_get_row _yaml_find_nextindent _pp_yaml _parse_yaml"
+    SPACE_ENV="_SPACEGAL_EOF_TAG"
 
     local _yamlrows=("") _yamlfilelist=""
     local _yamlfile="./Spacefile.bash"

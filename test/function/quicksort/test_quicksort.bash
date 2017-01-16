@@ -18,8 +18,8 @@
 
 _TEST_QUICKSORT()
 {
-    SPACE_CMDDEP="PRINT _quicksort _sort_pad"
-    SPACE_CMDENV="_ALLOW_EXTERNAL"
+    SPACE_DEP="PRINT _quicksort _sort_pad"
+    SPACE_ENV="_ALLOW_EXTERNAL"
 
     _ALLOW_EXTERNAL=0
 

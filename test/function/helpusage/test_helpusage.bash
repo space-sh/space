@@ -18,8 +18,8 @@
 
 _TEST_HELPUSAGE()
 {
-    SPACE_CMDDEP="PRINT _helpusage"
-    SPACE_CMDENV="_USAGE"
+    SPACE_DEP="PRINT _helpusage"
+    SPACE_ENV="_USAGE"
 
     local _tmp_file_name="./tmp_test_helpusage"
 

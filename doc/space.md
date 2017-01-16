@@ -404,60 +404,60 @@ When CMD points to a function name, that function will be parsed for Space heade
         Describes the number of arguments that the function is expecting. Space
         will exit with error if not fulfilled. Bracketed arguments are optional.
 
-  * `SPACE_CMDDEP="FUNC2 PRINT"`:
+  * `SPACE_DEP="FUNC2 PRINT"`:
        A space separated list of names of other function that this function depends
        on. All those functions will be exported together with the referring function.
        Those function modules must have been cloned (and automatically included)
        by issuing "clone mod1 mod2" in the referrings modules script file.
        PRINT is a function that is provided by Space for export for outputting text.
        Always overwritten by the space header if present, and each function that
-       is dependant on other functions should always set their own SPACE_CMDDEP.
+       is dependant on other functions should always set their own SPACE_DEP.
        All dependency functions and their dependencies will be exported, also their
-       SPACE_CMDENV will get added to the first functions SPACE_CMDENV.
+       SPACE_ENV will get added to the first functions SPACE_ENV.
 
-  * `SPACE_CMDENV="SUDO var1=\${othervar-} var2"`:
+  * `SPACE_ENV="SUDO var1=\${othervar-} var2"`:
        A space separated list of variables to export out together with the functions.
        These variables will be evaluated at build time to reflect values set in
        the YAML or present for other reasons. "var=\${var-defaultvalue}" means
        Default value taken from CMDENV variable. Which could be set in the YAML.
        Always overwritten by the space header if present, and each function that
-       is dependant on environment variables should always set their own SPACE_CMDENV.
-       It is important not to introduce spaces in values inside the SPACE_CMDENV
+       is dependant on environment variables should always set their own SPACE_ENV.
+       It is important not to introduce spaces in values inside the SPACE_ENV
        variable, because it will result in syntax error. Always escape default
        value variable names so that there not evaluated too early.
 
-  * `SPACE_CMDREDIR`:
+  * `SPACE_REDIR`:
        Default value taken from CMDREDIR variable. Which could be set in the YAML.
        Only read from space header if not already set in the environment when building.
        Only settable from the first level function (not from the wrappers).
 
-  * `SPACE_CMDOUTER`:
+  * `SPACE_OUTER`:
        Default value taken from CMDOUTER variable. Which could be set in the YAML.
        Only read from space header if not already set in the environment when building.
        Only settable from the first level function (not from the wrappers).
 
-  * `SPACE_CMDARGS`:
+  * `SPACE_ARGS`:
        Default value taken from CMDARGS variable. Which could be set in the YAML.
        Always overwritten by the space header if present.
 
-  * `SPACE_CMD`:
+  * `SPACE_FN`:
        If this variable is set, the function that it refers to will replace the
        current function as being the CMD.
        The referring CMD functions body will be run at this point giving the
        function very powerful ways of altering the environment variables and space
        header variables.
-       For example the function body of the chaining command could do "SPACE_CMDREDIR=..."
+       For example the function body of the chaining command could do "SPACE_REDIR=..."
        to override a value that is already set, but which could not have been overwritten
-       simply using the space header variables, since SPACE_CMDREDIR is not allowed
+       simply using the space header variables, since SPACE_REDIR is not allowed
        to be overwritten in that manner.
        A chained function could chain to another function, etc. All the above variable
        extraction rules apply.
        The body of a chaining function is run in Space's own context, meaning that
        it has access to all included modules and all environment variables, meaning
-       that SPACE_CMDENV and SPACE_CMDDEP headers must *not* be used in a chaining
+       that SPACE_ENV and SPACE_DEP headers must *not* be used in a chaining
        function.
 
-  * `SPACE_CMDWRAP="WRAPFN1 WRAPFN2"`:
+  * `SPACE_WRAP="WRAPFN1 WRAPFN2"`:
        A space separated list of function names that will wrap this function.
        Typical use case is to wrap a command in SSH to run it on a remote server,
        or to wrap it in a "docker exec" to run it inside a Docker container, or both together
@@ -471,16 +471,16 @@ When CMD points to a function name, that function will be parsed for Space heade
        Good to know is that wrapper functions do not get the arguments that the
        original function gets, meaning that a wrapper function should not use the
        SPACE_SIGNATURE header. However the wrapper function often refers to another.
-       function by SPACE_CMD header which is the function to run. For example SSH_WRAP
+       function by SPACE_FN header which is the function to run. For example SSH_WRAP
        chains to the SSH function, and the SSH function does have a SPACE_SIGNATURE header
        because it could be used for direct purposes, not only wrapping.
        So the first wrapper function (the referrer) must then appropriately set up the
-       SPACE_CMDARGS header to match the SPACE_CMD functions SPACE_SIGNATURE that it
+       SPACE_ARGS header to match the SPACE_FN functions SPACE_SIGNATURE that it
        is referring to. The values that make up the SPACE_ARGS will typically be
        derived from environment variables defined in SPACE_ENV.
-       SPACE_CMDDEP and SPACE_CMDENV headers are extracted and exported together with the
+       SPACE_DEP and SPACE_ENV headers are extracted and exported together with the
        wrapper function.
-       If a function refers to another function using SPACE_CMD then the function
+       If a function refers to another function using SPACE_FN then the function
        body is evaluated giving the opportunity to manipulate environment variables.
        The wrappers are evaluated from outermost to innermost, then the actual CMD's
        SPACE_ENV's are evaluated, so that wrappers could have a way of affecting
@@ -523,7 +523,7 @@ first:
 MYMOD1_FIRST ()
 {
      SPACE_SIGNATURE="txt”
-     SPACE_CMDDEP="MYMOD1_PRINT"
+     SPACE_DEP="MYMOD1_PRINT"
 
 
     local txt="${1}"

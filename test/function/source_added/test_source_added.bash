@@ -18,7 +18,7 @@
 
 _TEST_SOURCE_ADDED_SINGLE_CHECK_STATUS()
 {
-    SPACE_CMDDEP="PRINT _source_added"
+    SPACE_DEP="PRINT _source_added"
 
     # Define expected global
     _SOURCE_FILES=("./test/function/source_added/test_source_added.bash")
@@ -51,7 +51,7 @@ _TEST_SOURCE_ADDED_SINGLE_CHECK_STATUS()
 
 _TEST_SOURCE_ADDED_SINGLE_CHECK_STATE_CHANGED_0()
 {
-    SPACE_CMDDEP="PRINT _source_added"
+    SPACE_DEP="PRINT _source_added"
 
     # Define expected global
     _SOURCE_FILES=("./test/function/source_added/test_source_added.bash")
@@ -84,7 +84,7 @@ _TEST_SOURCE_ADDED_SINGLE_CHECK_STATE_CHANGED_0()
 
 _TEST_SOURCE_ADDED_SINGLE_CHECK_STATE_CHANGED_1()
 {
-    SPACE_CMDDEP="PRINT _source_added"
+    SPACE_DEP="PRINT _source_added"
 
     # Define expected global
     _SOURCE_FILES=("./test/function/source_added/test_source_added.bash")
@@ -117,7 +117,7 @@ _TEST_SOURCE_ADDED_SINGLE_CHECK_STATE_CHANGED_1()
 
 _TEST_SOURCE_ADDED_MULTIPLE_CHECK_STATUS()
 {
-    SPACE_CMDDEP="PRINT _source_added"
+    SPACE_DEP="PRINT _source_added"
 
     # Define expected global
     _SOURCE_FILES=("./test/function/source_added/test_source_added.bash" "./test/function/source_added/test_source_added.yaml")
@@ -150,7 +150,7 @@ _TEST_SOURCE_ADDED_MULTIPLE_CHECK_STATUS()
 
 _TEST_SOURCE_ADDED_MULTIPLE_CHECK_STATE_CHANGED_0()
 {
-    SPACE_CMDDEP="PRINT _source_added"
+    SPACE_DEP="PRINT _source_added"
 
     # Define expected global
     _SOURCE_FILES=("./test/function/source_added/test_source_added.bash" "./test/function/source_added/test_source_added.yaml")
@@ -183,7 +183,7 @@ _TEST_SOURCE_ADDED_MULTIPLE_CHECK_STATE_CHANGED_0()
 
 _TEST_SOURCE_ADDED_MULTIPLE_CHECK_STATE_CHANGED_1()
 {
-    SPACE_CMDDEP="PRINT _source_added"
+    SPACE_DEP="PRINT _source_added"
 
     # Define expected global
     _SOURCE_FILES=("./test/function/source_added/test_source_added.bash" "./test/function/source_added/test_source_added.yaml")

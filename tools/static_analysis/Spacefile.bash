@@ -25,7 +25,7 @@
 #
 _RUN_SHELLCHECK()
 {
-    SPACE_CMDDEP="PRINT"
+    SPACE_DEP="PRINT"
 
     if [ "$#" -lt 2 ]; then
         PRINT "Missing two parameters: input file name and output file name." "error"
@@ -62,7 +62,7 @@ _RUN_SHELLCHECK()
 #
 _RUN_CHECKBASHISMS()
 {
-    SPACE_CMDDEP="PRINT"
+    SPACE_DEP="PRINT"
 
     if [ "$#" -lt 2 ]; then
         PRINT "Missing two parameters: input file name and output file name." "error"
@@ -96,7 +96,7 @@ _RUN_CHECKBASHISMS()
 
 _RUN_ALL()
 {
-    SPACE_CMDDEP="_RUN_CHECKBASHISMS _RUN_SHELLCHECK"
+    SPACE_DEP="_RUN_CHECKBASHISMS _RUN_SHELLCHECK"
 
     if [ "$#" -lt 2 ]; then
         PRINT "Missing two parameters: input file name and output file name suffix" "error"
@@ -117,7 +117,7 @@ _RUN_ALL()
 
 _RUN_ALL_RECURSIVELY()
 {
-    SPACE_CMDDEP="_RUN_CHECKBASHISMS _RUN_SHELLCHECK"
+    SPACE_DEP="_RUN_CHECKBASHISMS _RUN_SHELLCHECK"
 
     if [ "$#" -lt 1 ]; then
         PRINT "Missing destination directory parameter" "error"

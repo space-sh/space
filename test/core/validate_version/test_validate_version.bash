@@ -18,8 +18,8 @@
 
 _VALIDATE_VERSION()
 {
-    SPACE_CMDDEP="PRINT"
-    SPACE_CMDENV="_VERSION"
+    SPACE_DEP="PRINT"
+    SPACE_ENV="_VERSION"
 
     # Check if version string is valid
     if [[ "${_VERSION}" =~ ^[0-9]+.[0-9]+.[0-9]+$ ]]; then

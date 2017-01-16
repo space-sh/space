@@ -31,7 +31,7 @@ SPACE_INSTALL_BIN()
 
 SPACE_DEP_INSTALL()
 {
-    SPACE_CMDDEP="PRINT"
+    SPACE_DEP="PRINT"
 
     # This is a lighter variant of a dep_installer,
     # since the full variant depends on the OS module,
@@ -46,7 +46,7 @@ SPACE_DEP_INSTALL()
 
 SPACE_BUILD()
 {
-    SPACE_CMDDEP="PRINT"
+    SPACE_DEP="PRINT"
 
     if ! command -v docker >/dev/null; then
         PRINT "Docker is not installed. Failed to build container image." "error"
@@ -68,8 +68,8 @@ SPACE_BUILD()
 
 SPACE_INSTALL()
 {
-    SPACE_CMDDEP="PRINT SPACE_INSTALL_BIN"
-    SPACE_CMDENV="AC_PREFIX BIN_PREFIX"
+    SPACE_DEP="PRINT SPACE_INSTALL_BIN"
+    SPACE_ENV="AC_PREFIX BIN_PREFIX"
 
     PRINT "Installing..."
 
@@ -223,8 +223,8 @@ SPACE_INSTALL()
 SPACE_UNINSTALL()
 {
     # External
-    SPACE_CMDDEP="PRINT"
-    SPACE_CMDENV="AC_PREFIX BIN_PREFIX"
+    SPACE_DEP="PRINT"
+    SPACE_ENV="AC_PREFIX BIN_PREFIX"
 
     local _find_space=
     _find_space=$(which space 2>&1)

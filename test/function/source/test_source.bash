@@ -18,7 +18,7 @@
 
 _TEST_SOURCE_ONE_CHECK_STATUS()
 {
-    SPACE_CMDDEP="PRINT _source"
+    SPACE_DEP="PRINT _source"
 
     _SOURCE_FILES=()
     local _expected_output=("./adding_file.extension")
@@ -37,7 +37,7 @@ _TEST_SOURCE_ONE_CHECK_STATUS()
 
 _TEST_SOURCE_ONE_CHECK_STATE_CHANGED()
 {
-    SPACE_CMDDEP="PRINT _source"
+    SPACE_DEP="PRINT _source"
 
     _SOURCE_FILES=()
     local _expected_output=("./adding_file.extension")
@@ -56,7 +56,7 @@ _TEST_SOURCE_ONE_CHECK_STATE_CHANGED()
 
 _TEST_SOURCE_ONE_CHECK_EXPECTED_OUTPUT()
 {
-    SPACE_CMDDEP="PRINT _source"
+    SPACE_DEP="PRINT _source"
 
     _SOURCE_FILES=()
     local _expected_output=("./adding_file.extension")
@@ -75,7 +75,7 @@ _TEST_SOURCE_ONE_CHECK_EXPECTED_OUTPUT()
 
 _TEST_SOURCE_MULTIPLE_CHECK_STATUS()
 {
-    SPACE_CMDDEP="PRINT _source"
+    SPACE_DEP="PRINT _source"
 
     _SOURCE_FILES=()
     local _expected_output=("./adding_file.extension" "adding_various_files" "/more/source/testing_123/" "path_shouldnt_matter_at_this_stage!!11" "/more/source/testing_123/")
@@ -98,7 +98,7 @@ _TEST_SOURCE_MULTIPLE_CHECK_STATUS()
 
 _TEST_SOURCE_MULTIPLE_CHECK_STATE_CHANGED()
 {
-    SPACE_CMDDEP="PRINT _source"
+    SPACE_DEP="PRINT _source"
 
     _SOURCE_FILES=()
     local _expected_output=("./adding_file.extension" "adding_various_files" "/more/source/testing_123/" "path_shouldnt_matter_at_this_stage!!11" "/more/source/testing_123/")
@@ -121,7 +121,7 @@ _TEST_SOURCE_MULTIPLE_CHECK_STATE_CHANGED()
 
 _TEST_SOURCE_MULTIPLE_CHECK_EXPECTED_OUTPUT()
 {
-    SPACE_CMDDEP="PRINT _source"
+    SPACE_DEP="PRINT _source"
 
     _SOURCE_FILES=()
     local _expected_output=("./adding_file.extension" "adding_various_files" "/more/source/testing_123/" "path_shouldnt_matter_at_this_stage!!11" "/more/source/testing_123/")

@@ -22,8 +22,8 @@
 
 _EXPORT_MAN()
 {
-    SPACE_CMDDEP="PRINT"
-    SPACE_CMDENV="DATE_NOW MAN_NAME ORGANIZATION_NAME"
+    SPACE_DEP="PRINT"
+    SPACE_ENV="DATE_NOW MAN_NAME ORGANIZATION_NAME"
 
     if [ "$#" -eq 0 ]; then
         PRINT "missing input file to generate man page from" "error"
@@ -60,8 +60,8 @@ _EXPORT_MAN()
 
 _EXPORT_HTML()
 {
-    SPACE_CMDDEP="PRINT"
-    SPACE_CMDENV="DATE_NOW MAN_NAME ORGANIZATION_NAME"
+    SPACE_DEP="PRINT"
+    SPACE_ENV="DATE_NOW MAN_NAME ORGANIZATION_NAME"
 
     if [ "$#" -eq 0 ]; then
         PRINT "missing input file to generate man page from" "error"

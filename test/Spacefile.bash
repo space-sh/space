@@ -18,7 +18,7 @@
 
 _TEST_ALL_RECURSIVELY()
 {
-    SPACE_CMDDEP="PRINT"
+    SPACE_DEP="PRINT"
 
     # Use parameter as target, otherwise defaults to iterate over everything
     local _target_directory="${1-*}"

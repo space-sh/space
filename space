@@ -4057,32 +4057,31 @@ _execute()
     if (($? > 0)); then
         # $CMD is not a function, it's an external executable or a Bash snippet
         _debug "CMD is snippet or executable: $CMD"
-        _debug "CMD args: $_cmd_args_str"
-
-        # As for now CMDDEP is nothing we provide for anonymous functions.
-
-        local _fn_def="_anonymous ()"$'\n'"{"$'\n'"    $CMD \"\$@\""$'\n'"}"$'\n'
-        _add_cmd "_anonymous" "${_fn_def}" "$_cmd_args_str" "${CMDREDIR-}" "${CMDOUTER-}" "${CMDWRAP-}" "" "${CMDENV-}"
-        unset _fn_def
-    else
-        # $CMD is a function.
-        _debug "CMD is function: $CMD"
-        _debug "CMD args: $_cmd_args_str"
-        _debug "CMD wrap: ${CMDWRAP-}"
-
-        local SPACE_FN=$CMD                     # Inherited value from YAML.
-        local SPACE_REDIR=${CMDREDIR-}          # Inherited value from YAML.
-        local SPACE_OUTER=${CMDOUTER-}          # Inherited value from YAML.
-        local SPACE_OUTERARGS=${CMDOUTERARGS-}  # Inherited value from YAML.
-        local SPACE_WRAP=${CMDWRAP-}            # Inherited value from YAML.
-        local SPACE_ENV=
-        local SPACE_ARGS=${_cmd_args_str}
-        local SPACE_DEP=${CMDDEP-}
-        local SPACE_OUTERDEP=
-        local SPACE_OUTERENV=
-        _cmd_extract
-        (( $? > 0 )) && return 1
+        # We want to create an anonymous function containing $CMD,
+        # so it then could be handled in the general way, just as any other function.
+        # We create this variable, and it will be available for _get_fn to read from
+        # when it ecnouters the name "_anonymous".
+        local _anonymous="    $CMD \"\$@\""
+        CMD="_anonymous"
     fi
+
+    # $CMD is a function.
+    _debug "CMD is function: $CMD"
+    _debug "CMD args: $_cmd_args_str"
+    _debug "CMD wrap: ${CMDWRAP-}"
+
+    local SPACE_FN=$CMD                     # Inherited value from YAML.
+    local SPACE_REDIR=${CMDREDIR-}          # Inherited value from YAML.
+    local SPACE_OUTER=${CMDOUTER-}          # Inherited value from YAML.
+    local SPACE_OUTERARGS=${CMDOUTERARGS-}  # Inherited value from YAML.
+    local SPACE_WRAP=${CMDWRAP-}            # Inherited value from YAML.
+    local SPACE_ENV=
+    local SPACE_ARGS=${_cmd_args_str}
+    local SPACE_DEP=${CMDDEP-}
+    local SPACE_OUTERDEP=
+    local SPACE_OUTERENV=
+    _cmd_extract
+    (( $? > 0 )) && return 1
     unset _cmd_args_str
 
     # Iterate over all cmds and their data to build up the export
@@ -4938,6 +4937,13 @@ _get_fn()
 
     local _varbody=$1
     shift
+
+    # A special case for the dynamically defined function _anonymous.
+    if [ "${_cmdname}" = "_anonymous" ]; then
+        eval "${_varbody}=\${_anonymous}"
+        eval "${_varname}=\${_cmdname}"
+        return 0
+    fi
 
     # Look through all loaded source files to find the declaration, in reverse order.
     local _i=$((${#_SOURCE_FILES_TOTAL[@]}-1))

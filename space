@@ -153,7 +153,7 @@ unset RUN
 unset CMDEXIT
 unset CMDSILENT
 unset CMDOUTER
-unset CMDREDIR
+unset SPACE_REDIR
 unset CMDWRAP # CMDWRAP is the only environment variable allowed to be inherited downwards in node structures.
 
 # Figure out if there's a shasum executable in the OS.
@@ -3885,7 +3885,7 @@ _loadnode()
                     # allowed to be set on the last part of the node.
                     if (( _i < _nrparts )); then
                         case "${_key}" in
-                            RUN|CMDREDIR|ALIAS|CMDOUTER|CMDARGS)
+                            RUN|SPACE_REDIR|ALIAS|CMDOUTER|CMDARGS)
                                 continue
                                 ;;
                         esac
@@ -4059,7 +4059,7 @@ _execute()
     _debug "RUN wrap: ${CMDWRAP-}"
 
     local SPACE_FN=$RUN                     # Inherited value from YAML.
-    local SPACE_REDIR=${CMDREDIR-}          # Inherited value from YAML.
+    local SPACE_REDIR=${SPACE_REDIR-}       # Inherited value from YAML.
     local SPACE_OUTER=${CMDOUTER-}          # Inherited value from YAML.
     local SPACE_OUTERARGS=${CMDOUTERARGS-}  # Inherited value from YAML.
     local SPACE_WRAP=${CMDWRAP-}            # Inherited value from YAML.

@@ -155,7 +155,7 @@ unset CMDSILENT
 unset SPACE_OUTER
 unset SPACE_REDIR
 unset SPACE_DEP
-unset CMDWRAP # CMDWRAP is the only environment variable allowed to be inherited downwards in node structures.
+unset SPACE_WRAP
 
 # Figure out if there's a shasum executable in the OS.
 # We use this for caching purposes, so not required.
@@ -266,8 +266,8 @@ $_USAGE
               Clone and load modules. Separate multiple by space within quotes,
               or use multiple -M switches, one for each module.
               Usually used together with '-m' option to load a needed module for use
-              with CMDWRAP environment variable.
-              Example: space -m dropalot -M ssh -e CMDWRAP=SSH_WRAP -e sshhost=1.2.3.4
+              with SPACE_WRAP environment variable.
+              Example: space -m dropalot -M ssh -e SPACE_WRAP=SSH_WRAP -e sshhost=1.2.3.4
           -e  environment variable to forcefully apply/overwrite before parsing the YAML.
               -e var1="value1".
               Use one -e for each variable.
@@ -4057,13 +4057,13 @@ _execute()
     # $RUN is a function.
     _debug "RUN is function: $RUN"
     _debug "RUN args: $_cmd_args_str"
-    _debug "RUN wrap: ${CMDWRAP-}"
+    _debug "RUN wrap: ${SPACE_WRAP-}"
 
     local SPACE_FN=$RUN                     # Inherited value from YAML.
     local SPACE_REDIR=${SPACE_REDIR-}       # Inherited value from YAML.
     local SPACE_OUTER=${SPACE_OUTER-}          # Inherited value from YAML.
     local SPACE_OUTERARGS=${CMDOUTERARGS-}  # Inherited value from YAML.
-    local SPACE_WRAP=${CMDWRAP-}            # Inherited value from YAML.
+    local SPACE_WRAP=${SPACE_WRAP-}         # Inherited value from YAML.
     local SPACE_ENV=
     local SPACE_ARGS=${_cmd_args_str}
     local SPACE_DEP=${SPACE_DEP-}

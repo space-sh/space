@@ -153,6 +153,7 @@ unset RUN
 unset CMDEXIT
 unset CMDSILENT
 unset SPACE_OUTER
+unset SPACE_OUTERARGS
 unset SPACE_REDIR
 unset SPACE_DEP
 unset SPACE_ENV
@@ -4063,7 +4064,7 @@ _execute()
     local SPACE_FN=$RUN                     # Inherited value from YAML.
     local SPACE_REDIR=${SPACE_REDIR-}       # Inherited value from YAML.
     local SPACE_OUTER=${SPACE_OUTER-}          # Inherited value from YAML.
-    local SPACE_OUTERARGS=${CMDOUTERARGS-}  # Inherited value from YAML.
+    local SPACE_OUTERARGS=${SPACE_OUTERARGS-}  # Inherited value from YAML.
     local SPACE_WRAP=${SPACE_WRAP-}         # Inherited value from YAML.
     local SPACE_ENV=${SPACE_ENV}            # Inherited value from YAML.
     local SPACE_ARGS=${_cmd_args_str}

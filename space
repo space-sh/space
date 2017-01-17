@@ -155,7 +155,6 @@ unset CMDSILENT
 unset CMDOUTER
 unset CMDREDIR
 unset CMDWRAP # CMDWRAP is the only environment variable allowed to be inherited downwards in node structures.
-unset CMDOVERRIDE
 
 # Figure out if there's a shasum executable in the OS.
 # We use this for caching purposes, so not required.
@@ -275,10 +274,6 @@ $_USAGE
           -p  preprocess variable to set before preprocessing.
               -p inventory=staging.
               Use one -p for each variable.
-          -c  Set the CMD environment variable just before running the cmd.
-              Overwrites the CMD variable set in YAML.
-              Could be used together with -m to run a Bash function in the module,
-              or to use the environment of a target but swap out the CMD being run.
           -v  verbosity level, 0 = off, 1 = error, 2 = warning, 3 = info, 4 = debug.
               Default is 2. Outputs to stderr.
           -d  dry run. Will echo the Bash command line computed instead of running it.
@@ -2276,7 +2271,7 @@ _main()
         elif [[ ${1:0:1} == '-' ]]; then
             # A normal switch, let getopts handle it.
             OPTIND=1
-            getopts ":f:m:aM:c:e:dp:v:k:K:ShVlC:BU:X:13:g" "_o"
+            getopts ":f:m:aM:e:dp:v:k:K:ShVlC:BU:X:13:g" "_o"
             case "${_o}" in
                 f)
                     if (( ${#_namespaces[@]} == 3 )); then
@@ -2306,10 +2301,6 @@ _main()
                     ;;
                 M)
                     _loadmodules="$_loadmodules ${OPTARG}"
-                    (return 1)
-                    ;;
-                c)
-                    readonly CMDOVERRIDE=${OPTARG}
                     (return 1)
                     ;;
                 e)
@@ -3366,9 +3357,6 @@ _exec_dimensions()
     if [[ $_DEBUG_OUTPUT_ENV == "1" ]]; then
         return 0
     fi
-
-    # Apply CMDOVERRIDE if set on command line.
-    CMD=${CMDOVERRIDE:-${CMD-}}
 
     if [[ -z ${CMD-} ]]; then
         _error "No CMD environment variable specified in YAML nodes nor on command line. Use -h to get help or -a -l to list all child nodes."
@@ -4978,10 +4966,6 @@ _apply_cmd_env()
     for _ev in "${_envE[@]-}"; do
         if [[ $_ev =~ ([_a-zA-Z0-9]+)=(.*) ]]; then
             local _varname=${BASH_REMATCH[1]}
-            if [[ $_varname == "CMDOVERRIDE" ]]; then
-                # Protected variable
-                continue
-            fi
             if [[ ${BASH_REMATCH[2]} == "!unset" ]]; then
                 printf "%s\n" "unset $_varname"
             else

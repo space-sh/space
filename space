@@ -155,6 +155,7 @@ unset CMDSILENT
 unset SPACE_OUTER
 unset SPACE_REDIR
 unset SPACE_DEP
+unset SPACE_ENV
 unset SPACE_WRAP
 
 # Figure out if there's a shasum executable in the OS.
@@ -4064,7 +4065,7 @@ _execute()
     local SPACE_OUTER=${SPACE_OUTER-}          # Inherited value from YAML.
     local SPACE_OUTERARGS=${CMDOUTERARGS-}  # Inherited value from YAML.
     local SPACE_WRAP=${SPACE_WRAP-}         # Inherited value from YAML.
-    local SPACE_ENV=
+    local SPACE_ENV=${SPACE_ENV}            # Inherited value from YAML.
     local SPACE_ARGS=${_cmd_args_str}
     local SPACE_DEP=${SPACE_DEP-}
     local SPACE_OUTERDEP=

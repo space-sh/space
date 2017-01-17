@@ -152,7 +152,7 @@ unset ALIAS
 unset RUN
 unset CMDEXIT
 unset CMDSILENT
-unset CMDOUTER
+unset SPACE_OUTER
 unset SPACE_REDIR
 unset CMDWRAP # CMDWRAP is the only environment variable allowed to be inherited downwards in node structures.
 
@@ -3885,7 +3885,7 @@ _loadnode()
                     # allowed to be set on the last part of the node.
                     if (( _i < _nrparts )); then
                         case "${_key}" in
-                            RUN|SPACE_REDIR|ALIAS|CMDOUTER|CMDARGS)
+                            RUN|SPACE_REDIR|ALIAS|SPACE_OUTER|CMDARGS)
                                 continue
                                 ;;
                         esac
@@ -4060,7 +4060,7 @@ _execute()
 
     local SPACE_FN=$RUN                     # Inherited value from YAML.
     local SPACE_REDIR=${SPACE_REDIR-}       # Inherited value from YAML.
-    local SPACE_OUTER=${CMDOUTER-}          # Inherited value from YAML.
+    local SPACE_OUTER=${SPACE_OUTER-}          # Inherited value from YAML.
     local SPACE_OUTERARGS=${CMDOUTERARGS-}  # Inherited value from YAML.
     local SPACE_WRAP=${CMDWRAP-}            # Inherited value from YAML.
     local SPACE_ENV=
@@ -4174,7 +4174,7 @@ _execute()
                     local _fn_deps="${_cmd_deps[$_index]}"
 
                     # Check if this is the outermost wrapper and
-                    # if CMDOUTER has env and dep's to it, then
+                    # if SPACE_OUTER has env and dep's to it, then
                     # we add those to this top most level.
                     if [[ "${_i}" == "$((_wrappers-1))" ]]; then
                         if [[ -n "${_fn_cmdouterenv}" ]]; then

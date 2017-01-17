@@ -1,5 +1,7 @@
 # Versions
 
+New versions are set with the `bump_version.sh` script.
+
 ## Stable  
 All released versions are marked as _Git tags_ on the [source repository](https://gitlab.com/space-sh/space/tags). Those are referred to as _stable_ versions, which are the ones packaged and distributed on [space.sh](https://space.sh) website. Check the Downloading) section in the [installation document](doc/install.md) for download links.
 

@@ -148,7 +148,7 @@ _PRINT_COLUMN_POSITION="0"
 # These are environment variables to be overwritten in the YAML or by Space functions.
 # They are intentionally not inherited from the Bash environment.
 unset CMDARGS
-unset ALIAS
+unset RUN_ALIAS
 unset RUN
 unset CMDEXIT
 unset CMDSILENT
@@ -3344,11 +3344,11 @@ _exec_dimensions()
             fi
             trap - EXIT
 
-            if [[ -n ${ALIAS-} ]]; then
+            if [[ -n ${RUN_ALIAS-} ]]; then
                 # Rerun for the new node, same namespace.
-                _debug "Alias $_node to $ALIAS, namespace $_ns."
-                _node=$ALIAS
-                unset ALIAS
+                _debug "Alias $_node to $RUN_ALIAS, namespace $_ns."
+                _node=$RUN_ALIAS
+                unset RUN_ALIAS
                 # will continue
             else
                 break
@@ -3888,7 +3888,7 @@ _loadnode()
                     # allowed to be set on the last part of the node.
                     if (( _i < _nrparts )); then
                         case "${_key}" in
-                            RUN|SPACE_REDIR|ALIAS|SPACE_OUTER|CMDARGS)
+                            RUN|SPACE_REDIR|RUN_ALIAS|SPACE_OUTER|CMDARGS)
                                 continue
                                 ;;
                         esac

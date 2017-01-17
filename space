@@ -145,11 +145,11 @@ readonly _COLOR_FG_WHITE="\033[37m"
 # Override column position for print function
 _PRINT_COLUMN_POSITION="0"
 
-# These are environment variables to be overwritten in the YAML or by CMD functions.
+# These are environment variables to be overwritten in the YAML or by Space functions.
 # They are intentionally not inherited from the Bash environment.
 unset CMDARGS
 unset ALIAS
-unset CMD
+unset RUN
 unset CMDEXIT
 unset CMDSILENT
 unset CMDOUTER
@@ -2266,7 +2266,7 @@ _main()
             # End of options
             shift
             # Save the remaining of "$@" as is, because we will use Bash's special treatment of "$@" when forwarding the arguments.
-            _strip_args="1" # This will strip of the -- args from CMD in YAML.
+            _strip_args="1" # This will strip of the -- args from RUN in YAML.
             break
         elif [[ ${1:0:1} == '-' ]]; then
             # A normal switch, let getopts handle it.
@@ -3358,8 +3358,8 @@ _exec_dimensions()
         return 0
     fi
 
-    if [[ -z ${CMD-} ]]; then
-        _error "No CMD environment variable specified in YAML nodes nor on command line. Use -h to get help or -a -l to list all child nodes."
+    if [[ -z ${RUN-} ]]; then
+        _error "No RUN environment variable specified in YAML nodes nor on command line. Use -h to get help or -a -l to list all child nodes."
         return 1
     fi
 
@@ -3825,7 +3825,7 @@ _match_node()
 # Parameters:
 #   $1: name of the output array to append to.
 #   $2: the node path to load.
-#   $3: set to "1" to strip CMD variable of -- arguments. We do this when we have commands on command line that shall override.
+#   $3: set to "1" to strip RUN variable of -- arguments. We do this when we have commands on command line that shall override.
 #
 #==========
 _loadnode()
@@ -3885,7 +3885,7 @@ _loadnode()
                     # allowed to be set on the last part of the node.
                     if (( _i < _nrparts )); then
                         case "${_key}" in
-                            CMD|CMDREDIR|ALIAS|CMDOUTER|CMDARGS)
+                            RUN|CMDREDIR|ALIAS|CMDOUTER|CMDARGS)
                                 continue
                                 ;;
                         esac
@@ -3904,8 +3904,8 @@ _loadnode()
                     local _value=
                     _copy "_value" "${_nodepath}_env/$_arrindex/$_key"
 
-                    if [[ $_key == "CMD" && $_strip_args == "1" ]]; then
-                        # If variable is CMD, we check if to trim away the arguments
+                    if [[ $_key == "RUN" && $_strip_args == "1" ]]; then
+                        # If variable is RUN, we check if to trim away the arguments
                         # after "--" already here, to avoid variables not being declared.
                         # Use case is when overriding arguments from command line with the "--" switch.
                         # NOTE: There's a small probability that the first -- encountered is not
@@ -3974,15 +3974,15 @@ _execute()
     _source_added
     (( $? > 0 )) && return 1
 
-    # Cut potential function arguments from $CMD into $_defaultargs.
-    # NOTE: possibly make it possible to have CMD: "A=1 B=2 echo something"
+    # Cut potential function arguments from $RUN into $_defaultargs.
+    # NOTE: possibly make it possible to have RUN: "A=1 B=2 echo something"
     # in the sense that A=1 isn't treated as the command and the rest as arguments.
     local _defaultargs=
-    if [[ $CMD =~ ([^ ]+)[\ ]+(.+) ]]; then
-        CMD=${BASH_REMATCH[1]}
+    if [[ $RUN =~ ([^ ]+)[\ ]+(.+) ]]; then
+        RUN=${BASH_REMATCH[1]}
         _defaultargs=${BASH_REMATCH[2]}
-        if [[ $CMD =~ \= ]]; then
-            _error "Sorry, but the CMD (\"$CMD $_defaultargs\") seems to be prefixed by variable assignment(s), the CMD variable assigned from YAML cannot not take such a complex form. Please instead use a Bash function to set CMD."
+        if [[ $RUN =~ \= ]]; then
+            _error "Sorry, but the RUN (\"$RUN $_defaultargs\") seems to be prefixed by variable assignment(s), the RUN variable assigned from YAML cannot not take such a complex form. Please instead use a Bash function to set RUN."
             return 1
         fi
     fi
@@ -3991,7 +3991,7 @@ _execute()
     local _args=()
     _split_quoted "_args" "$_defaultargs"
 
-    # Any arguments in CMD after -- (including) have already been cut away by now.
+    # Any arguments in RUN after -- (including) have already been cut away by now.
     # If it was not we now remove the -- token.
     local _rowindex=
     for ((_rowindex=0; _rowindex<${#_args[@]}; _rowindex+=1 )); do
@@ -4002,7 +4002,7 @@ _execute()
     done
     unset _rowindex
 
-    # Append CMDARGS arguments to CMD.
+    # Append CMDARGS arguments to RUN.
     local _arg=
     if [[ -n ${CMDARGS-} ]]; then
         for _arg in ${CMDARGS}; do
@@ -4010,7 +4010,7 @@ _execute()
         done
     fi
 
-    # Append command line arguments to CMD.
+    # Append command line arguments to RUN.
     for _arg in "$@"; do
         _args+=("$_arg")
     done
@@ -4026,7 +4026,7 @@ _execute()
     unset _rowindex _arg _args _cmd_args_count
 
 
-    # Now start looking at the CMD.
+    # Now start looking at the RUN.
     # All these arrays will be the same size,
     # and populated by the _cmd_extract function.
     local _cmd_names=()
@@ -4040,25 +4040,25 @@ _execute()
     local _cmd_outerenvs=()
     local _cmd_outerdeps=()
 
-    # Check if $CMD is a function or just a snippet.
-    declare -f -F $CMD &>/dev/null
+    # Check if $RUN is a function or just a snippet.
+    declare -f -F $RUN &>/dev/null
     if (($? > 0)); then
-        # $CMD is not a function, it's an external executable or a Bash snippet
-        _debug "CMD is snippet or executable: $CMD"
-        # We want to create an anonymous function containing $CMD,
+        # $RUN is not a function, it's an external executable or a Bash snippet
+        _debug "RUN is snippet or executable: $RUN"
+        # We want to create an anonymous function containing $RUN,
         # so it then could be handled in the general way, just as any other function.
         # We create this variable, and it will be available for _get_fn to read from
         # when it ecnouters the name "_anonymous".
-        local _anonymous="    $CMD \"\$@\""
-        CMD="_anonymous"
+        local _anonymous="    $RUN \"\$@\""
+        RUN="_anonymous"
     fi
 
-    # $CMD is a function.
-    _debug "CMD is function: $CMD"
-    _debug "CMD args: $_cmd_args_str"
-    _debug "CMD wrap: ${CMDWRAP-}"
+    # $RUN is a function.
+    _debug "RUN is function: $RUN"
+    _debug "RUN args: $_cmd_args_str"
+    _debug "RUN wrap: ${CMDWRAP-}"
 
-    local SPACE_FN=$CMD                     # Inherited value from YAML.
+    local SPACE_FN=$RUN                     # Inherited value from YAML.
     local SPACE_REDIR=${CMDREDIR-}          # Inherited value from YAML.
     local SPACE_OUTER=${CMDOUTER-}          # Inherited value from YAML.
     local SPACE_OUTERARGS=${CMDOUTERARGS-}  # Inherited value from YAML.
@@ -4075,7 +4075,7 @@ _execute()
     # Iterate over all cmds and their data to build up the export
     local _numcmds=${#_cmd_names[@]}
     if (( _numcmds == 0 )); then
-        _error "No CMD's to run."
+        _error "No RUN's to run."
         return 1
     fi
 
@@ -4210,7 +4210,7 @@ _execute()
 
         while ((_wrappers>0)); do
             ((_wrappers-=1))
-            _wrapped_fn_def="CMD=\$(cat <<\"${_wrappers}${_SPACEGAL_EOF_TAG}\""$'\n'"${_wrapped_fn_def}${_export_vars}${_fn_def}${_fn_call}"$'\n\n'"${_wrappers}${_SPACEGAL_EOF_TAG}"$'\n'")"$'\n\n'
+            _wrapped_fn_def="RUN=\$(cat <<\"${_wrappers}${_SPACEGAL_EOF_TAG}\""$'\n'"${_wrapped_fn_def}${_export_vars}${_fn_def}${_fn_call}"$'\n\n'"${_wrappers}${_SPACEGAL_EOF_TAG}"$'\n'")"$'\n\n'
             pop "_export_vars"
             pop "_fn_call"
             pop "_fn_def"
@@ -4220,7 +4220,7 @@ _execute()
             _fn_call="${_fn_call} ${_fn_redir}"
         fi
 
-        # $_fn_outer is used to make the CMD be inside a for loop
+        # $_fn_outer is used to make the RUN be inside a for loop
         # or some other prefixing or enclosing code.
         local _fn_outer_header=""
         local _fn_outer_footer=""
@@ -4291,7 +4291,7 @@ fi
 #============
 # _cmd_extract
 #
-# Helper function to analyze and extract CMD function and headers.
+# Helper function to analyze and extract RUN function and headers.
 # The following Space header variables could or are expected to have been set with default values:
 # - SPACE_FN (required)
 # - SPACE_ENV

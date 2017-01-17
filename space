@@ -4638,26 +4638,25 @@ _cmd_export_vars()
         local _fn_env_item= _k1= _k2= _v= _done=""
         for _fn_env_item in ${_fn_env}; do
             _k1=${_fn_env_item%%=*}
+            if [[ ${_done} =~ (^|[\ ])${_k1}($|[\ ]) ]]; then
+                # Variable already exported.
+                continue;
+            else
+                _done="${_done} ${_k1}"
+            fi
+            _v=""
             if [[ ${_k1} == ${_fn_env_item} ]]; then
                 _k2="\${${_fn_env_item}}"
-            else
-                _k2=${_fn_env_item##*=}
-            fi
-            if [[ ${_done} =~ (^|[\ ])${_k1}($|[\ ]) ]]; then
-                continue;
-            fi
-            _done="${_done} ${_k1}"
-            if [[ -n ${_k2} ]]; then
                 eval "_v=\"${_k2}\""
                 if [ "$?" != "0" ]; then
-                    _error "Problem when evaluating SPACE_FN(OUTER)ENV header variables associated with ${_fn_name}. Look for unbound variable or syntax error in named function or in its chain of functions."
+                    _error "Problem when evaluating SPACE_FN(OUTER)ENV header variable '${_fn_env_item}' associated with fucntion ${_fn_name}. Look for unbound variable or syntax error in function ${_fn_name} or in its chain of functions."
                     trap - EXIT
                     return 1
                 fi
             else
-                _v=""
+                _v=${_fn_env_item##*=}
             fi
-            _escape "_v"
+            _escape "_v" '"'
             _export_vars="${_export_vars}${_k1}=\""$_v"\""$'\n'
         done
         unset _fn_env_item _k _v _done

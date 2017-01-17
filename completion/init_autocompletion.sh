@@ -117,7 +117,8 @@ _space()
             return 1
         fi
 
-        local _items=() _el=
+        local _items=()
+        local _el=
         for _el in $_list; do
             _items+=("$_el")
         done

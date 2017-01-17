@@ -3058,9 +3058,9 @@ _main()
             _status=$?
             (( _status > 0 )) && return
             # We only keep the first node.
-            if (( ${#_dim2[@]} > 0 )); then
-                _dim2=("${_dim2[0]}")
-            fi
+            #if (( ${#_dim2[@]} > 0 )); then
+                #_dim2=("${_dim2[0]}")
+            #fi
         fi
         if (( ${#_dim2[@]} > 0 )); then
             for _second in "${_dim2[@]}"; do
@@ -4077,7 +4077,7 @@ _execute()
         local SPACE_WRAP=${CMDWRAP-}            # Inherited value from YAML.
         local SPACE_ENV=
         local SPACE_ARGS=${_cmd_args_str}
-        local SPACE_DEP=
+        local SPACE_DEP=${CMDDEP-}
         local SPACE_OUTERDEP=
         local SPACE_OUTERENV=
         _cmd_extract

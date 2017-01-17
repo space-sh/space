@@ -147,7 +147,7 @@ _PRINT_COLUMN_POSITION="0"
 
 # These are environment variables to be overwritten in the YAML or by Space functions.
 # They are intentionally not inherited from the Bash environment.
-unset CMDARGS
+unset SPACE_ARGS
 unset RUN_ALIAS
 unset RUN
 unset SPACE_EXIT    # This is only used as a global, it's not a real SPACE header variable.
@@ -3888,7 +3888,7 @@ _loadnode()
                     # allowed to be set on the last part of the node.
                     if (( _i < _nrparts )); then
                         case "${_key}" in
-                            RUN|SPACE_REDIR|RUN_ALIAS|SPACE_OUTER|CMDARGS)
+                            RUN|SPACE_REDIR|RUN_ALIAS|SPACE_OUTER|SPACE_ARGS)
                                 continue
                                 ;;
                         esac
@@ -3990,6 +3990,12 @@ _execute()
         fi
     fi
 
+    # Replace RUN arguments with SPACE_ARGS, if provided.
+    if [[ -n ${SPACE_ARGS-} ]]; then
+        echo effw $_defaultargs
+        _defaultargs=${SPACE_ARGS}
+    fi
+
     # Split string into array of arguments.
     local _args=()
     _split_quoted "_args" "$_defaultargs"
@@ -3999,19 +4005,15 @@ _execute()
     local _rowindex=
     for ((_rowindex=0; _rowindex<${#_args[@]}; _rowindex+=1 )); do
         if [[ ${_args[$_rowindex]} == "--" ]]; then
-            _args=("${_args[@]:0:$_rowindex}" "${_args[@]:(($_rowindex+1))}")
+            if [ "${#}" -gt 0 ]; then
+                _args=("${_args[@]:0:$_rowindex}")
+            else
+                _args=("${_args[@]:0:$_rowindex}" "${_args[@]:(($_rowindex+1))}")
+            fi
             break
         fi
     done
     unset _rowindex
-
-    # Append CMDARGS arguments to RUN.
-    local _arg=
-    if [[ -n ${CMDARGS-} ]]; then
-        for _arg in ${CMDARGS}; do
-            _args+=("$_arg")
-        done
-    fi
 
     # Append command line arguments to RUN.
     for _arg in "$@"; do

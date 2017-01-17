@@ -222,6 +222,17 @@ Relevant traps for controlling exit: `SIGINT SIGTERM EXIT ERR`
 ## Bash-only language constructs
 
 ### local
+Do not declare multiple local variables in the same line.  
+Local keyword is not defined by POSIX and its implementation is shell-specific. Some shells will only handle the first variable as local, while exposing the rest as global. Example:
+```sh
+# In the following example, var_one will always be handled as local
+# var_two might be handled as global by some shell implementations
+local var_one='' var_two=''
+
+# Do this instead
+local var_one=''
+local var_two=''
+```
 
 ### Arrays
 

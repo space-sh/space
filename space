@@ -4093,7 +4093,7 @@ _execute()
     fi
 
     local _export_cmd=""
-    local _cmd_options="set -u;
+    local _cmd_options="set -u  # Will not allow for unset variables being used.
 "
     local _index=0
     while (( _index < _numcmds )); do
@@ -4284,9 +4284,9 @@ fi
         printf "%s\n" "$_exportinfo"
 
         local _helpinfo="# Node: $_nodecombo"$'\n'
-        [[ $_infotitle ]] && _helpinfo="${_helpinfo}# $_infotitle"
-        [[ $_infodesc ]] && _helpinfo="${_helpinfo}"$'\n'"# ${_infodesc//$'\n'/$'\n'\# }"
-        [[ -n $_helpinfo ]] && printf "%s\n\n" "$_helpinfo"
+        [[ $_infotitle ]] && _helpinfo="${_helpinfo}# $_infotitle"$'\n'
+        [[ $_infodesc ]] && _helpinfo="${_helpinfo}# ${_infodesc//$'\n'/$'\n'\# }"$'\n'
+        [[ -n $_helpinfo ]] && printf "%s\n" "$_helpinfo"
 
         printf "%s\n" "$_export_cmd"
         return 0

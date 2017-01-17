@@ -4068,8 +4068,6 @@ _execute()
     local SPACE_ENV=${SPACE_ENV}            # Inherited value from YAML.
     local SPACE_ARGS=${_cmd_args_str}
     local SPACE_DEP=${SPACE_DEP-}
-    local SPACE_OUTERDEP=
-    local SPACE_OUTERENV=
     _cmd_extract
     (( $? > 0 )) && return 1
     unset _cmd_args_str
@@ -4155,8 +4153,6 @@ _execute()
                     local SPACE_WRAP=
                     local SPACE_DEP=
                     local SPACE_ENV=
-                    local SPACE_OUTERDEP=
-                    local SPACE_OUTERENV=
                     # We do NOT pass the arguments
                     # into the wrapper function.
                     local SPACE_ARGS=
@@ -4414,7 +4410,7 @@ _cmd_extract()
                 function _space_context2()
                 {
                     # Isolate all SPACE header variables to not get overwritten,
-                    # except SPACE_OUTERDEP and SPACE_OUTERENV.
+                    # except _SPACE_OUTERDEP and _SPACE_OUTERENV.
                     local SPACE_DEP= SPACE_ENV= SPACE_REDIR=
                     local SPACE_WRAP= SPACE_FN= SPACE_ARGS="${SPACE_ARGS}"
                     if [ -n "${SPACE_OUTER}" ]; then
@@ -4455,16 +4451,16 @@ _cmd_extract()
                             unset _fns
                         fi
                         unset _spacelines
-                        SPACE_OUTERENV="${SPACE_ENV}"
-                        SPACE_OUTERDEP="${SPACE_DEP}"
+                        _SPACE_OUTERENV="${SPACE_ENV}"
+                        _SPACE_OUTERDEP="${SPACE_DEP}"
                     fi
                 }
-                local SPACE_OUTERDEP=
-                local SPACE_OUTERENV=
+                local _SPACE_OUTERDEP=
+                local _SPACE_OUTERENV=
                 _space_context2
                 if (( $? > 0 )); then trap - EXIT; return 1; fi
 
-                _add_cmd "${_fn_name}" "${_fn_def}" "${SPACE_ARGS}" "${SPACE_REDIR}" "${SPACE_OUTER}" "${SPACE_WRAP}" "${SPACE_DEP}" "${_fn_env}" "${SPACE_OUTERDEP}" "${SPACE_OUTERENV}"
+                _add_cmd "${_fn_name}" "${_fn_def}" "${SPACE_ARGS}" "${SPACE_REDIR}" "${SPACE_OUTER}" "${SPACE_WRAP}" "${SPACE_DEP}" "${_fn_env}" "${_SPACE_OUTERDEP}" "${_SPACE_OUTERENV}"
                 unset _fn_def
                 break
             fi

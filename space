@@ -4408,59 +4408,59 @@ _cmd_extract()
                 _cmd_add_fn_dep "${SPACE_DEP}" "${_fn_name}"
                 if (( $? > 0 )); then trap - EXIT; return 1; fi
 
-                # If SPACE_OUTER, then get that body and it's headers DEP/ENV values.
-                # And we'll isolate this in a function to not pollute env variables.
+                # This is a function to isolate variables when extracting header
+                # variables out of an outer function.
                 function _space_context2()
                 {
-                    # Isolate all SPACE header variables to not get overwritten,
-                    # except _SPACE_OUTERDEP and _SPACE_OUTERENV.
-                    local SPACE_DEP= SPACE_ENV= SPACE_REDIR=
-                    local SPACE_WRAP= SPACE_FN= SPACE_ARGS="${SPACE_ARGS}"
-                    if [ -n "${SPACE_OUTER}" ]; then
-                        # The command is referring to an OUTER command.
-                        # We will fetch the outer command's body and it's SPACE headers:
-                        # SPACE_DEP, SPACE_ENV.
-                        local _fn_name= _fn_body=
-                        _get_fn "$SPACE_OUTER" "_fn_name" "_fn_body"
+                    # Isolate SPACE_DEP and SPACE_ENV header variables to not get overwritten,
+                    # These are the only two SPACE header variables taht are allowed
+                    # to be axtracted from an outer functions header. That's why we do not
+                    # hve to isolate any other header variables here.
+                    local SPACE_DEP=
+                    local SPACE_ENV= 
+                    local _fn_name= _fn_body=
+                    _get_fn "$SPACE_OUTER" "_fn_name" "_fn_body"
+                    if (( $? > 0 )); then
+                        _error "Function $SPACE_OUTER is not declared or syntax error."
+                        trap - EXIT
+                        return 1
+                    fi
+                    local _args=()
+                    _split_quoted "_args" "${SPACE_OUTERARGS}"
+                    local _cmd_args_count=${#_args[@]};
+                    unset _args
+                    local _fnlines=()
+                    local _spacelines=()
+                    _cmd_extract_space_header "${_fn_body}" "${_fn_name}" "${_cmd_args_count}" "1" "${SPACE_OUTERARGS}"
+                    (( $? > 0 )) && { trap - EXIT; return 1; }
+                    local _fn_def=
+                    printf -v _fn_def "%s\n" "${_fnlines[@]-:}"
+                    SPACE_OUTER="${_fn_name} ()"$'\n'"{"$'\n'"${_fn_def}""}"$'\n'"${_fn_name} ${SPACE_OUTERARGS}"$'\n\n'
+                    # If we have any SPACE_ variables we evaluate them together
+                    # with the function arguments.
+                    if (( ${#_spacelines[@]} > 0 )); then
+                        local _SPACE_ARGS=$SPACE_OUTERARGS
+                        local _fns=
+                        printf -v _fns "    %s\n" "${_spacelines[@]}"
+                        _fns="_set_args () {"$'\n'"${_fns}}"$'\n'"_set_args ${_SPACE_ARGS}"$'\n'
+                        eval "$_fns"
                         if (( $? > 0 )); then
-                            _error "Function $SPACE_OUTER is not declared or syntax error."
+                            _error "Could not evaluate function header of ${SPACE_OUTER} to set SPACE_ variables."
                             trap - EXIT
                             return 1
                         fi
-                        local _args=()
-                        _split_quoted "_args" "${SPACE_OUTERARGS}"
-                        local _cmd_args_count=${#_args[@]};
-                        unset _args
-                        local _fnlines=()
-                        local _spacelines=()
-                        _cmd_extract_space_header "${_fn_body}" "${_fn_name}" "${_cmd_args_count}" "1" "${SPACE_OUTERARGS}"
-                        (( $? > 0 )) && { trap - EXIT; return 1; }
-                        local _fn_def=
-                        printf -v _fn_def "%s\n" "${_fnlines[@]-:}"
-                        SPACE_OUTER="${_fn_name} ()"$'\n'"{"$'\n'"${_fn_def}""}"$'\n'"${_fn_name} ${SPACE_OUTERARGS}"$'\n\n'
-                        # If we have any SPACE_ variables we evaluate them together
-                        # with the function arguments.
-                        if (( ${#_spacelines[@]} > 0 )); then
-                            local _SPACE_ARGS=$SPACE_OUTERARGS
-                            local _fns=
-                            printf -v _fns "    %s\n" "${_spacelines[@]}"
-                            _fns="_set_args () {"$'\n'"${_fns}}"$'\n'"_set_args ${_SPACE_ARGS}"$'\n'
-                            eval "$_fns"
-                            if (( $? > 0 )); then
-                                _error "Could not evaluate function header of ${SPACE_OUTER} to set SPACE_ variables."
-                                trap - EXIT
-                                return 1
-                            fi
-                            unset _fns
-                        fi
-                        unset _spacelines
-                        _SPACE_OUTERENV="${SPACE_ENV}"
-                        _SPACE_OUTERDEP="${SPACE_DEP}"
+                        unset _fns
                     fi
+                    unset _spacelines _fnlines
+                    # These are the only two SPACE variables that we can extract from an outer functions space heaer.
+                    _SPACE_OUTERENV="${SPACE_ENV}"
+                    _SPACE_OUTERDEP="${SPACE_DEP}"
                 }
                 local _SPACE_OUTERDEP=
                 local _SPACE_OUTERENV=
-                _space_context2
+                if [ -n "${SPACE_OUTER}" ]; then
+                    _space_context2
+                fi
                 if (( $? > 0 )); then trap - EXIT; return 1; fi
 
                 _add_cmd "${_fn_name}" "${_fn_def}" "${SPACE_ARGS}" "${SPACE_REDIR}" "${SPACE_OUTER}" "${SPACE_WRAP}" "${SPACE_DEP}" "${_fn_env}" "${_SPACE_OUTERDEP}" "${_SPACE_OUTERENV}"

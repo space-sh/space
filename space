@@ -4066,7 +4066,7 @@ _execute()
     local SPACE_OUTER=${SPACE_OUTER-}          # Inherited value from YAML.
     local SPACE_OUTERARGS=${SPACE_OUTERARGS-}  # Inherited value from YAML.
     local SPACE_WRAP=${SPACE_WRAP-}         # Inherited value from YAML.
-    local SPACE_ENV=${SPACE_ENV}            # Inherited value from YAML.
+    local SPACE_ENV=${SPACE_ENV-}           # Inherited value from YAML.
     local SPACE_ARGS=${_cmd_args_str}
     local SPACE_DEP=${SPACE_DEP-}
     _cmd_extract

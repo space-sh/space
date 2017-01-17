@@ -32,6 +32,28 @@
 
 * Fix reponame splitting for every dot, which causes module versions that include a dot not do be properly identified
 
+* Change `SPACE_FNNAME` to `_SPACE_NAME`
+
+* Change `SPACE_CMDOUTERENV` to `SPACE_OUTERENV`
+
+* Change `SPACE_CMDOUTERDEP` to `SPACE_OUTERDEP`
+
+* Change `SPACE_CMDOUTERARGS` to `SPACE_OUTERARGS`
+
+* Change `SPACE_CMDOUTER` to `SPACE_OUTER`
+
+* Change `SPACE_CMDENV` to `SPACE_ENV`
+
+* Change `SPACE_CMDDEP` to `SPACE_DEP`
+
+* Change `SPACE_CMDARGS` to `SPACE_ARGS`
+
+* Change `SPACE_CMDWRAP` to `SPACE_WRAP`
+
+* Change `SPACE_CMDREDIR` to `SPACE_REDIR`
+
+* Change `SPACE_CMD` to `SPACE_FN`
+
 - Remove `tput` program usage
 
 - Remove `SUBST` function in favor of the string module

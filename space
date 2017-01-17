@@ -150,7 +150,7 @@ _PRINT_COLUMN_POSITION="0"
 unset CMDARGS
 unset RUN_ALIAS
 unset RUN
-unset CMDEXIT
+unset SPACE_EXIT    # This is only used as a global, it's not a real SPACE header variable.
 unset CMDSILENT
 unset SPACE_OUTER
 unset SPACE_OUTERARGS
@@ -4236,7 +4236,7 @@ _execute()
 
         _export_cmd="${_export_cmd}"'
 # Space shows error message, if non clear exit.
-_status="$?"; if [ "'${CMDSILENT:-0}'" -eq 0 ] && [ "${_status}" -ne "'${CMDEXIT:-0}'" ]; then
+_status="$?"; if [ "'${CMDSILENT:-0}'" -eq 0 ] && [ "${_status}" -ne "'${SPACE_EXIT:-0}'" ]; then
     [ "'${_LOG_ENABLE_COLORS}'" = "1" ] && printf "'${_COLOR_FG_RED}'"; printf "%s\n" "[ERROR] Script exited with status: ${_status}." >&2; [ "'${_LOG_ENABLE_COLORS}'" = "1" ] && printf "'${_COLOR_DEFAULT}'"
     exit "$(( ${_status} > 0 ? ${_status} : 1 ))"
 fi

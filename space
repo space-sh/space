@@ -4131,9 +4131,10 @@ _execute()
             _fn_cmdouterdep=
         fi
 
-        if [[ -n ${CMDENV-} ]]; then
-            _fn_env="${CMDENV} ${_fn_env}"
-        fi
+        # This must be old cruft, right?
+        #if [[ -n ${CMDENV-} ]]; then
+            #_fn_env="${CMDENV} ${_fn_env}"
+        #fi
 
         local _fn_call="${_fn_name} ${_fn_args}"
         unset _fn_args

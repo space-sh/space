@@ -3128,15 +3128,15 @@ _get_second_dimension()
 
     _YAML_NAMESPACE=1
     local _l=()
-    _list "_l" "/_friends/" "1"
-    _debug "friends ${_l[@]-}"
+    _list "_l" "/_dimensions/" "1"
+    _debug "dimensions ${_l[@]-}"
 
     if (( ${#_l[@]} > 0 )); then
         local _i=
         for _i in ${_l[@]}; do
             local _firststr= _secondstr=
-            _copy "_firststr" "/_friends/$_i/first"
-            _copy "_secondstr" "/_friends/$_i/second"
+            _copy "_firststr" "/_dimensions/$_i/first"
+            _copy "_secondstr" "/_dimensions/$_i/second"
             if [[ -z $_firststr || -z $_secondstr ]]; then
                 continue
             fi
@@ -3146,7 +3146,7 @@ _get_second_dimension()
             local _first=
             for _first in "${_firstarr[@]}"; do
                 if [[ ! $_first =~ (^/.+/$)|(^/$) ]]; then
-                    _error "Malformed _friends/${_i}/first node path (${_first}). Node path must begin and end with a slash."
+                    _error "Malformed _dimensions/${_i}/first node path (${_first}). Node path must begin and end with a slash."
                     return 1
                 fi
                 local _levelsfirst=${_first//[^\/]}
@@ -3155,7 +3155,7 @@ _get_second_dimension()
                     local _second=
                     for _second in "${_secondarr[@]}"; do
                         if [[ ! $_second =~ (^/.+/$)|(^/$) ]]; then
-                            _error "Malformed _friends/${_i}/second node path (${_second}). Node path must begin and end with a slash."
+                            _error "Malformed _dimensions/${_i}/second node path (${_second}). Node path must begin and end with a slash."
                             return 1
                         fi
                         local _nodes=()
@@ -3164,7 +3164,7 @@ _get_second_dimension()
                             _error "Friend nodes defined for second dimension but then not found in namespace ${_ns}: ${_second}."
                             return 1
                         fi
-                        _debug "Friends _friends/${_i}$_first+$_second matched ${#_nodes[@]} nodes for second dimension in namespace ${_ns}."
+                        _debug "Friends _dimensions/${_i}$_first+$_second matched ${#_nodes[@]} nodes for second dimension in namespace ${_ns}."
                         _dim2+=("${_nodes[@]}")
                     done
                     break # No point checking next first if current matched.
@@ -3207,15 +3207,15 @@ _get_third_dimension()
 
     _YAML_NAMESPACE=1
     local _l=()
-    _list "_l" "/_friends/" "1"
+    _list "_l" "/_dimensions/" "1"
 
     if (( ${#_l[@]} > 0 )); then
         local _i=
         for _i in ${_l[@]}; do
             local _firststr= _secondstr= _thirdstr=
-            _copy "_firststr" "/_friends/$_i/first"
-            _copy "_secondstr" "/_friends/$_i/second"
-            _copy "_thirdstr" "/_friends/$_i/third"
+            _copy "_firststr" "/_dimensions/$_i/first"
+            _copy "_secondstr" "/_dimensions/$_i/second"
+            _copy "_thirdstr" "/_dimensions/$_i/third"
             if [[ -z $_firststr || -z $_secondstr || -z $_thirdstr ]]; then
                 continue
             fi
@@ -3226,7 +3226,7 @@ _get_third_dimension()
             local _first=
             for _first in "${_firstarr[@]}"; do
                 if [[ ! $_first =~ (^/.+/$)|(^/$) ]]; then
-                    _error "Malformed _friends/${_i}/first node path (${_first}). Node path must begin and end with a slash."
+                    _error "Malformed _dimensions/${_i}/first node path (${_first}). Node path must begin and end with a slash."
                     return 1
                 fi
                 local _levelsfirst=${_first//[^\/]}
@@ -3235,7 +3235,7 @@ _get_third_dimension()
                     local _second=
                     for _second in "${_secondarr[@]}"; do
                         if [[ ! $_second =~ (^/.+/$)|(^/$) ]]; then
-                            _error "Malformed _friends/${_i}/second node path (${_second}). Node path must begin and end with a slash."
+                            _error "Malformed _dimensions/${_i}/second node path (${_second}). Node path must begin and end with a slash."
                             return 1
                         fi
                         local _levelssecond=${_second//[^\/]}
@@ -3244,7 +3244,7 @@ _get_third_dimension()
                             local _third=
                             for _third in "${_thirdarr[@]}"; do
                                 if [[ ! $_third =~ (^/.+/$)|(^/$) ]]; then
-                                    _error "Malformed _friends/${_i}/third node path (${_third}). Node path must begin and end with a slash."
+                                    _error "Malformed _dimensions/${_i}/third node path (${_third}). Node path must begin and end with a slash."
                                     return 1
                                 fi
                                 local _nodes=()
@@ -3253,7 +3253,7 @@ _get_third_dimension()
                                     _error "Friend nodes defined for third dimension but then not found in namespace ${_ns}: ${_third}."
                                     return 1
                                 fi
-                                _debug "Friends _friends/${_i}$_first+$_second+$_third matched ${#_nodes[@]} nodes for second dimension in namespace ${_ns}."
+                                _debug "Friends _dimensions/${_i}$_first+$_second+$_third matched ${#_nodes[@]} nodes for second dimension in namespace ${_ns}."
                                 _dim3+=("${_nodes[@]}")
                             done
                             break # No point in checkin further.

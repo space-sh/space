@@ -798,7 +798,9 @@ _parse_yaml()
                 else
                     # Check if to collapse new lines.
                     if [[ ${value:0:1} == ">" ]]; then
-                        local _s=${_readahead[@]}
+                        # To not have spaces:
+                            #printf -v _s "%s" "${_readahead[@]}"
+                        local _s=${_readahead[*]}
                         _readahead=("$_s")
                     fi
                 fi

@@ -3992,7 +3992,6 @@ _execute()
 
     # Replace RUN arguments with SPACE_ARGS, if provided.
     if [[ -n ${SPACE_ARGS-} ]]; then
-        echo effw $_defaultargs
         _defaultargs=${SPACE_ARGS}
     fi
 

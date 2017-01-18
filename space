@@ -158,6 +158,7 @@ unset SPACE_REDIR
 unset SPACE_DEP
 unset SPACE_ENV
 unset SPACE_WRAP
+unset SPACE_WRAPARGS
 
 # Figure out if there's a shasum executable in the OS.
 # We use this for caching purposes, so not required.
@@ -4038,6 +4039,7 @@ _execute()
     local _cmd_redirs=()
     local _cmd_outers=()
     local _cmd_wraps=()
+    local _cmd_wraps_args=()
     local _cmd_deps=()
     local _cmd_envs=()
     local _cmd_outerenvs=()
@@ -4066,9 +4068,18 @@ _execute()
     local SPACE_OUTER=${SPACE_OUTER-}          # Inherited value from YAML.
     local SPACE_OUTERARGS=${SPACE_OUTERARGS-}  # Inherited value from YAML.
     local SPACE_WRAP=${SPACE_WRAP-}         # Inherited value from YAML.
+    local SPACE_WRAPARGS=${SPACE_WRAPARGS-} # Inherited value from YAML.
     local SPACE_ENV=${SPACE_ENV-}           # Inherited value from YAML.
     local SPACE_ARGS=${_cmd_args_str}
     local SPACE_DEP=${SPACE_DEP-}
+
+    # Balance SPACE_WRAP and SPACE_WRAPARGS
+    if [ -n "${SPACE_WRAP}" ]; then
+        SPACE_WRAPARGS="${SPACE_WRAPARGS:-\ }"$'\n'
+    else
+        SPACE_WRAPARGS=
+    fi
+
     _cmd_extract
     (( $? > 0 )) && return 1
     unset _cmd_args_str
@@ -4082,6 +4093,7 @@ _execute()
 
     local _export_cmd=""
     local _cmd_options="set -u  # Will not allow for unset variables being used.
+
 "
     local _index=0
     while (( _index < _numcmds )); do
@@ -4091,6 +4103,7 @@ _execute()
         local _fn_redir=${_cmd_redirs[$_index]}
         local _fn_outer=${_cmd_outers[$_index]}
         local _fn_wrap=${_cmd_wraps[$_index]}
+        local _fn_wraps_args=${_cmd_wraps_args[$_index]}
         local _fn_env="${_cmd_envs[$_index]}"
         local _fn_deps="${_cmd_deps[$_index]}"
         local _fn_cmdouterenv="${_cmd_outerenvs[$_index]}"
@@ -4124,15 +4137,21 @@ _execute()
         local _wrapped_fn_def=""
         local _wrappers=0
         if [[ -n ${_fn_wrap} ]]; then
-            _wrapped_fn_def=$'\n'   # An empty line before all the wrapping comes.
-            local _fn_wrap_item= _fn_wrap_items= _i=
+            local _fn_wrap_item= _fn_wrap_items=() _i= _fn_wrap_item_args=
+            local _fn_wrap_items_args=()
             IFS=' ' read -r -a _fn_wrap_items <<< "${_fn_wrap}"
+            IFS=$'\n' read -d'' -r -a _fn_wrap_items_args <<< "${_fn_wraps_args}"
             _wrappers=${#_fn_wrap_items[@]}
+            if [ "${_wrappers}" -ne "${#_fn_wrap_items_args[@]}" ]; then
+                _error "The number of SPACE_WRAP and SPACE_WRAPARGS do not match."
+                return 1
+            fi
             # We evaluate all the wrappers beginning with the outermost one.
             # In this way wrappers can manipulate environment variables for
             # innermore wrappers and also for the final function.
-            for ((_i=$((_wrappers-1)); _i>=0; _i-=1 )); do
+            for ((_i=0; _i<$((_wrappers)); _i+=1 )); do
                 _fn_wrap_item="${_fn_wrap_items[${_i}]}"
+                _fn_wrap_item_args="${_fn_wrap_items_args[${_i}]}"
 
                 # Inner scope used to isolate some variables 
                 _spacegal_context ()
@@ -4143,6 +4162,7 @@ _execute()
                     local _cmd_redirs=()
                     local _cmd_outers=()
                     local _cmd_wraps=()
+                    local _cmd_wraps_args=()
                     local _cmd_deps=()
                     local _cmd_envs=()
                     local _cmd_outerenvs=()
@@ -4152,20 +4172,17 @@ _execute()
                     local SPACE_OUTER=
                     local SPACE_OUTERARGS=
                     local SPACE_WRAP=
+                    local SPACE_WRAPARGS=
                     local SPACE_DEP=
                     local SPACE_ENV=
                     # We do NOT pass the arguments
                     # into the wrapper function.
-                    local SPACE_ARGS=
+                    local SPACE_ARGS="${_fn_wrap_item_args}"
 
-                    _cmd_extract
+                    _cmd_extract "2"
                     (( $? > 0 )) && return 1
 
                     local _fn_env="${_cmd_envs[0]}"
-                    #if [[ -n ${CMDENV-} ]]; then
-                        #_fn_env="${CMDENV} ${_fn_env}"
-                    #fi
-
                     local _fn_name=${_cmd_names[0]}
                     local _fn_def=${_cmd_bodies[0]}
                     local _fn_args="${_cmd_args[0]}"
@@ -4175,7 +4192,7 @@ _execute()
                     # Check if this is the outermost wrapper and
                     # if SPACE_OUTER has env and dep's to it, then
                     # we add those to this top most level.
-                    if [[ "${_i}" == "$((_wrappers-1))" ]]; then
+                    if [ "${_i}" -eq 0 ]; then
                         if [[ -n "${_fn_cmdouterenv}" ]]; then
                             _fn_env="${_fn_cmdouterenv} ${_fn_env}"
                         fi
@@ -4207,13 +4224,15 @@ _execute()
         local _export_vars=""
         _cmd_export_vars "${_fn_env}" "${_fn_name}"
 
-        while ((_wrappers>0)); do
-            ((_wrappers-=1))
-            _wrapped_fn_def="RUN=\$(cat <<\"${_wrappers}${_SPACEGAL_EOF_TAG}\""$'\n'"${_wrapped_fn_def}${_export_vars}${_fn_def}${_fn_call}"$'\n\n'"${_wrappers}${_SPACEGAL_EOF_TAG}"$'\n'")"$'\n\n'
+        local _i=
+        for ((_i=1; _i<$((_wrappers+1)); _i+=1)); do
+            _wrapped_fn_def="# BEGIN WRAP ${_i}"$'\n'"RUN=\$(cat <<\"${_i}${_SPACEGAL_EOF_TAG}\""$'\n'"set -u"$'\n'$'\n'"${_wrapped_fn_def}${_export_vars}${_fn_def}${_fn_call}"$'\n\n'"${_i}${_SPACEGAL_EOF_TAG}"$'\n'")"$'\n'"# END WRAP ${_i}"$'\n\n'
             pop "_export_vars"
             pop "_fn_call"
             pop "_fn_def"
         done
+        unset _i
+        unset _wrappers
 
         if [[ -n ${_fn_redir} ]]; then
             _fn_call="${_fn_call} ${_fn_redir}"
@@ -4299,6 +4318,10 @@ fi
 # - SPACE_OUTERARGS
 # - SPACE_ARGS
 # - SPACE_WRAP
+# - SPACE_WRAPARGS
+#
+# Parameters:
+#   $1: Space header type, 0=normal, 1=outer, 2=wrap. Default is 0.
 #
 # Expects:
 #   _cmd_names=()
@@ -4307,12 +4330,16 @@ fi
 #   _cmd_redirs=()
 #   _cmd_outers=()
 #   _cmd_wraps=()
+#   _cmd_wraps_args=()
 #   _cmd_deps=()
 #   _cmd_envs=()
 #
 #============
 _cmd_extract()
 {
+    local _headertype="${1:-0}"
+    shift || :
+
     trap '_error "Problem when evaluating SPACE_ header variables or function body for: ${_fn_name}. Look for unbound variable or other syntax error."; trap - EXIT; return 1; ' EXIT
     local _space_cmds=("${SPACE_FN}")
     local _space_cmd_index=0
@@ -4352,7 +4379,7 @@ _cmd_extract()
             local _space_cmd=$SPACE_FN
             local _fnlines=()
             local _spacelines=()
-            _cmd_extract_space_header "${_fn_body}" "${_fn_name}" "${_cmd_args_count}" "0" "${SPACE_ARGS}"
+            _cmd_extract_space_header "${_fn_body}" "${_fn_name}" "${_cmd_args_count}" "${_headertype}" "${SPACE_ARGS}"
             (( $? > 0 )) && { trap - EXIT; return 1; }
 
             # If we have any SPACE_ variables we evaluate them together
@@ -4461,7 +4488,7 @@ _cmd_extract()
                 fi
                 if (( $? > 0 )); then trap - EXIT; return 1; fi
 
-                _add_cmd "${_fn_name}" "${_fn_def}" "${SPACE_ARGS}" "${SPACE_REDIR}" "${SPACE_OUTER}" "${SPACE_WRAP}" "${SPACE_DEP}" "${_fn_env}" "${_SPACE_OUTERDEP}" "${_SPACE_OUTERENV}"
+                _add_cmd "${_fn_name}" "${_fn_def}" "${SPACE_ARGS}" "${SPACE_REDIR}" "${SPACE_OUTER}" "${SPACE_WRAP}" "${SPACE_DEP}" "${_fn_env}" "${_SPACE_OUTERDEP}" "${_SPACE_OUTERENV}" "${SPACE_WRAPARGS}"
                 unset _fn_def
                 break
             fi
@@ -4492,7 +4519,7 @@ _cmd_extract_space_header ()
     local _cmd_args_count="${1-}"
     shift || :
 
-    local is_outercmd="${1-}"
+    local _headertype="${1-}"
     shift || :
 
     local _given_args="${1-}"
@@ -4505,6 +4532,8 @@ _cmd_extract_space_header ()
 
     local _line=
     local _isheader="1"
+    local _addedspacewrap=0
+    local _spacewrapargs=
     while IFS= read -r _line; do
         # Disconsider comments when evaluating header line
         if [[ $_isheader == "1" ]]; then
@@ -4533,7 +4562,8 @@ _cmd_extract_space_header ()
                             return 1
                         fi
                     fi
-                elif [ "${is_outercmd}" = "1" ]; then
+                elif [ "${_headertype}" = "1" ]; then
+                    # Outer command
                     if [[ ${_spacevar} == "SPACE_ENV" ]]; then
                         # Always overwritten.
                         _spacelines+=("SPACE_ENV=${BASH_REMATCH[2]}")
@@ -4544,7 +4574,24 @@ _cmd_extract_space_header ()
                         _error "Unknown SPACE HEADER variable: ${_spacevar}, in OUTER function: ${_fn_name}."
                         return 1
                     fi
-                    continue
+                elif [ "${_headertype}" = "2" ]; then
+                    # Wrap command
+                    if [[ ${_spacevar} == "SPACE_ENV" ]]; then
+                        # Always overwritten.
+                        _spacelines+=("SPACE_ENV=${BASH_REMATCH[2]}")
+                    elif [[ ${_spacevar} == "SPACE_DEP" ]]; then
+                        # Always overwritten.
+                        _spacelines+=("SPACE_DEP=${BASH_REMATCH[2]}")
+                    elif [[ ${_spacevar} == "SPACE_ARGS" ]]; then
+                        # Always overwritten.
+                        _spacelines+=("SPACE_ARGS=${BASH_REMATCH[2]}")
+                    elif [[ ${_spacevar} == "SPACE_FN" ]]; then
+                        # Always overwritten.
+                        _spacelines+=("SPACE_FN=${BASH_REMATCH[2]}")
+                    else
+                        _error "Unknown SPACE HEADER variable: ${_spacevar}, in WRAP function: ${_fn_name}."
+                        return 1
+                    fi
                 else
                     if [[ ${_spacevar} == "SPACE_ENV" ]]; then
                         # Always overwritten.
@@ -4569,18 +4616,34 @@ _cmd_extract_space_header ()
                         # Always overwritten.
                         _spacelines+=("SPACE_ARGS=${BASH_REMATCH[2]}")
                     elif [[ ${_spacevar} == "SPACE_WRAP" ]]; then
-                        # Always overwritten, but prepended to.
+                        # Appended to.
                         local _s="${BASH_REMATCH[2]}"
-                        if [ "${_s:0:1}" = "\"" ]; then
-                            _s="${_s:1}"
-                        fi
                         if [ "${_s: -1}" = ";" ]; then
                             _s="${_s:0:$((${#_s}-1))}"
                         fi
-                        if [ "${_s: -1}" = "\"" ]; then
+                        if [ "${_s:0:1}" = "\"" ] || [ "${_s:0:1}" = "'" ]; then
+                            _s="${_s:1}"
+                        fi
+                        if [ "${_s: -1}" = "\"" ] || [ "${_s: -1}" = "'" ]; then
                             _s="${_s:0:$((${#_s}-1))}"
                         fi
-                        _spacelines+=("SPACE_WRAP=\"${_s}${SPACE_WRAP:+ ${SPACE_WRAP}}"\")
+                        _spacelines+=("SPACE_WRAP=\"${SPACE_WRAP:+${SPACE_WRAP} }${_s}"\")
+                        unset _s
+                        _addedspacewrap=1
+                    elif [[ ${_spacevar} == "SPACE_WRAPARGS" ]]; then
+                        # Appended to.
+                        local _s="${BASH_REMATCH[2]}"
+                        if [ "${_s: -1}" = ";" ]; then
+                            _s="${_s:0:$((${#_s}-1))}"
+                        fi
+                        if [ "${_s:0:1}" = "\"" ] || [ "${_s:0:1}" = "'" ]; then
+                            _s="${_s:1}"
+                        fi
+                        if [ "${_s: -1}" = "\"" ] || [ "${_s: -1}" = "'" ]; then
+                            _s="${_s:0:$((${#_s}-1))}"
+                        fi
+                        _escape "_s" '"'
+                        _spacewrapargs=${_s}  # Save for later
                         unset _s
                     elif [[ ${_spacevar} == "SPACE_FN" ]]; then
                         # Always overwritten.
@@ -4595,6 +4658,11 @@ _cmd_extract_space_header ()
             else
                 # Stop extracting header if a row is not prefixed by "SPACE_" nor "#".
                 _isheader="0"
+                # Balance SPACE_WRAPARGS
+                if [ "${_addedspacewrap}" -eq 1 ]; then
+                    _spacewrapargs="${_spacewrapargs:-\ }"
+                    _spacelines+=("SPACE_WRAPARGS=\"\${SPACE_WRAPARGS}${_spacewrapargs}\"\$'\n'")
+                fi
             fi
         fi
         if [[ $_isheader == "0" ]]; then
@@ -4688,10 +4756,10 @@ _cmd_add_fn_dep()
             return 1
         fi
         local _spacelines=() _fnlines=() _line=
-        # We set some space header variable to non empty because we do not
-        # want them returned in _spacelines.
-        local SPACE_DEP= SPACE_ENV= SPACE_REDIR=1
-        local SPACE_WRAP=1 SPACE_FN=1 SPACE_OUTER=1 SPACE_ARGS=1 SPACE_OUTERARGS=1
+        # We isolate the space header variables:
+        local SPACE_DEP= SPACE_ENV= SPACE_REDIR=
+        local SPACE_WRAP= SPACE_FN= SPACE_OUTER=
+        local SPACE_ARGS= SPACE_OUTERARGS= SPACE_WRAPARGS=
         _cmd_extract_space_header "${_fn_dep_body}" "${_fn_dep_name}"
         (( $? > 0 )) && return 1
         local _fns=
@@ -4760,6 +4828,9 @@ _add_cmd()
     shift || :
 
     _cmd_outerenvs+=("${1-}")
+    shift || :
+
+    _cmd_wraps_args+=("${1-}")
     shift || :
 }
 

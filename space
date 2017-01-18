@@ -4247,10 +4247,10 @@ _execute()
         local _fn_outer_header=""
         local _fn_outer_footer=""
         if [[ -n ${_fn_outer} ]]; then
-            _fn_outer_header=${_fn_outer%_CMD_*}
-            _fn_outer_footer=${_fn_outer#*_CMD_}
+            _fn_outer_header=${_fn_outer%_RUN_*}
+            _fn_outer_footer=${_fn_outer#*_RUN_}
             if [ "${_fn_outer_header}" = "${_fn_outer_footer}" ]; then
-                _error "Outer command has no _CMD_ tag."
+                _error "Outer command has no _RUN_ tag."
                 return 1
             fi
         fi

@@ -3300,9 +3300,6 @@ _exec_dimensions()
         return 0
     fi
 
-    # Set command line -e envs, if provided.
-    eval $(_apply_cmd_env)
-
     local _nodes=("$_ns1 $_node1")
     [[ -n $_node2 ]] && _nodes+=("$_ns2 $_node2")
     [[ -n $_node3 ]] && _nodes+=("$_ns3 $_node3")

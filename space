@@ -3347,6 +3347,10 @@ _exec_dimensions()
             if [[ -n ${RUN_ALIAS-} ]]; then
                 # Rerun for the new node, same namespace.
                 _debug "Alias $_node to $RUN_ALIAS, namespace $_ns."
+                if [[ ! $RUN_ALIAS =~ (^/[^ ]+/$)|(^/$) ]]; then
+                    _error 'RUN_ALIAS must begin and end with slash, and have no funny characters. Like: /a/b/c/'
+                    return 1
+                fi
                 _node=$RUN_ALIAS
                 unset RUN_ALIAS
                 # will continue
@@ -5007,6 +5011,7 @@ _get_fn()
     local _i=$((${#_SOURCE_FILES_TOTAL[@]}-1))
     while [ "${_i}" -gt -1 ]; do
         _file="${_SOURCE_FILES_TOTAL[$_i]}"
+        # EXTERNAL: cat
         local _content="$(cat ${_file})"$'\n'  # We add a '\n' so that pattern matching below works properly.
         if [[ ${_content} =~ (.?)${_cmdname}[\ ]*\(\)$'\n'\{[\ ]*$'\n'(.*$'\n') ]]; then
             if [ "${#BASH_REMATCH[1]}" -eq 0 -o "${BASH_REMATCH[1]}" = $'\n' ]; then

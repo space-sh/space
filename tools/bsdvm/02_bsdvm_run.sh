@@ -49,5 +49,12 @@ printf "\n===== INSTRUCTIONS =====\n\n Inside SpaceBSD (Guest):
  On host:
  $ VBoxManage startvm SpaceBSD --type headless
  $ ssh -p 2222 -o PubkeyAuthentication=no root@127.0.0.1
+
+ Running Space tests inside the Guest OS:
+ # ./test/test_all_exit_status.sh
+ # ./test/test_install.sh
+ # ./test/test_core.sh
+ # ./test/test_function.sh
+ # ./test/test_yaml.sh
  \n"
 

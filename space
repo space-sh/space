@@ -1516,7 +1516,7 @@ _yaml_get_multiline()
 #==================
 clone()
 {
-    local _modules="${@}"
+    local _modules="$@"
     shift
 
     # Cloning will always be to $_INCLUDEPATH[1],
@@ -4019,7 +4019,7 @@ _execute()
     local _rowindex=
     for ((_rowindex=0; _rowindex<${#_args[@]}; _rowindex+=1 )); do
         if [[ ${_args[$_rowindex]} == "--" ]]; then
-            if [ "${#}" -gt 0 ]; then
+            if [ "$#" -gt 0 ]; then
                 _args=("${_args[@]:0:$_rowindex}")
             else
                 _args=("${_args[@]:0:$_rowindex}" "${_args[@]:(($_rowindex+1))}")

@@ -5043,17 +5043,25 @@ _get_fn()
 #
 # Apply the cmd line environment variables if provided.
 #
+# Parameters:
+#   $1: type of apply. "isolate" will set the variable to itself as local,
+#       to make it isolated in it's scope.
+#
 # Expects:
 #   _envE
 #===============
 _apply_cmd_env()
 {
+    local _type="${1-}"
+
     local _ev=
     for _ev in "${_envE[@]-}"; do
         if [[ $_ev =~ ([_a-zA-Z0-9]+)=(.*) ]]; then
             local _varname=${BASH_REMATCH[1]}
             if [[ ${BASH_REMATCH[2]} == "!unset" ]]; then
                 printf "%s\n" "unset $_varname"
+            elif [ "${_type}" = "isolate" ]; then
+                printf "%s\n" "local $_varname=\"\$${_varname}\""
             else
                 printf "%s\n" "local $_varname=\"${BASH_REMATCH[2]}\""
             fi

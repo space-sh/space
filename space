@@ -4305,7 +4305,7 @@ fi
 
         local _helpinfo="# Node: $_nodecombo"$'\n'
         [[ $_infotitle ]] && _helpinfo="${_helpinfo}# $_infotitle"$'\n'
-        [[ $_infodesc ]] && _helpinfo="${_helpinfo}# ${_infodesc//$'\n'/$'\n'\# }"$'\n'
+        [[ $_infodesc ]] && _helpinfo="${_helpinfo}# ${_infodesc//$'\n'/$'\n'# }"$'\n'
         [[ -n $_helpinfo ]] && printf "%s\n" "$_helpinfo"
 
         printf "%s\n" "$_export_cmd"

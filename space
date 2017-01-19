@@ -4633,6 +4633,18 @@ _cmd_extract_space_header ()
                         _error "Unknown SPACE HEADER variable: ${_spacevar}, in WRAP function: ${_fn_name}."
                         return 1
                     fi
+                elif [ "${_headertype}" = "3" ]; then
+                    # Dep command
+                    if [[ ${_spacevar} == "SPACE_ENV" ]]; then
+                        # Always overwritten.
+                        _spacelines+=("SPACE_ENV=${BASH_REMATCH[2]}")
+                    elif [[ ${_spacevar} == "SPACE_DEP" ]]; then
+                        # Always overwritten.
+                        _spacelines+=("SPACE_DEP=${BASH_REMATCH[2]}")
+                    else
+                        _error "Unknown SPACE HEADER variable: ${_spacevar}, in DEP function: ${_fn_name}."
+                        return 1
+                    fi
                 else
                     if [[ ${_spacevar} == "SPACE_ENV" ]]; then
                         # Always overwritten.
@@ -4830,7 +4842,7 @@ _cmd_add_fn_dep()
         local SPACE_WRAP= SPACE_FN= SPACE_OUTER=
         local SPACE_ARGS= SPACE_OUTERARGS= SPACE_WRAPARGS=
         local SPACE_OUTERENV= SPACE_OUTERDEP=
-        _cmd_extract_space_header "${_fn_dep_body}" "${_fn_dep_name}"
+        _cmd_extract_space_header "${_fn_dep_body}" "${_fn_dep_name}" "" "3"
         (( $? > 0 )) && return 1
         local _fns=
         printf -v _fns "    %s\n" "${_spacelines[@]-:}"

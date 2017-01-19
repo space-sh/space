@@ -3303,6 +3303,13 @@ _exec_dimensions()
         return 0
     fi
 
+    # Isolate all -e cmd variables.
+    # This is important to do here because
+    # if we are iterating many nodes the variables
+    # might get changed, either by YAML parsing,
+    # module build functions or space it self.
+    eval $(_apply_cmd_env "isolate")
+
     local _nodes=("$_ns1 $_node1")
     [[ -n $_node2 ]] && _nodes+=("$_ns2 $_node2")
     [[ -n $_node3 ]] && _nodes+=("$_ns3 $_node3")

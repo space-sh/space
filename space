@@ -4863,24 +4863,30 @@ _escape_inline()
 #============
 _escape()
 {
-    local _s=$1
+    local __s=$1
     shift
-    local _c=${1-\"\$}
+
+    local __c=${1-\"\$}
     shift || :
 
-    local _s2=${!_s}
-
-    if [[ $_c =~ \" ]]; then
-        _s2=${_s2//\"/\\\"}
-        _s2=${_s2//\\\\\"/\\\\\\\"} # Adjust the odd ones...
+    if [ "${__s}" == "__s" ]; then
+        _error "Variable name collision in _escape, choose other variable name than ${__s}."
+        return 1
     fi
 
-    if [[ $_c =~ \$ ]]; then
-        _s2=${_s2//\$/\\\$}
-        _s2=${_s2//\\\\\$/\\\\\\\$} # Adjust the odd ones...
+    local __s2=${!__s}
+
+    if [[ $__c =~ \" ]]; then
+        __s2=${__s2//\"/\\\"}
+        __s2=${__s2//\\\\\"/\\\\\\\"} # Adjust the odd ones...
     fi
 
-    eval "$_s=\$_s2"
+    if [[ $__c =~ \$ ]]; then
+        __s2=${__s2//\$/\\\$}
+        __s2=${__s2//\\\\\$/\\\\\\\$} # Adjust the odd ones...
+    fi
+
+    eval "$__s=\$__s2"
     return 0
 }
 

@@ -3,14 +3,14 @@ space(1) -- automation using Bash
 
 ## SYNOPSIS
 
-`space` [`-f`|`m` namespace [`-M` modules] [`-ep` key=value] [`-c` cmd] [node] [`-a`]] [`-vkKCBX` value] [`-dlShg`] [`--` args]  
+`space` [`-f`|`m` namespace [`-M` modules] [`-ep` key=value] [node] [`-a`]] [`-vkKCBX` value] [`-dlShg`] [`--` args]  
 `space` [`-hV`]  
 `space` `-U` [module]  
 
 ## DESCRIPTION
 **SpaceGal shell**, also known as **Space**, is a non-intrusive automation tool with a very small footprint, perfect to use with and on constrained environments and devices. It loads and runs YAML and Bash files.  
 
-A YAML file is parsed and may refer to Bash functions loaded from a Bash file. The YAML structure is referred to as "nodes", and a "node" could have Bash variables associated to it. A node could be executed if it has the environment variable CMD set. The CMD variable typically refers to a Bash function, or is a Bash snippet in itself. A node could have many environment variables attached to it. When executing a node that has many levels such as "/a/b/c/", all Bash variables in each level will be loaded, where the deeper levels override their parent levels.  
+A YAML file is parsed and may refer to Bash functions loaded from a Bash file. The YAML structure is referred to as "nodes", and a "node" could have Bash variables associated to it. A node could be executed if it has the environment variable RUN set. The RUN variable typically refers to a Bash function, or is a Bash snippet in itself. A node could have many environment variables attached to it. When executing a node that has many levels such as "/a/b/c/", all Bash variables in each level will be loaded, where the deeper levels override their parent levels.  
 In short, the YAML structure sets up the environment and then execution is passed on to a Bash function that executes the actual task.  
 
 **Space** only depends on Bash and its exported scripts only depend on POSIX shell, so it runs with any POSIX compliant shell (ash, dash or bash). It provides a built-in YAML parser and preprocessor which are used to build **Space Modules**. *Modules* are exportable user extensions that can include each other to be loaded and run by **Space** in a composable way. The execution can then be exported as a shell script, to be run directly or shared, all in a decentralized manner.  
@@ -18,7 +18,7 @@ Behind the scenes, Space Module is a Git repository which contains at least the 
 
 For more complex combinations of modules, there is also the concept of "Dimensions". **Space** can handle up to three dimensions. This is a cuboid X*Y*Z, where X, Y and Z are one or many nodes that will get run in combination.  
 An example of that is X could be a list of "things" to operate on, Y could be one or more "operations" to apply to each thing and Z could be one or more "hosts" to where these things exist.  
-The Z dimension nodes will typically provide an environment variable named CMDWRAP that would wrap the CMD inside another CMD, for example to run the given CMD on another host over SSH.  
+The Z dimension nodes will typically provide an environment variable named SPACE_WRAP that would wrap the RUN inside another RUN, for example to run the given RUN on another host over SSH.  
 Each Dimension could have its own Namespace or share Namespaces. A Namespace is a loaded YAML structure. **Space** could, from a given first and optional second dimension, fetch the second or third dimension.
 
 When running **Space**, the following steps occur:  
@@ -26,16 +26,16 @@ When running **Space**, the following steps occur:
   2. Perform YAML preprocessing to resolve all the @-directives  
   3. Perform YAML parsing to prepare environment variables to the next stage  
   4. Set up environment variables  
-  5. Look up the CMD environment variable and gets the executable string from the given Bash function to execute  
+  5. Look up the RUN environment variable and gets the executable string from the given Bash function to execute  
 
 
 ## OPTIONS
 
   * `-f` [Spacefile.yaml]:
         YAML file to load, relative or absolute path. Both `-f` and `-m` options define namespaces in where to look for nodes, for a given dimension of nodes. There can be maximum three namespaces and three dimensions. One namespace can have more than one dimension. Dimension two and three could be found from namespace one below the node in dimension 1.  
-        If only one dimension is given Space looks below `node/_friends/second` for a space separated set of lists that makes up the second dimension.  
+        If only one dimension is given Space looks below `node/_dimensions/second` for a space separated set of lists that makes up the second dimension.  
         The second dimension then uses second namespace if defined else first namespace.
-        If two dimensions are given Space looks below `node/_friends/third` for a space separated list, each list object's "match" node is matched against the node in the second dimension, if match then the list below "nodes" makes up the third dimension.
+        If two dimensions are given Space looks below `node/_dimensions/third` for a space separated list, each list object's "match" node is matched against the node in the second dimension, if match then the list below "nodes" makes up the third dimension.
         The third dimension then uses third namespace if defined else first namespace.  
         Defaults to: ./Spacefile.yaml.
 
@@ -50,8 +50,8 @@ When running **Space**, the following steps occur:
   * `-M` [giturl/][username]/reponame:
         Module to load e.g. "gitlab.com/blockie-org/amodule"  
         Clone and load modules. Separate multiple by space within quotes or use multiple -M switches, one for each module.  
-        Usually used together with '-m' option to load a needed module for use with CMDWRAP environment variable.  
-        Example: space -m dropalot -M ssh -e CMDWRAP=SSH_WRAP -e sshhost=111.222.123.4
+        Usually used together with '-m' option to load a needed module for use with SPACE_WRAP environment variable.  
+        Example: space -m dropalot -M ssh -e SPACE_WRAP=SSH_WRAP -e sshhost=111.222.123.4
 
   * `-e`  var=value:
         Environment variable to forcefully apply/overwrite before parsing the YAML.  
@@ -61,12 +61,6 @@ When running **Space**, the following steps occur:
   * `-p` var=value:
         Preprocess variable to set before preprocessing.  
         Use one -p for each variable.  
-
-  * `-c` value:
-        Set the CMD environment variable just before running the cmd.  
-        Overwrites the CMD variable set in YAML.  
-        Could be used together with -m to run a Bash function in the module,
-        or to use the environment of a target but swap out the CMD being run.
 
   * `-v` level:
         Set verbosity level: 0 = off, 1 = error, 2 = warning, 3 = info, 4 = debug.  
@@ -358,47 +352,52 @@ The following keywords are functions and cannot be used as preprocess variables:
     The directory of where the sourced Bash file is located.
     Use this as "_source ${DIR}/somefile.bash" in the module bash file header.
 
-## CMD VARIABLES
+## RUN VARIABLES
 These are set from the YAML structure and modules Bash files or with command line switches. They are NOT inherited from the Bash environment and are initially unset.
 
-  * `CMD`:
+  * `RUN`:
         `Function/binary arg1 arg2 -- replaceable_arg3 replaceable_arg4`
-        CMD is always cleared for every node being evaluated, meaning it is not inherited downwards.  
-        To use more complicated CMD's always use a Bash function for that, since A=1 B=1 echo something will treat A=1 as the command and the rest as arguments.  
-        Set in YAML or using -c switch.
+        RUN is always cleared for every node being evaluated, meaning it is not inherited downwards.  
+        To use more complicated RUN's always use a Bash function for that, since A=1 B=1 echo something will treat A=1 as the command and the rest as arguments.  
 
-  * `CMDARGS`:
-        Positional arguments to be added to the end of the CMD arguments list, but before any command line arguments.  
+  * `SPACE_ARGS`:
+        Positional arguments to be added to the end of the RUN arguments list, but before any command line arguments.  
         Set in YAML or using -eARGS= switch.
 
-  * `ALIAS`:
+  * `RUN_ALIAS`:
         If set to a node name space will reinvoke running that node instead. Arguments will get passed on just like the would on command line using --.  
-        Not inherited between nodes, just as CMD.  
-        ALIAS shadows CMD.
+        Not inherited between nodes, just as RUN.  
+        RUN_ALIAS shadows RUN.
 
-  * `CMDREDIR`:
+  * `SPACE_REDIR`:
         If set in modules Bash function or YAML will be appended to the final generated Bash string for redirection purposes.  
-        Not inherited between nodes, just as ALIAS and CMD.
+        Not inherited between nodes, just as RUN_ALIAS and RUN.
 
-  * `CMDOUTER`:
-        Use to have $CMD wrapped inside a for loop or similar. $CMD is substituted with _CMD_.  
+  * `SPACE_OUTER`:
+        Use to have $RUN wrapped inside a for loop or similar. $RUN is substituted with _CMD_.  
         Set from modules Bash functions.  
         Not inherited.
 
-  * `CMDWRAP`:
-        Set to FUNC that takes $CMD as argument, often used for ssh wrapping.  
+  * `SPACE_OUTERDEP`:
+
+  * `SPACE_OUTERENV`:
+
+  * `SPACE_WRAP`:
+        Set to FUNC that takes $RUN as argument, often used for ssh wrapping.  
         Will be inherited downwards on nodes.
 
+  * `SPACE_WRAPARGS`:
+
   * `CMDENV`:
-        Space separated list of variable names to export with the CMD function.
+        Space separated list of variable names to export with the RUN function.
 
-  * `CMDEXIT`:
-        If this is set in YAML (or using -e) to "1", then the return status of CMD must be equal to CMDEXIT or else it's regarded as an error and will return 1.
+  * `SPACE_EXIT`:
+        If this is set in YAML (or using -e) to "1", then the return status of RUN must be equal to SPACE_EXIT or else it's regarded as an error and will return 1.
 
-  * `CMDSILENT`:
-        If this is set in YAML (or using -e) to "1", then the return status of CMD will be ignored.
+  * `SPACE_SILENT`:
+        If this is set in YAML (or using -e) to "1", then the return status of RUN will be ignored.
 
-When CMD points to a function name, that function will be parsed for Space header variables, which are on the format "SPACE_xyz=value". Header variables must be at the absolute top of the function to be considered header variables. These are the header variables available to be put at the top of your module functions to which CMD refers to.
+When RUN points to a function name, that function will be parsed for Space header variables, which are on the format "SPACE_xyz=value". Header variables must be at the absolute top of the function to be considered header variables. These are the header variables available to be put at the top of your module functions to which RUN refers to.
 
   * `SPACE_SIGNATURE="arg1 arg2 [optarg1 optarg2]"`:
         Describes the number of arguments that the function is expecting. Space
@@ -427,23 +426,27 @@ When CMD points to a function name, that function will be parsed for Space heade
        value variable names so that there not evaluated too early.
 
   * `SPACE_REDIR`:
-       Default value taken from CMDREDIR variable. Which could be set in the YAML.
+       Default value taken from SPACE_REDIR variable. Which could be set in the YAML.
        Only read from space header if not already set in the environment when building.
        Only settable from the first level function (not from the wrappers).
 
   * `SPACE_OUTER`:
-       Default value taken from CMDOUTER variable. Which could be set in the YAML.
+       Default value taken from SPACE_OUTER variable. Which could be set in the YAML.
        Only read from space header if not already set in the environment when building.
        Only settable from the first level function (not from the wrappers).
 
+  * `SPACE_OUTERDEP`:
+
+  * `SPACE_OUTERENV`:
+
   * `SPACE_ARGS`:
-       Default value taken from CMDARGS variable. Which could be set in the YAML.
+       Default value taken from SPACE_ARGS variable. Which could be set in the YAML.
        Always overwritten by the space header if present.
 
   * `SPACE_FN`:
        If this variable is set, the function that it refers to will replace the
-       current function as being the CMD.
-       The referring CMD functions body will be run at this point giving the
+       current function as being the RUN.
+       The referring RUN functions body will be run at this point giving the
        function very powerful ways of altering the environment variables and space
        header variables.
        For example the function body of the chaining command could do "SPACE_REDIR=..."
@@ -464,7 +467,7 @@ When CMD points to a function name, that function will be parsed for Space heade
        to run the command over SSH inside a Docker container.
        The first name in the list is the innermost wrapper and the last name is
        the outermost wrapper.
-       Default value taken from CMDWRAP variable. Which could be set in the YAML.
+       Default value taken from SPACE_WRAP variable. Which could be set in the YAML.
        Always prepended by the space header if present, meaning that each function
        could define a wrapper and all wrappers will be used.  
        A function that is a wrapper uses a limited set of the space headers.
@@ -482,10 +485,11 @@ When CMD points to a function name, that function will be parsed for Space heade
        wrapper function.
        If a function refers to another function using SPACE_FN then the function
        body is evaluated giving the opportunity to manipulate environment variables.
-       The wrappers are evaluated from outermost to innermost, then the actual CMD's
+       The wrappers are evaluated from outermost to innermost, then the actual RUN's
        SPACE_ENV's are evaluated, so that wrappers could have a way of affecting
        those variables.
 
+  * `SPACE_WRAPARGS`:
 
 ## NOTES
 **Space** is made to work with Bash version 3.2 and later.  
@@ -514,7 +518,7 @@ first:
             providing a positional argument.
     _env:
         - txt: ${txt-FIRST}
-        - CMD: MYMOD1_FIRST -- ${txt}
+        - RUN: MYMOD1_FIRST -- ${txt}
 ```
 
 ### Spacefile.sh:  

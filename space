@@ -2577,7 +2577,7 @@ _main()
     fi
 
     if [[ $_help == "general" ]]; then
-        if (( ${#_dimensions[@]} == 0 )); then
+        if (( ${#_dimensions[@]} == 0 && ${#_namespaces[@]} == 0 )); then
             _helpusage
             return 0
         else

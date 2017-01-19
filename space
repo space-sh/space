@@ -3984,16 +3984,17 @@ _execute()
     # NOTE: possibly make it possible to have RUN: "A=1 B=2 echo something"
     # in the sense that A=1 isn't treated as the command and the rest as arguments.
     local _defaultargs=
-    if [[ $RUN =~ ([^ ]+)[\ ]+(.+) ]]; then
-        RUN=${BASH_REMATCH[1]}
+    local _RUN="${RUN}"  # Isolate this since we are changing it. As a courtesy.
+    if [[ $_RUN =~ ([^ ]+)[\ ]+(.+) ]]; then
+        _RUN=${BASH_REMATCH[1]}
         _defaultargs=${BASH_REMATCH[2]}
-        if [[ $RUN =~ \= ]]; then
-            _error "Sorry, but the RUN (\"$RUN $_defaultargs\") seems to be prefixed by variable assignment(s), the RUN variable assigned from YAML cannot not take such a complex form. Please instead use a Bash function to set RUN."
+        if [[ $_RUN =~ \= ]]; then
+            _error "Sorry, but the RUN (\"$_RUN $_defaultargs\") seems to be prefixed by variable assignment(s), the RUN variable assigned from YAML cannot not take such a complex form. Please instead use a Bash function to set RUN."
             return 1
         fi
     fi
 
-    # Replace RUN arguments with SPACE_ARGS, if provided.
+    # Replace _RUN arguments with SPACE_ARGS, if provided.
     if [[ -n ${SPACE_ARGS-} ]]; then
         _defaultargs=${SPACE_ARGS}
     fi
@@ -4002,7 +4003,7 @@ _execute()
     local _args=()
     _split_quoted "_args" "$_defaultargs"
 
-    # Any arguments in RUN after -- (including) have already been cut away by now.
+    # Any arguments in _RUN after -- (including) have already been cut away by now.
     # If it was not we now remove the -- token.
     local _rowindex=
     for ((_rowindex=0; _rowindex<${#_args[@]}; _rowindex+=1 )); do
@@ -4017,7 +4018,7 @@ _execute()
     done
     unset _rowindex
 
-    # Append command line arguments to RUN.
+    # Append command line arguments to _RUN.
     for _arg in "$@"; do
         _args+=("$_arg")
     done
@@ -4033,7 +4034,7 @@ _execute()
     unset _rowindex _arg _args _cmd_args_count
 
 
-    # Now start looking at the RUN.
+    # Now start looking at the _RUN.
     # All these arrays will be the same size,
     # and populated by the _cmd_extract function.
     local _cmd_names=()
@@ -4048,25 +4049,26 @@ _execute()
     local _cmd_outerenvs=()
     local _cmd_outerdeps=()
 
-    # Check if $RUN is a function or just a snippet.
-    declare -f -F $RUN &>/dev/null
+    # Check if $_RUN is a function or just a snippet.
+    declare -f -F $_RUN &>/dev/null
     if (($? > 0)); then
-        # $RUN is not a function, it's an external executable or a Bash snippet
-        _debug "RUN is snippet or executable: $RUN"
-        # We want to create an anonymous function containing $RUN,
+        # $_RUN is not a function, it's an external executable or a Bash snippet
+        _debug "RUN is snippet or executable: $_RUN"
+        # We want to create an anonymous function containing $_RUN,
         # so it then could be handled in the general way, just as any other function.
         # We create this variable, and it will be available for _get_fn to read from
         # when it ecnouters the name "_anonymous".
-        local _anonymous="    $RUN \"\$@\""
-        RUN="_anonymous"
+        local _anonymous="    $_RUN \"\$@\""
+        _RUN="_anonymous"
+    else
+        # $RUN is a function.
+        _debug "RUN is function: $_RUN"
     fi
 
-    # $RUN is a function.
-    _debug "RUN is function: $RUN"
     _debug "RUN args: $_cmd_args_str"
     _debug "RUN wrap: ${SPACE_WRAP-}"
 
-    local SPACE_FN=$RUN                     # Inherited value from YAML.
+    local SPACE_FN=$_RUN                     # Inherited value from YAML.
     local SPACE_REDIR=${SPACE_REDIR-}       # Inherited value from YAML.
     local SPACE_OUTER=${SPACE_OUTER-}          # Inherited value from YAML.
     local SPACE_OUTERARGS=${SPACE_OUTERARGS-}  # Inherited value from YAML.

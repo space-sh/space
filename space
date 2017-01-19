@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/usr/bin/env bash3
 ###############################################################################
 ###          |                       !                                 |    ###
 ##           |                       .                                 |     ##
@@ -154,6 +154,8 @@ unset SPACE_EXIT    # This is only used as a global, it's not a real SPACE heade
 unset SPACE_SILENT  # This is only used as a global, it's not a real SPACE header variable.
 unset SPACE_OUTER
 unset SPACE_OUTERARGS
+unset SPACE_OUTERENV
+unset SPACE_OUTERDEP
 unset SPACE_REDIR
 unset SPACE_DEP
 unset SPACE_ENV
@@ -4081,6 +4083,8 @@ _execute()
     local SPACE_REDIR=${SPACE_REDIR-}       # Inherited value from YAML.
     local SPACE_OUTER=${SPACE_OUTER-}          # Inherited value from YAML.
     local SPACE_OUTERARGS=${SPACE_OUTERARGS-}  # Inherited value from YAML.
+    local SPACE_OUTERENV=${SPACE_OUTERENV-} # Inherited value from YAML.
+    local SPACE_OUTERDEP=${SPACE_OUTERDEP-} # Inherited value from YAML.
     local SPACE_WRAP=${SPACE_WRAP-}         # Inherited value from YAML.
     local SPACE_WRAPARGS=${SPACE_WRAPARGS-} # Inherited value from YAML.
     local SPACE_ENV=${SPACE_ENV-}           # Inherited value from YAML.
@@ -4186,6 +4190,8 @@ _execute()
                     local SPACE_REDIR=
                     local SPACE_OUTER=
                     local SPACE_OUTERARGS=
+                    local SPACE_OUTERENV=
+                    local SPACE_OUTERDEP=
                     local SPACE_WRAP=
                     local SPACE_WRAPARGS=
                     local SPACE_DEP=
@@ -4331,6 +4337,8 @@ fi
 # - SPACE_REDIR
 # - SPACE_OUTER
 # - SPACE_OUTERARGS
+# - SPACE_OUTERENV
+# - SPACE_OUTERDEP
 # - SPACE_ARGS
 # - SPACE_WRAP
 # - SPACE_WRAPARGS
@@ -4452,12 +4460,6 @@ _cmd_extract()
                 # variables out of an outer function.
                 function _space_context2()
                 {
-                    # Isolate SPACE_DEP and SPACE_ENV header variables to not get overwritten,
-                    # These are the only two SPACE header variables taht are allowed
-                    # to be axtracted from an outer functions header. That's why we do not
-                    # hve to isolate any other header variables here.
-                    local SPACE_DEP=
-                    local SPACE_ENV= 
                     local _fn_name= _fn_body=
                     _get_fn "$SPACE_OUTER" "_fn_name" "_fn_body"
                     if (( $? > 0 )); then
@@ -4473,16 +4475,11 @@ _cmd_extract()
                     local _spacelines=()
                     _cmd_extract_space_header "${_fn_body}" "${_fn_name}" "${_cmd_args_count}" "1" "${SPACE_OUTERARGS}"
                     (( $? > 0 )) && { trap - EXIT; return 1; }
-                    local _fn_def=
-                    printf -v _fn_def "%s\n" "${_fnlines[@]-:}"
-                    SPACE_OUTER="${_fn_name} ()"$'\n'"{"$'\n'"${_fn_def}""}"$'\n'"${_fn_name} ${SPACE_OUTERARGS}"$'\n\n'
-                    # If we have any SPACE_ variables we evaluate them together
-                    # with the function arguments.
+                    # If we have any SPACE_ variables we evaluate them together with the function arguments.
                     if (( ${#_spacelines[@]} > 0 )); then
-                        local _SPACE_ARGS=$SPACE_OUTERARGS
                         local _fns=
                         printf -v _fns "    %s\n" "${_spacelines[@]}"
-                        _fns="_set_args () {"$'\n'"${_fns}}"$'\n'"_set_args ${_SPACE_ARGS}"$'\n'
+                        _fns="_set_args () {"$'\n'"${_fns}}"$'\n'"_set_args ${SPACE_OUTERARGS}"$'\n'
                         eval "$_fns"
                         if (( $? > 0 )); then
                             _error "Could not evaluate function header of ${SPACE_OUTER} to set SPACE_ variables."
@@ -4491,19 +4488,17 @@ _cmd_extract()
                         fi
                         unset _fns
                     fi
+                    local _fn_def=
+                    printf -v _fn_def "%s\n" "${_fnlines[@]-:}"
+                    SPACE_OUTER="${_fn_name} ()"$'\n'"{"$'\n'"${_fn_def}""}"$'\n'"${_fn_name} ${SPACE_OUTERARGS}"$'\n\n'
                     unset _spacelines _fnlines
-                    # These are the only two SPACE variables that we can extract from an outer functions space heaer.
-                    _SPACE_OUTERENV="${SPACE_ENV}"
-                    _SPACE_OUTERDEP="${SPACE_DEP}"
                 }
-                local _SPACE_OUTERDEP=
-                local _SPACE_OUTERENV=
                 if [ -n "${SPACE_OUTER}" ]; then
                     _space_context2
                 fi
                 if (( $? > 0 )); then trap - EXIT; return 1; fi
 
-                _add_cmd "${_fn_name}" "${_fn_def}" "${SPACE_ARGS}" "${SPACE_REDIR}" "${SPACE_OUTER}" "${SPACE_WRAP}" "${SPACE_DEP}" "${_fn_env}" "${_SPACE_OUTERDEP}" "${_SPACE_OUTERENV}" "${SPACE_WRAPARGS}"
+                _add_cmd "${_fn_name}" "${_fn_def}" "${SPACE_ARGS}" "${SPACE_REDIR}" "${SPACE_OUTER}" "${SPACE_WRAP}" "${SPACE_DEP}" "${_fn_env}" "${SPACE_OUTERDEP}" "${SPACE_OUTERENV}" "${SPACE_WRAPARGS}"
                 unset _fn_def
                 break
             fi
@@ -4579,12 +4574,38 @@ _cmd_extract_space_header ()
                     fi
                 elif [ "${_headertype}" = "1" ]; then
                     # Outer command
+                    # NOTE: We handle the translation to OUTER names already here.
                     if [[ ${_spacevar} == "SPACE_ENV" ]]; then
-                        # Always overwritten.
-                        _spacelines+=("SPACE_ENV=${BASH_REMATCH[2]}")
+                        # Appended to.
+                        local _s="${BASH_REMATCH[2]}"
+                        if [ "${_s: -1}" = ";" ]; then
+                            _s="${_s:0:$((${#_s}-1))}"
+                        fi
+                        if [ "${_s:0:1}" = "\"" ] || [ "${_s:0:1}" = "'" ]; then
+                            _s="${_s:1}"
+                        fi
+                        if [ "${_s: -1}" = "\"" ] || [ "${_s: -1}" = "'" ]; then
+                            _s="${_s:0:$((${#_s}-1))}"
+                        fi
+                        _spacelines+=("SPACE_OUTERENV=\"${SPACE_OUTERENV:+${SPACE_OUTERENV} }${_s}"\")
+                        unset _s
                     elif [[ ${_spacevar} == "SPACE_DEP" ]]; then
+                        # Appended to.
+                        local _s="${BASH_REMATCH[2]}"
+                        if [ "${_s: -1}" = ";" ]; then
+                            _s="${_s:0:$((${#_s}-1))}"
+                        fi
+                        if [ "${_s:0:1}" = "\"" ] || [ "${_s:0:1}" = "'" ]; then
+                            _s="${_s:1}"
+                        fi
+                        if [ "${_s: -1}" = "\"" ] || [ "${_s: -1}" = "'" ]; then
+                            _s="${_s:0:$((${#_s}-1))}"
+                        fi
+                        _spacelines+=("SPACE_OUTERDEP=\"${SPACE_OUTERDEP:+${SPACE_OUTERDEP} }${_s}"\")
+                        unset _s
+                    elif [[ ${_spacevar} == "SPACE_ARGS" ]]; then
                         # Always overwritten.
-                        _spacelines+=("SPACE_DEP=${BASH_REMATCH[2]}")
+                        _spacelines+=("SPACE_OUTERARGS=${BASH_REMATCH[2]}")
                     else
                         _error "Unknown SPACE HEADER variable: ${_spacevar}, in OUTER function: ${_fn_name}."
                         return 1
@@ -4627,6 +4648,34 @@ _cmd_extract_space_header ()
                     elif [[ ${_spacevar} == "SPACE_OUTERARGS" ]]; then
                         # Always overwritten.
                         _spacelines+=("SPACE_OUTERARGS=${BASH_REMATCH[2]}")
+                    elif [[ ${_spacevar} == "SPACE_OUTERENV" ]]; then
+                        # Appended to.
+                        local _s="${BASH_REMATCH[2]}"
+                        if [ "${_s: -1}" = ";" ]; then
+                            _s="${_s:0:$((${#_s}-1))}"
+                        fi
+                        if [ "${_s:0:1}" = "\"" ] || [ "${_s:0:1}" = "'" ]; then
+                            _s="${_s:1}"
+                        fi
+                        if [ "${_s: -1}" = "\"" ] || [ "${_s: -1}" = "'" ]; then
+                            _s="${_s:0:$((${#_s}-1))}"
+                        fi
+                        _spacelines+=("SPACE_OUTERENV=\"${SPACE_OUTERENV:+${SPACE_OUTERENV} }${_s}"\")
+                        unset _s
+                    elif [[ ${_spacevar} == "SPACE_OUTERDEP" ]]; then
+                        # Appended to.
+                        local _s="${BASH_REMATCH[2]}"
+                        if [ "${_s: -1}" = ";" ]; then
+                            _s="${_s:0:$((${#_s}-1))}"
+                        fi
+                        if [ "${_s:0:1}" = "\"" ] || [ "${_s:0:1}" = "'" ]; then
+                            _s="${_s:1}"
+                        fi
+                        if [ "${_s: -1}" = "\"" ] || [ "${_s: -1}" = "'" ]; then
+                            _s="${_s:0:$((${#_s}-1))}"
+                        fi
+                        _spacelines+=("SPACE_OUTERDEP=\"${SPACE_OUTERDEP:+${SPACE_OUTERDEP} }${_s}"\")
+                        unset _s
                     elif [[ ${_spacevar} == "SPACE_ARGS" ]]; then
                         # Always overwritten.
                         _spacelines+=("SPACE_ARGS=${BASH_REMATCH[2]}")
@@ -4775,6 +4824,7 @@ _cmd_add_fn_dep()
         local SPACE_DEP= SPACE_ENV= SPACE_REDIR=
         local SPACE_WRAP= SPACE_FN= SPACE_OUTER=
         local SPACE_ARGS= SPACE_OUTERARGS= SPACE_WRAPARGS=
+        local SPACE_OUTERENV= SPACE_OUTERDEP=
         _cmd_extract_space_header "${_fn_dep_body}" "${_fn_dep_name}"
         (( $? > 0 )) && return 1
         local _fns=

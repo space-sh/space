@@ -4127,9 +4127,11 @@ _execute()
         local _fn_cmdouterenv="${_cmd_outerenvs[$_index]}"
         local _fn_cmdouterdep="${_cmd_outerdeps[$_index]}"
 
+        # This _export_vars is used here and then way further down.
+        local _export_vars=""
         if [[ -z "${_fn_wrap}" ]]; then
             if [[ -n "${_fn_cmdouterenv}" ]]; then
-                _fn_env="${_fn_cmdouterenv} ${_fn_env}"
+                _cmd_export_vars "${_fn_cmdouterenv}" "which defined OUTER env"
             fi
             if [[ -n "${_fn_cmdouterdep}" ]]; then
                 local _item=
@@ -4210,12 +4212,13 @@ _execute()
                     local _fn_call="${_fn_name} ${_fn_args}"
                     local _fn_deps="${_cmd_deps[$_index]}"
 
+                    local _export_vars=""
                     # Check if this is the outermost wrapper and
                     # if SPACE_OUTER has env and dep's to it, then
                     # we add those to this top most level.
                     if [ "${_i}" -eq 0 ]; then
                         if [[ -n "${_fn_cmdouterenv}" ]]; then
-                            _fn_env="${_fn_cmdouterenv} ${_fn_env}"
+                            _cmd_export_vars "${_fn_cmdouterenv}" "which defined OUTER env"
                         fi
                         if [[ -n "${_fn_cmdouterdep}" ]]; then
                             local _item=
@@ -4229,7 +4232,9 @@ _execute()
                         fi
                     fi
 
-                    local _export_vars=""
+                    # Add to _export_vars,
+                    # there might be multiple variable declarations,
+                    # but that's as expected.
                     _cmd_export_vars "${_fn_env}" "${_fn_name}"
 
                     push "_fn_def"
@@ -4242,7 +4247,7 @@ _execute()
             unset _fn_wrap_item _fn_wrap_items _i
         fi
 
-        local _export_vars=""
+        # _export_vars declared way above (no not in the context isolator).
         _cmd_export_vars "${_fn_env}" "${_fn_name}"
 
         local _i=

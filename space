@@ -3094,7 +3094,7 @@ _main()
     }
         _context "$@"
         if (( _status > 0 )); then
-            _error "Node(s): $_nodecombo failed executing (status: $_status)."
+            _debug "Node(s): $_nodecombo failed executing (status: $_status)."
             return $_status
         fi
     done
@@ -3296,7 +3296,7 @@ _exec_dimensions()
     shift
 
     local _nodecombo=
-    printf -v _nodecombo "%s%s%s" "$_node1" "${_node2+ $_node2}" "${_node3+ $_node3}"
+    printf -v _nodecombo "%s%s%s" "$_node1" "${_node2:+ $_node2}" "${_node3:+ $_node3}"
 
     if [[ ${_listnodes-} == "1" ]]; then
         printf "%s\n" "$_nodecombo"
@@ -3998,7 +3998,7 @@ _execute()
         _RUN=${BASH_REMATCH[1]}
         _defaultargs=${BASH_REMATCH[2]}
         if [[ $_RUN =~ \= ]]; then
-            _error "Sorry, but the RUN (\"$_RUN $_defaultargs\") seems to be prefixed by variable assignment(s), the RUN variable assigned from YAML cannot not take such a complex form. Please instead use a Bash function to set RUN."
+            _error "Sorry, but the RUN (\"$_RUN $_defaultargs\") seems to be prefixed by variable assignment(s), the RUN variable assigned from YAML or -e cannot not take such a complex form. Please use a Space module instead to set RUN."
             return 1
         fi
     fi
@@ -4271,7 +4271,7 @@ _execute()
         _export_cmd="${_export_cmd}"'
 # Space shows error message, if non clear exit.
 _status="$?"; if [ "'${SPACE_SILENT:-0}'" -eq 0 ] && [ "${_status}" -ne "'${SPACE_EXIT:-0}'" ]; then
-    [ "'${_LOG_ENABLE_COLORS}'" = "1" ] && printf "'${_COLOR_FG_RED}'"; printf "%s\n" "[ERROR] Script exited with status: ${_status}." >&2; [ "'${_LOG_ENABLE_COLORS}'" = "1" ] && printf "'${_COLOR_DEFAULT}'"
+[ "'${_LOG_ENABLE_COLORS}'" = "1" ] && printf "'${_COLOR_FG_RED}'"; printf "%s\n" "[ERROR] Script exited with status: ${_status} (node: '${_nodecombo}')." >&2; [ "'${_LOG_ENABLE_COLORS}'" = "1" ] && printf "'${_COLOR_DEFAULT}'"
     exit "$(( ${_status} > 0 ? ${_status} : 1 ))"
 fi
 '

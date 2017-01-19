@@ -3317,6 +3317,7 @@ _exec_dimensions()
         _YAML_NAMESPACE=${_ns}
         while :; do
             local _res=()
+            _debug "Load node: ${_node}, from namespace: ${_ns}."
             _loadnode "_res" "$_node" "$_strip_args"
             _status=$?
             if (($_status != 0)); then
@@ -3850,8 +3851,6 @@ _loadnode()
         _error "Malformed node ($_fullnodepath), node must begin with slash."
         return 1
     fi
-
-    _debug "Load node: ${_fullnodepath}"
 
     local _nodeparts=()
     IFS='/' read -r -a _nodeparts <<< "${_fullnodepath}"
@@ -4928,6 +4927,9 @@ _to_lower()
 _split_quoted()
 {
     # NOTE: This should have a neater solution, no?
+
+    # Subtle bug: Hello "World"!
+    #   will expand to three arguments: Hello World !
 
     local _output=$1
     shift

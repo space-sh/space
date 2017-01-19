@@ -2314,7 +2314,9 @@ _main()
                         _error "Malformed -e switch not on format [a-ZA-Z0-9_]+=.*: $OPTARG"
                         return 1
                     fi
-                    _envE+=("${OPTARG}")
+                    local _s="${OPTARG}"
+                    _escape "_s" '"'
+                    _envE+=("${_s}")
                     (return 1)
                     ;;
                 d)

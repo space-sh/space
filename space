@@ -3751,7 +3751,7 @@ _parsed_yaml_to_bash()
         elif [[ $_line == "$_SPACEGAL_EOF_TAG" ]]; then
             _str=$_str$'\n'$_SPACEGAL_EOF_TAG$'\n'
             if [ "${_haddata}" -eq 1 ]; then
-                _str="${_str}${_varname}=\${${_varname}: 0:\$((\${#${_varname}}-1))}"$'\n'
+                _str="${_str}${_varname}=\${${_varname}: 0:\$(( \${#${_varname}} > 0 ? \${#${_varname}}-1 : 0 ))}"$'\n'
             else
                 _str="${_str}:"$'\n'
             fi

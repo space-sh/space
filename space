@@ -2774,7 +2774,7 @@ _main()
                 if [[ $_DEBUG_OUTPUT_PARSED == "1" ]]; then
                     [[ $_line =~ local\ ([^\=]+) ]]
                     local _varname=${BASH_REMATCH[1]}
-                    eval "printf \"%s=\\\"%s\\\"\n\" $_varname \"\$$_varname\""
+                    eval "printf \"%s=%s\n\" $_varname \"\$$_varname\""
                     unset _varname
                 fi
 

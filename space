@@ -3958,8 +3958,13 @@ _loadnode()
                         local _s="unset ${_key}"$'\n'
                         eval "$_output+=( \"\$_s\" )"
                     elif [[ "${_value:0:1}" == \' && "${_value: -1}" == \' ]]; then
-                        local _s="[[ \${$_key+spacegal} == \"\" ]] && local ${_key} || local ${_key}=\$${_key}; IFS= read -d '' -r ${_key} << \"$_SPACEGAL_EOF_TAG\""$'\n'"${_value:1:$((${#_value}-2))}"$'\n'"$_SPACEGAL_EOF_TAG"$'\n'
-                        _s="${_s}${_key}=\${${_key}: 0:\$((\${#${_key}}-1))}"$'\n'
+                        local _s="local __spacegaltmp_=
+IFS= read -d '' -r __spacegaltmp_ << \"$_SPACEGAL_EOF_TAG\"
+${_value:1:$((${#_value}-2))}
+$_SPACEGAL_EOF_TAG
+local ${_key}=\${__spacegaltmp_: 0:\$(( \${#__spacegaltmp_} > 0 ? \${#__spacegaltmp_}-1 : 0 ))}
+unset __spacegaltmp_
+"
                         eval "$_output+=( \"\$_s\" )"
                     else
                         if [[ "${_value:0:1}" == \" && "${_value: -1}" == \" ]]; then
@@ -3981,9 +3986,13 @@ _loadnode()
                             _escape "_middle"
                             _value="${_left}\$(_escape_inline \"${_middle}\")${_right}"
                         done
-
-                        local _s="[[ \${$_key+spacegal} == \"\" ]] && local ${_key} || local ${_key}=\$${_key}; IFS= read -d '' -r ${_key} << $_SPACEGAL_EOF_TAG"$'\n'"${_value}"$'\n'"$_SPACEGAL_EOF_TAG"$'\n'
-                        _s="${_s}${_key}=\${${_key}: 0:\$((\${#${_key}}-1))}"$'\n'
+                        local _s="local __spacegaltmp_=
+IFS= read -d '' -r __spacegaltmp_ << $_SPACEGAL_EOF_TAG
+${_value}
+$_SPACEGAL_EOF_TAG
+local ${_key}=\${__spacegaltmp_: 0:\$(( \${#__spacegaltmp_} > 0 ? \${#__spacegaltmp_}-1 : 0 ))}
+unset __spacegaltmp_
+"
                         eval "$_output+=( \"\$_s\" )"
                     fi
                 done

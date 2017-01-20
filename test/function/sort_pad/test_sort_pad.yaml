@@ -23,19 +23,19 @@ tests:
   -
     -
       _env:
-        - CMD: _TEST_SORT_PAD_SINGLE_DIGIT
+        - RUN: _TEST_SORT_PAD_SINGLE_DIGIT
     -
       _env:
-        - CMD: _TEST_SORT_PAD_10_DIGITS
+        - RUN: _TEST_SORT_PAD_10_DIGITS
     -
       _env:
-        - CMD: _TEST_SORT_PAD_20_DIGITS
+        - RUN: _TEST_SORT_PAD_20_DIGITS
     -
       _env:
-        - CMD: _TEST_SORT_PAD_SINGLE_CHARACTER
+        - RUN: _TEST_SORT_PAD_SINGLE_CHARACTER
     -
       _env:
-        - CMD: _TEST_SORT_PAD_10_CHARACTERS
+        - RUN: _TEST_SORT_PAD_10_CHARACTERS
     -
       _env:
-        - CMD: _TEST_SORT_PAD_20_CHARACTERS
+        - RUN: _TEST_SORT_PAD_20_CHARACTERS

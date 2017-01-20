@@ -23,5 +23,5 @@ tests:
   -
     -
       _env:
-        - CMD: _READ_PROGRAM_NAME
+        - RUN: _READ_PROGRAM_NAME
 

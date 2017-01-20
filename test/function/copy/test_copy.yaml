@@ -23,5 +23,5 @@ tests:
   -
     -
       _env:
-        - CMD: _TEST_COPY
+        - RUN: _TEST_COPY
 

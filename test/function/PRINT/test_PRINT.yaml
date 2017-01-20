@@ -23,20 +23,20 @@ tests:
   -
     -
       _env:
-        - CMD: _TEST_PRINT_LEVEL_ERROR
+        - RUN: _TEST_PRINT_LEVEL_ERROR
     -
       _env:
-        - CMD: _TEST_PRINT_LEVEL_SECURITY
+        - RUN: _TEST_PRINT_LEVEL_SECURITY
     -
       _env:
-        - CMD: _TEST_PRINT_LEVEL_WARNING
+        - RUN: _TEST_PRINT_LEVEL_WARNING
     -
       _env:
-        - CMD: _TEST_PRINT_LEVEL_OK
+        - RUN: _TEST_PRINT_LEVEL_OK
     -
       _env:
-        - CMD: _TEST_PRINT_LEVEL_INFO
+        - RUN: _TEST_PRINT_LEVEL_INFO
     -
       _env:
-        - CMD: _TEST_PRINT_LEVEL_DEBUG
+        - RUN: _TEST_PRINT_LEVEL_DEBUG
 

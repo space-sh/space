@@ -30,5 +30,5 @@ install:
             t2 t7
             t3 t4 t5
     _env:
-        - CMD:
+        - RUN:
 

@@ -23,5 +23,5 @@ tests:
   -
     -
       _env:
-        - CMD: _VALIDATE_VERSION
+        - RUN: _VALIDATE_VERSION
 

@@ -23,5 +23,5 @@ tests:
   -
     -
       _env:
-        - CMD: _VALIDATE_BASEDIR
+        - RUN: _VALIDATE_BASEDIR
 

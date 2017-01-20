@@ -31,7 +31,7 @@ _dep_install:
     _info:
         title: Verify Space dependencies
     _env:
-        - CMD: SPACE_DEP_INSTALL
+        - RUN: SPACE_DEP_INSTALL
 install:
     _info:
         title: Install SpaceGal shell
@@ -43,7 +43,7 @@ install:
             Example (using default values):
                 ./space /install/ -- "/usr/local" "/usr/share/bash-completion/completions"
     _env:
-        - CMD: SPACE_INSTALL
+        - RUN: SPACE_INSTALL
 
 uninstall:
     _info:
@@ -51,5 +51,5 @@ uninstall:
         desc:|
             Auto detects and lists all the files originally installed by SpaceGal shell.
     _env:
-        - CMD: SPACE_UNINSTALL
+        - RUN: SPACE_UNINSTALL
 

@@ -23,5 +23,5 @@ tests:
   -
     -
       _env:
-        - CMD: _PARSE_YAML
+        - RUN: _PARSE_YAML
 

@@ -23,5 +23,5 @@ tests:
   -
     -
       _env:
-        - CMD: _TEST_QUICKSORT
+        - RUN: _TEST_QUICKSORT
 

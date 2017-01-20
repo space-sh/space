@@ -48,7 +48,7 @@
         1: Where too?
 _env:
     0:
-        CMD: here it is
+        RUN: here it is
         CMD2: something more
         CMD3: ""
     1:
@@ -70,7 +70,7 @@ _env:
     7:
         STDIN: /dev/stdin
     9999:
-        CMD: OK prio
+        RUN: OK prio
 hej:
     0:
         a: Testing syntax

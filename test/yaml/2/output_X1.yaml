@@ -1,5 +1,5 @@
 _env:
-    - CMD: here it is
+    - RUN: here it is
       CMD2: something more
       CMD3: ""
     - PIPE: input comes from here
@@ -80,4 +80,4 @@ names:
     - Bill Jones
 _env:
     9999:
-        CMD: OK prio
+        RUN: OK prio

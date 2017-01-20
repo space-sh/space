@@ -23,5 +23,5 @@ tests:
   -
     -
       _env:
-        - CMD: _TEST_HELPUSAGE
+        - RUN: _TEST_HELPUSAGE
 

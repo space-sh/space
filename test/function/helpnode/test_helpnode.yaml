@@ -23,8 +23,8 @@ tests:
   -
     -
       _env:
-        - CMD: _TEST_HELPNODE_EMPTY_STRING_PARAMETER
+        - RUN: _TEST_HELPNODE_EMPTY_STRING_PARAMETER
     -
       _env:
-        - CMD: _TEST_HELPNODE_WITH_PARAMETER
+        - RUN: _TEST_HELPNODE_WITH_PARAMETER
 

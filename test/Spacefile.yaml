@@ -33,5 +33,5 @@ run:
         Parameters (optional):
             1: directory path
   _env:
-    - CMD: _TEST_ALL_RECURSIVELY
+    - RUN: _TEST_ALL_RECURSIVELY
 

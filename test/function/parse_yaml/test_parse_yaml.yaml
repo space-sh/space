@@ -23,11 +23,11 @@ tests:
   -
     -
       _env:
-        - CMD: _TEST_PARSE_YAML_CHECK_STATUS_OK
+        - RUN: _TEST_PARSE_YAML_CHECK_STATUS_OK
     -
       _env:
-        - CMD: _TEST_PARSE_YAML_CHECK_PARSED_YAML_OK
+        - RUN: _TEST_PARSE_YAML_CHECK_PARSED_YAML_OK
     -
       _env:
-        - CMD: _TEST_PARSE_YAML_CHECK_PARSED_YAML_FAIL
+        - RUN: _TEST_PARSE_YAML_CHECK_PARSED_YAML_FAIL
 

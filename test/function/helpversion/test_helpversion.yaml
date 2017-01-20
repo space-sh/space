@@ -23,5 +23,5 @@ tests:
   -
     -
       _env:
-        - CMD: _TEST_HELPVERSION
+        - RUN: _TEST_HELPVERSION
 

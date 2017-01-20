@@ -1,8 +1,8 @@
 First:
     SUB3:
         sub4:
-            sub341: This is a\n\nmultiline!
-            sub342: This is a collapsed multiline without newlines.
+            sub341: This is a\n\nmultiline!\n
+            sub342: This is a collapsed multiline without newlines.\n
         sub31: "HELLO"
         sub32: "WORLD!"
     _env:

@@ -20,8 +20,8 @@
         1: ignored:no it becomes an indexed array value.
 3:
     OK: some text
-    OK2: One row,\ntwo rows.
-    OK3: One row, still one row.
+    OK2: One row,\ntwo rows.\n
+    OK3: One row, still one row.\n
 4:
     OK4: Yes!
     OK4a:
@@ -29,11 +29,11 @@
         1:
         2: Spaces removed. index 2.
         3: "Astro Physics"
-        4: Multiline\nright here,\nthanks.
+        4: Multiline\nright here,\nthanks.\n
 5: Old school.
 6: Great school.
 7: Astro School.
-8: Gotta love these collapsed lines.
+8: Gotta love these collapsed lines.\n
 9:
     0:
         A: Aaa
@@ -48,9 +48,9 @@
         1: Where too?
 _env:
     0:
-        RUN: here it is
         CMD2: something more
         CMD3: ""
+        RUN: here it is
     1:
         PIPE: input comes from here
     2:
@@ -84,7 +84,7 @@ hej2:
     1:
         B: B
     2:
-        C: One row,\ntwo rows.
+        C: One row,\ntwo rows.\n
 names:
     0: Mary Smith
     1: "Ester J:son"

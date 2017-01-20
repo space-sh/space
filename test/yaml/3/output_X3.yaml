@@ -66,4 +66,4 @@ test4:
             title: firstarg2/test4/c/hello/
         world:
             title: secarg2world
-    info: here comes an iteration of a.yaml|all with added sub include.\nNotice the args passed with the @include. o/
+    info: here comes an iteration of a.yaml|all with added sub include.\nNotice the args passed with the @include. o/\n

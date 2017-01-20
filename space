@@ -145,17 +145,22 @@ readonly _COLOR_FG_WHITE="\033[37m"
 # Override column position for print function
 _PRINT_COLUMN_POSITION="0"
 
-# These are environment variables to be overwritten in the YAML or by CMD functions.
+# These are environment variables to be overwritten in the YAML or by Space functions.
 # They are intentionally not inherited from the Bash environment.
-unset CMDARGS
-unset ALIAS
-unset CMD
-unset CMDEXIT
-unset CMDSILENT
-unset CMDOUTER
-unset CMDREDIR
-unset CMDWRAP # CMDWRAP is the only environment variable allowed to be inherited downwards in node structures.
-unset CMDOVERRIDE
+unset SPACE_ARGS
+unset RUN_ALIAS
+unset RUN
+unset SPACE_EXIT    # This is only used as a global, it's not a real SPACE header variable.
+unset SPACE_SILENT  # This is only used as a global, it's not a real SPACE header variable.
+unset SPACE_OUTER
+unset SPACE_OUTERARGS
+unset SPACE_OUTERENV
+unset SPACE_OUTERDEP
+unset SPACE_REDIR
+unset SPACE_DEP
+unset SPACE_ENV
+unset SPACE_WRAP
+unset SPACE_WRAPARGS
 
 # Figure out if there's a shasum executable in the OS.
 # We use this for caching purposes, so not required.
@@ -266,8 +271,8 @@ $_USAGE
               Clone and load modules. Separate multiple by space within quotes,
               or use multiple -M switches, one for each module.
               Usually used together with '-m' option to load a needed module for use
-              with CMDWRAP environment variable.
-              Example: space -m dropalot -M ssh -e CMDWRAP=SSH_WRAP -e sshhost=1.2.3.4
+              with SPACE_WRAP environment variable.
+              Example: space -m dropalot -M ssh -e SPACE_WRAP=SSH_WRAP -e sshhost=1.2.3.4
           -e  environment variable to forcefully apply/overwrite before parsing the YAML.
               -e var1="value1".
               Use one -e for each variable.
@@ -275,10 +280,6 @@ $_USAGE
           -p  preprocess variable to set before preprocessing.
               -p inventory=staging.
               Use one -p for each variable.
-          -c  Set the CMD environment variable just before running the cmd.
-              Overwrites the CMD variable set in YAML.
-              Could be used together with -m to run a Bash function in the module,
-              or to use the environment of a target but swap out the CMD being run.
           -v  verbosity level, 0 = off, 1 = error, 2 = warning, 3 = info, 4 = debug.
               Default is 2. Outputs to stderr.
           -d  dry run. Will echo the Bash command line computed instead of running it.
@@ -798,17 +799,34 @@ _parse_yaml()
                         _readahead[0]=""
                     fi
                 else
-                    # Check if to collapse new lines.
-                    if [[ ${value:0:1} == ">" ]]; then
-                        local _s=${_readahead[@]}
+                    # Newlines and multiline strings....
+                    if [[ ${value:0:10} == "!nospace >" ]]; then
+                        # Collapse newlines into one line non-space separated
+                        printf -v _s "%s" "${_readahead[@]}"
                         _readahead=("$_s")
+                        if [[ ${value:10:1} != "-" ]]; then
+                            # Make for trailing newline.
+                            _readahead+=("")
+                        fi
+                    elif [[ ${value:0:1} == ">" ]]; then
+                        # Collapse newlines into one line space separated
+                        local _s=${_readahead[*]}
+                        _readahead=("$_s")
+                        if [[ ${value:1:1} != "-" ]]; then
+                            # Make for trailing newline.
+                            _readahead+=("")
+                        fi
+                    elif [[ ${value:0:1} == "|" ]]; then
+                        if [[ ${value:1:1} != "-" ]]; then
+                            # Make for trailing newline.
+                            _readahead+=("")
+                        fi
                     fi
                 fi
                 eval "$_outvarname+=(\"\$_varname\")"
                 local _line=
                 for _line in "${_readahead[@]}"; do
-                    _output=$(printf "%s" "$_line")
-                    eval "$_outvarname+=(\"\$_output\")"
+                    eval "$_outvarname+=(\"\$_line\")"
                 done
                 eval "$_outvarname+=(\"\$_SPACEGAL_EOF_TAG\")"
                 _lastkey=$_key
@@ -1345,7 +1363,7 @@ _yaml_get_next()
             # This row has a value (other than spaces)
             _rowtype="leaf"
             # Check if we should do a read ahead.
-            if [[ ${value:0:1} == "|" || ${value:0:1} == ">" ]]; then
+            if [[ ${value:0:1} == "|" || ${value:0:1} == ">" || ${value:0:10} == "!nospace >" ]]; then
                 _yaml_get_multiline "$_dopreprocess"
             fi
         else
@@ -1374,7 +1392,7 @@ _yaml_get_next()
         if [[ ${value//\ } != "" ]]; then
             # This row has a value (other than spaces)
             # Check if we should do a read ahead.
-            if [[ ${value:0:1} == "|" || ${value:0:1} == ">" ]]; then
+            if [[ ${value:0:1} == "|" || ${value:0:1} == ">" || ${value:0:10} == "!nospace >" ]]; then
                 _yaml_get_multiline "$_dopreprocess"
             fi
         fi
@@ -1388,7 +1406,7 @@ _yaml_get_next()
         if [[ ${value//\ } != "" ]]; then
             # This row has a value (other than spaces)
             # Check if we should do a read ahead.
-            if [[ ${value:0:1} == "|" || ${value:0:1} == ">" ]]; then
+            if [[ ${value:0:1} == "|" || ${value:0:1} == ">" || ${value:0:10} == "!nospace >" ]]; then
                 _yaml_get_multiline "$_dopreprocess"
             fi
         fi
@@ -1513,7 +1531,7 @@ _yaml_get_multiline()
 #==================
 clone()
 {
-    local _modules="${@}"
+    local _modules="$@"
     shift
 
     # Cloning will always be to $_INCLUDEPATH[1],
@@ -2271,12 +2289,12 @@ _main()
             # End of options
             shift
             # Save the remaining of "$@" as is, because we will use Bash's special treatment of "$@" when forwarding the arguments.
-            _strip_args="1" # This will strip of the -- args from CMD in YAML.
+            _strip_args="1" # This will strip of the -- args from RUN in YAML.
             break
         elif [[ ${1:0:1} == '-' ]]; then
             # A normal switch, let getopts handle it.
             OPTIND=1
-            getopts ":f:m:aM:c:e:dp:v:k:K:ShVlC:BU:X:13:g" "_o"
+            getopts ":f:m:aM:e:dp:v:k:K:ShVlC:BU:X:13:g" "_o"
             case "${_o}" in
                 f)
                     if (( ${#_namespaces[@]} == 3 )); then
@@ -2308,16 +2326,14 @@ _main()
                     _loadmodules="$_loadmodules ${OPTARG}"
                     (return 1)
                     ;;
-                c)
-                    readonly CMDOVERRIDE=${OPTARG}
-                    (return 1)
-                    ;;
                 e)
                     if [[ ! $OPTARG =~ ^[a-zA-Z0-9_]+\=.*$ ]]; then
                         _error "Malformed -e switch not on format [a-ZA-Z0-9_]+=.*: $OPTARG"
                         return 1
                     fi
-                    _envE+=("${OPTARG}")
+                    local _s="${OPTARG}"
+                    _escape "_s" '"'
+                    _envE+=("${_s}")
                     (return 1)
                     ;;
                 d)
@@ -2580,7 +2596,7 @@ _main()
     fi
 
     if [[ $_help == "general" ]]; then
-        if (( ${#_dimensions[@]} == 0 )); then
+        if (( ${#_dimensions[@]} == 0 && ${#_namespaces[@]} == 0 )); then
             _helpusage
             return 0
         else
@@ -2758,7 +2774,7 @@ _main()
                 if [[ $_DEBUG_OUTPUT_PARSED == "1" ]]; then
                     [[ $_line =~ local\ ([^\=]+) ]]
                     local _varname=${BASH_REMATCH[1]}
-                    eval "printf \"%s=%s\n\" $_varname \"\$$_varname\""
+                    eval "printf \"%s=\\\"%s\\\"\n\" $_varname \"\$$_varname\""
                     unset _varname
                 fi
 
@@ -3058,9 +3074,9 @@ _main()
             _status=$?
             (( _status > 0 )) && return
             # We only keep the first node.
-            if (( ${#_dim2[@]} > 0 )); then
-                _dim2=("${_dim2[0]}")
-            fi
+            #if (( ${#_dim2[@]} > 0 )); then
+                #_dim2=("${_dim2[0]}")
+            #fi
         fi
         if (( ${#_dim2[@]} > 0 )); then
             for _second in "${_dim2[@]}"; do
@@ -3095,7 +3111,7 @@ _main()
     }
         _context "$@"
         if (( _status > 0 )); then
-            _error "Node(s): $_nodecombo failed executing (status: $_status)."
+            _debug "Node(s): $_nodecombo failed executing (status: $_status)."
             return $_status
         fi
     done
@@ -3131,15 +3147,15 @@ _get_second_dimension()
 
     _YAML_NAMESPACE=1
     local _l=()
-    _list "_l" "/_friends/" "1"
-    _debug "friends ${_l[@]-}"
+    _list "_l" "/_dimensions/" "1"
+    _debug "dimensions ${_l[@]-}"
 
     if (( ${#_l[@]} > 0 )); then
         local _i=
         for _i in ${_l[@]}; do
             local _firststr= _secondstr=
-            _copy "_firststr" "/_friends/$_i/first"
-            _copy "_secondstr" "/_friends/$_i/second"
+            _copy "_firststr" "/_dimensions/$_i/first"
+            _copy "_secondstr" "/_dimensions/$_i/second"
             if [[ -z $_firststr || -z $_secondstr ]]; then
                 continue
             fi
@@ -3149,7 +3165,7 @@ _get_second_dimension()
             local _first=
             for _first in "${_firstarr[@]}"; do
                 if [[ ! $_first =~ (^/.+/$)|(^/$) ]]; then
-                    _error "Malformed _friends/${_i}/first node path (${_first}). Node path must begin and end with a slash."
+                    _error "Malformed _dimensions/${_i}/first node path (${_first}). Node path must begin and end with a slash."
                     return 1
                 fi
                 local _levelsfirst=${_first//[^\/]}
@@ -3158,7 +3174,7 @@ _get_second_dimension()
                     local _second=
                     for _second in "${_secondarr[@]}"; do
                         if [[ ! $_second =~ (^/.+/$)|(^/$) ]]; then
-                            _error "Malformed _friends/${_i}/second node path (${_second}). Node path must begin and end with a slash."
+                            _error "Malformed _dimensions/${_i}/second node path (${_second}). Node path must begin and end with a slash."
                             return 1
                         fi
                         local _nodes=()
@@ -3167,7 +3183,7 @@ _get_second_dimension()
                             _error "Friend nodes defined for second dimension but then not found in namespace ${_ns}: ${_second}."
                             return 1
                         fi
-                        _debug "Friends _friends/${_i}$_first+$_second matched ${#_nodes[@]} nodes for second dimension in namespace ${_ns}."
+                        _debug "Friends _dimensions/${_i}$_first+$_second matched ${#_nodes[@]} nodes for second dimension in namespace ${_ns}."
                         _dim2+=("${_nodes[@]}")
                     done
                     break # No point checking next first if current matched.
@@ -3210,15 +3226,15 @@ _get_third_dimension()
 
     _YAML_NAMESPACE=1
     local _l=()
-    _list "_l" "/_friends/" "1"
+    _list "_l" "/_dimensions/" "1"
 
     if (( ${#_l[@]} > 0 )); then
         local _i=
         for _i in ${_l[@]}; do
             local _firststr= _secondstr= _thirdstr=
-            _copy "_firststr" "/_friends/$_i/first"
-            _copy "_secondstr" "/_friends/$_i/second"
-            _copy "_thirdstr" "/_friends/$_i/third"
+            _copy "_firststr" "/_dimensions/$_i/first"
+            _copy "_secondstr" "/_dimensions/$_i/second"
+            _copy "_thirdstr" "/_dimensions/$_i/third"
             if [[ -z $_firststr || -z $_secondstr || -z $_thirdstr ]]; then
                 continue
             fi
@@ -3229,7 +3245,7 @@ _get_third_dimension()
             local _first=
             for _first in "${_firstarr[@]}"; do
                 if [[ ! $_first =~ (^/.+/$)|(^/$) ]]; then
-                    _error "Malformed _friends/${_i}/first node path (${_first}). Node path must begin and end with a slash."
+                    _error "Malformed _dimensions/${_i}/first node path (${_first}). Node path must begin and end with a slash."
                     return 1
                 fi
                 local _levelsfirst=${_first//[^\/]}
@@ -3238,7 +3254,7 @@ _get_third_dimension()
                     local _second=
                     for _second in "${_secondarr[@]}"; do
                         if [[ ! $_second =~ (^/.+/$)|(^/$) ]]; then
-                            _error "Malformed _friends/${_i}/second node path (${_second}). Node path must begin and end with a slash."
+                            _error "Malformed _dimensions/${_i}/second node path (${_second}). Node path must begin and end with a slash."
                             return 1
                         fi
                         local _levelssecond=${_second//[^\/]}
@@ -3247,7 +3263,7 @@ _get_third_dimension()
                             local _third=
                             for _third in "${_thirdarr[@]}"; do
                                 if [[ ! $_third =~ (^/.+/$)|(^/$) ]]; then
-                                    _error "Malformed _friends/${_i}/third node path (${_third}). Node path must begin and end with a slash."
+                                    _error "Malformed _dimensions/${_i}/third node path (${_third}). Node path must begin and end with a slash."
                                     return 1
                                 fi
                                 local _nodes=()
@@ -3256,7 +3272,7 @@ _get_third_dimension()
                                     _error "Friend nodes defined for third dimension but then not found in namespace ${_ns}: ${_third}."
                                     return 1
                                 fi
-                                _debug "Friends _friends/${_i}$_first+$_second+$_third matched ${#_nodes[@]} nodes for second dimension in namespace ${_ns}."
+                                _debug "Friends _dimensions/${_i}$_first+$_second+$_third matched ${#_nodes[@]} nodes for second dimension in namespace ${_ns}."
                                 _dim3+=("${_nodes[@]}")
                             done
                             break # No point in checkin further.
@@ -3297,15 +3313,19 @@ _exec_dimensions()
     shift
 
     local _nodecombo=
-    printf -v _nodecombo "%s%s%s" "$_node1" "${_node2+ $_node2}" "${_node3+ $_node3}"
+    printf -v _nodecombo "%s%s%s" "$_node1" "${_node2:+ $_node2}" "${_node3:+ $_node3}"
 
     if [[ ${_listnodes-} == "1" ]]; then
         printf "%s\n" "$_nodecombo"
         return 0
     fi
 
-    # Set command line -e envs, if provided.
-    eval $(_apply_cmd_env)
+    # Isolate all -e cmd variables.
+    # This is important to do here because
+    # if we are iterating many nodes the variables
+    # might get changed, either by YAML parsing,
+    # module build functions or space it self.
+    eval $(_apply_cmd_env "isolate")
 
     local _nodes=("$_ns1 $_node1")
     [[ -n $_node2 ]] && _nodes+=("$_ns2 $_node2")
@@ -3323,6 +3343,7 @@ _exec_dimensions()
         _YAML_NAMESPACE=${_ns}
         while :; do
             local _res=()
+            _debug "Load node: ${_node}, from namespace: ${_ns}."
             _loadnode "_res" "$_node" "$_strip_args"
             _status=$?
             if (($_status != 0)); then
@@ -3350,11 +3371,15 @@ _exec_dimensions()
             fi
             trap - EXIT
 
-            if [[ -n ${ALIAS-} ]]; then
+            if [[ -n ${RUN_ALIAS-} ]]; then
                 # Rerun for the new node, same namespace.
-                _debug "Alias $_node to $ALIAS, namespace $_ns."
-                _node=$ALIAS
-                unset ALIAS
+                _debug "Alias $_node to $RUN_ALIAS, namespace $_ns."
+                if [[ ! $RUN_ALIAS =~ (^/[^ ]+/$)|(^/$) ]]; then
+                    _error 'RUN_ALIAS must begin and end with slash, and have no funny characters. Like: /a/b/c/'
+                    return 1
+                fi
+                _node=$RUN_ALIAS
+                unset RUN_ALIAS
                 # will continue
             else
                 break
@@ -3367,11 +3392,8 @@ _exec_dimensions()
         return 0
     fi
 
-    # Apply CMDOVERRIDE if set on command line.
-    CMD=${CMDOVERRIDE:-${CMD-}}
-
-    if [[ -z ${CMD-} ]]; then
-        _error "No CMD environment variable specified in YAML nodes nor on command line. Use -h to get help or -a -l to list all child nodes."
+    if [[ -z ${RUN-} ]]; then
+        _error "No RUN environment variable specified in YAML nodes nor on command line. Use -h to get help or -a -l to list all child nodes."
         return 1
     fi
 
@@ -3721,18 +3743,25 @@ _parsed_yaml_to_bash()
     local _allrows=()
     eval "_allrows=(\"\${"${_invarname}"[@]}\")"
 
-    local _line= _str= _varname=
+    local _line= _str= _varname= _haddata=0
     for _line in "${_allrows[@]}"; do
         if [[ -z $_varname ]]; then
             _varname="${_YAML_PREFIX}${_YAML_NAMESPACE}${_line}"
-            _str="local $_varname="$'\n'" read -d '' -r $_varname << \"$_SPACEGAL_EOF_TAG\""
+            _str="local $_varname="$'\n'"IFS= read -d '' -r $_varname << \"$_SPACEGAL_EOF_TAG\""
         elif [[ $_line == "$_SPACEGAL_EOF_TAG" ]]; then
-            _str=$_str$'\n'$_SPACEGAL_EOF_TAG$'\n'":"$'\n'
+            _str=$_str$'\n'$_SPACEGAL_EOF_TAG$'\n'
+            if [ "${_haddata}" -eq 1 ]; then
+                _str="${_str}${_varname}=\${${_varname}: 0:\$((\${#${_varname}}-1))}"$'\n'
+            else
+                _str="${_str}:"$'\n'
+            fi
             eval "$_outvarname+=(\"\$_str\")"
             _str=""
             _varname=
+            _haddata=0
         else
             _str=$_str$'\n'$_line
+            _haddata=1
         fi
     done
 }
@@ -3837,7 +3866,7 @@ _match_node()
 # Parameters:
 #   $1: name of the output array to append to.
 #   $2: the node path to load.
-#   $3: set to "1" to strip CMD variable of -- arguments. We do this when we have commands on command line that shall override.
+#   $3: set to "1" to strip RUN variable of -- arguments. We do this when we have commands on command line that shall override.
 #
 #==========
 _loadnode()
@@ -3855,8 +3884,6 @@ _loadnode()
         _error "Malformed node ($_fullnodepath), node must begin with slash."
         return 1
     fi
-
-    _debug "Load node: ${_fullnodepath}"
 
     local _nodeparts=()
     IFS='/' read -r -a _nodeparts <<< "${_fullnodepath}"
@@ -3897,7 +3924,7 @@ _loadnode()
                     # allowed to be set on the last part of the node.
                     if (( _i < _nrparts )); then
                         case "${_key}" in
-                            CMD|CMDREDIR|ALIAS|CMDOUTER|CMDARGS)
+                            RUN|SPACE_REDIR|RUN_ALIAS|SPACE_OUTER|SPACE_ARGS)
                                 continue
                                 ;;
                         esac
@@ -3916,8 +3943,8 @@ _loadnode()
                     local _value=
                     _copy "_value" "${_nodepath}_env/$_arrindex/$_key"
 
-                    if [[ $_key == "CMD" && $_strip_args == "1" ]]; then
-                        # If variable is CMD, we check if to trim away the arguments
+                    if [[ $_key == "RUN" && $_strip_args == "1" ]]; then
+                        # If variable is RUN, we check if to trim away the arguments
                         # after "--" already here, to avoid variables not being declared.
                         # Use case is when overriding arguments from command line with the "--" switch.
                         # NOTE: There's a small probability that the first -- encountered is not
@@ -3928,14 +3955,21 @@ _loadnode()
                     fi
 
                     if [[ "$_value" == "!unset" ]]; then
-                        local _s="unset ${_key}"$'\n'":"$'\n'
+                        local _s="unset ${_key}"$'\n'
                         eval "$_output+=( \"\$_s\" )"
                     elif [[ "${_value:0:1}" == \' && "${_value: -1}" == \' ]]; then
-                        local _s="[[ \${$_key-} == \"\" && \${$_key-unset} == \"unset\" ]] && local ${_key} || local ${_key}=\$${_key}; read -d '' -r ${_key} << \"$_SPACEGAL_EOF_TAG\""$'\n'"${_value:1:$((${#_value}-2))}"$'\n'"$_SPACEGAL_EOF_TAG"$'\n'":"$'\n'
+                        local _s="local __spacegaltmp_=
+IFS= read -d '' -r __spacegaltmp_ << \"$_SPACEGAL_EOF_TAG\"
+${_value:1:$((${#_value}-2))}
+$_SPACEGAL_EOF_TAG
+local ${_key}=\${__spacegaltmp_: 0:\$(( \${#__spacegaltmp_} > 0 ? \${#__spacegaltmp_}-1 : 0 ))}
+unset __spacegaltmp_
+"
                         eval "$_output+=( \"\$_s\" )"
                     else
                         if [[ "${_value:0:1}" == \" && "${_value: -1}" == \" ]]; then
                             _value="${_value:1:$((${#_value}-2))}"
+                            # Descape quotes
                             _value=${_value//\\\"/\"}
                         fi
 
@@ -3952,8 +3986,13 @@ _loadnode()
                             _escape "_middle"
                             _value="${_left}\$(_escape_inline \"${_middle}\")${_right}"
                         done
-
-                        local _s="[[ \${$_key-} == \"\" && \${$_key-unset} == \"unset\" ]] && local ${_key} || local ${_key}=\$${_key}; read -d '' -r ${_key} << $_SPACEGAL_EOF_TAG"$'\n'"${_value}"$'\n'"$_SPACEGAL_EOF_TAG"$'\n'":"$'\n'
+                        local _s="local __spacegaltmp_=
+IFS= read -d '' -r __spacegaltmp_ << $_SPACEGAL_EOF_TAG
+${_value}
+$_SPACEGAL_EOF_TAG
+local ${_key}=\${__spacegaltmp_: 0:\$(( \${#__spacegaltmp_} > 0 ? \${#__spacegaltmp_}-1 : 0 ))}
+unset __spacegaltmp_
+"
                         eval "$_output+=( \"\$_s\" )"
                     fi
                 done
@@ -3986,43 +4025,45 @@ _execute()
     _source_added
     (( $? > 0 )) && return 1
 
-    # Cut potential function arguments from $CMD into $_defaultargs.
-    # NOTE: possibly make it possible to have CMD: "A=1 B=2 echo something"
+    # Cut potential function arguments from $RUN into $_defaultargs.
+    # NOTE: possibly make it possible to have RUN: "A=1 B=2 echo something"
     # in the sense that A=1 isn't treated as the command and the rest as arguments.
     local _defaultargs=
-    if [[ $CMD =~ ([^ ]+)[\ ]+(.+) ]]; then
-        CMD=${BASH_REMATCH[1]}
+    local _RUN="${RUN}"  # Isolate this since we are changing it. As a courtesy.
+    if [[ $_RUN =~ ([^ ]+)[\ ]+(.+) ]]; then
+        _RUN=${BASH_REMATCH[1]}
         _defaultargs=${BASH_REMATCH[2]}
-        if [[ $CMD =~ \= ]]; then
-            _error "Sorry, but the CMD (\"$CMD $_defaultargs\") seems to be prefixed by variable assignment(s), the CMD variable assigned from YAML cannot not take such a complex form. Please instead use a Bash function to set CMD."
+        if [[ $_RUN =~ \= ]]; then
+            _error "Sorry, but the RUN (\"$_RUN $_defaultargs\") seems to be prefixed by variable assignment(s), the RUN variable assigned from YAML or -e cannot not take such a complex form. Please use a Space module instead to set RUN."
             return 1
         fi
+    fi
+
+    # Replace _RUN arguments with SPACE_ARGS, if provided.
+    if [[ -n ${SPACE_ARGS-} ]]; then
+        _defaultargs=${SPACE_ARGS}
     fi
 
     # Split string into array of arguments.
     local _args=()
     _split_quoted "_args" "$_defaultargs"
 
-    # Any arguments in CMD after -- (including) have already been cut away by now.
+    # Any arguments in _RUN after -- (including) have already been cut away by now.
     # If it was not we now remove the -- token.
     local _rowindex=
     for ((_rowindex=0; _rowindex<${#_args[@]}; _rowindex+=1 )); do
         if [[ ${_args[$_rowindex]} == "--" ]]; then
-            _args=("${_args[@]:0:$_rowindex}" "${_args[@]:(($_rowindex+1))}")
+            if [ "$#" -gt 0 ]; then
+                _args=("${_args[@]:0:$_rowindex}")
+            else
+                _args=("${_args[@]:0:$_rowindex}" "${_args[@]:(($_rowindex+1))}")
+            fi
             break
         fi
     done
     unset _rowindex
 
-    # Append CMDARGS arguments to CMD.
-    local _arg=
-    if [[ -n ${CMDARGS-} ]]; then
-        for _arg in ${CMDARGS}; do
-            _args+=("$_arg")
-        done
-    fi
-
-    # Append command line arguments to CMD.
+    # Append command line arguments to _RUN.
     for _arg in "$@"; do
         _args+=("$_arg")
     done
@@ -4038,7 +4079,7 @@ _execute()
     unset _rowindex _arg _args _cmd_args_count
 
 
-    # Now start looking at the CMD.
+    # Now start looking at the _RUN.
     # All these arrays will be the same size,
     # and populated by the _cmd_extract function.
     local _cmd_names=()
@@ -4047,53 +4088,64 @@ _execute()
     local _cmd_redirs=()
     local _cmd_outers=()
     local _cmd_wraps=()
+    local _cmd_wraps_args=()
     local _cmd_deps=()
     local _cmd_envs=()
     local _cmd_outerenvs=()
     local _cmd_outerdeps=()
 
-    # Check if $CMD is a function or just a snippet.
-    declare -f -F $CMD &>/dev/null
+    # Check if $_RUN is a function or just a snippet.
+    declare -f -F $_RUN &>/dev/null
     if (($? > 0)); then
-        # $CMD is not a function, it's an external executable or a Bash snippet
-        _debug "CMD is snippet or executable: $CMD"
-        _debug "CMD args: $_cmd_args_str"
-
-        # As for now CMDDEP is nothing we provide for anonymous functions.
-
-        local _fn_def="_anonymous ()"$'\n'"{"$'\n'"    $CMD \"\$@\""$'\n'"}"$'\n'
-        _add_cmd "_anonymous" "${_fn_def}" "$_cmd_args_str" "${CMDREDIR-}" "${CMDOUTER-}" "${CMDWRAP-}" "" "${CMDENV-}"
-        unset _fn_def
+        # $_RUN is not a function, it's an external executable or a Bash snippet
+        _debug "RUN is snippet or executable: $_RUN"
+        # We want to create an anonymous function containing $_RUN,
+        # so it then could be handled in the general way, just as any other function.
+        # We create this variable, and it will be available for _get_fn to read from
+        # when it ecnouters the name "_anonymous".
+        local _anonymous="    $_RUN \"\$@\""
+        _RUN="_anonymous"
     else
-        # $CMD is a function.
-        _debug "CMD is function: $CMD"
-        _debug "CMD args: $_cmd_args_str"
-        _debug "CMD wrap: ${CMDWRAP-}"
-
-        local SPACE_FN=$CMD                     # Inherited value from YAML.
-        local SPACE_REDIR=${CMDREDIR-}          # Inherited value from YAML.
-        local SPACE_OUTER=${CMDOUTER-}          # Inherited value from YAML.
-        local SPACE_OUTERARGS=${CMDOUTERARGS-}  # Inherited value from YAML.
-        local SPACE_WRAP=${CMDWRAP-}            # Inherited value from YAML.
-        local SPACE_ENV=
-        local SPACE_ARGS=${_cmd_args_str}
-        local SPACE_DEP=
-        local SPACE_OUTERDEP=
-        local SPACE_OUTERENV=
-        _cmd_extract
-        (( $? > 0 )) && return 1
+        # $RUN is a function.
+        _debug "RUN is function: $_RUN"
     fi
+
+    _debug "RUN args: $_cmd_args_str"
+    _debug "RUN wrap: ${SPACE_WRAP-}"
+
+    local SPACE_FN=$_RUN                     # Inherited value from YAML.
+    local SPACE_REDIR=${SPACE_REDIR-}       # Inherited value from YAML.
+    local SPACE_OUTER=${SPACE_OUTER-}          # Inherited value from YAML.
+    local SPACE_OUTERARGS=${SPACE_OUTERARGS-}  # Inherited value from YAML.
+    local SPACE_OUTERENV=${SPACE_OUTERENV-} # Inherited value from YAML.
+    local SPACE_OUTERDEP=${SPACE_OUTERDEP-} # Inherited value from YAML.
+    local SPACE_WRAP=${SPACE_WRAP-}         # Inherited value from YAML.
+    local SPACE_WRAPARGS=${SPACE_WRAPARGS-} # Inherited value from YAML.
+    local SPACE_ENV=${SPACE_ENV-}           # Inherited value from YAML.
+    local SPACE_ARGS=${_cmd_args_str}
+    local SPACE_DEP=${SPACE_DEP-}
+
+    # Balance SPACE_WRAP and SPACE_WRAPARGS
+    if [ -n "${SPACE_WRAP}" ]; then
+        SPACE_WRAPARGS="${SPACE_WRAPARGS:-\ }"$'\n'
+    else
+        SPACE_WRAPARGS=
+    fi
+
+    _cmd_extract
+    (( $? > 0 )) && return 1
     unset _cmd_args_str
 
     # Iterate over all cmds and their data to build up the export
     local _numcmds=${#_cmd_names[@]}
     if (( _numcmds == 0 )); then
-        _error "No CMD's to run."
+        _error "No RUN's to run."
         return 1
     fi
 
     local _export_cmd=""
-    local _cmd_options="set -u;
+    local _cmd_options="set -u  # Will not allow for unset variables being used.
+
 "
     local _index=0
     while (( _index < _numcmds )); do
@@ -4103,14 +4155,17 @@ _execute()
         local _fn_redir=${_cmd_redirs[$_index]}
         local _fn_outer=${_cmd_outers[$_index]}
         local _fn_wrap=${_cmd_wraps[$_index]}
+        local _fn_wraps_args=${_cmd_wraps_args[$_index]}
         local _fn_env="${_cmd_envs[$_index]}"
         local _fn_deps="${_cmd_deps[$_index]}"
         local _fn_cmdouterenv="${_cmd_outerenvs[$_index]}"
         local _fn_cmdouterdep="${_cmd_outerdeps[$_index]}"
 
+        # This _export_vars is used here and then way further down.
+        local _export_vars=""
         if [[ -z "${_fn_wrap}" ]]; then
             if [[ -n "${_fn_cmdouterenv}" ]]; then
-                _fn_env="${_fn_cmdouterenv} ${_fn_env}"
+                _cmd_export_vars "${_fn_cmdouterenv}" "which defined OUTER env"
             fi
             if [[ -n "${_fn_cmdouterdep}" ]]; then
                 local _item=
@@ -4126,9 +4181,10 @@ _execute()
             _fn_cmdouterdep=
         fi
 
-        if [[ -n ${CMDENV-} ]]; then
-            _fn_env="${CMDENV} ${_fn_env}"
-        fi
+        # This must be old cruft, right?
+        #if [[ -n ${CMDENV-} ]]; then
+            #_fn_env="${CMDENV} ${_fn_env}"
+        #fi
 
         local _fn_call="${_fn_name} ${_fn_args}"
         unset _fn_args
@@ -4136,15 +4192,21 @@ _execute()
         local _wrapped_fn_def=""
         local _wrappers=0
         if [[ -n ${_fn_wrap} ]]; then
-            _wrapped_fn_def=$'\n'   # An empty line before all the wrapping comes.
-            local _fn_wrap_item= _fn_wrap_items= _i=
+            local _fn_wrap_item= _fn_wrap_items=() _i= _fn_wrap_item_args=
+            local _fn_wrap_items_args=()
             IFS=' ' read -r -a _fn_wrap_items <<< "${_fn_wrap}"
+            IFS=$'\n' read -d'' -r -a _fn_wrap_items_args <<< "${_fn_wraps_args}"
             _wrappers=${#_fn_wrap_items[@]}
+            if [ "${_wrappers}" -ne "${#_fn_wrap_items_args[@]}" ]; then
+                _error "The number of SPACE_WRAP and SPACE_WRAPARGS do not match."
+                return 1
+            fi
             # We evaluate all the wrappers beginning with the outermost one.
             # In this way wrappers can manipulate environment variables for
             # innermore wrappers and also for the final function.
-            for ((_i=$((_wrappers-1)); _i>=0; _i-=1 )); do
+            for ((_i=0; _i<$((_wrappers)); _i+=1 )); do
                 _fn_wrap_item="${_fn_wrap_items[${_i}]}"
+                _fn_wrap_item_args="${_fn_wrap_items_args[${_i}]}"
 
                 # Inner scope used to isolate some variables 
                 _spacegal_context ()
@@ -4155,6 +4217,7 @@ _execute()
                     local _cmd_redirs=()
                     local _cmd_outers=()
                     local _cmd_wraps=()
+                    local _cmd_wraps_args=()
                     local _cmd_deps=()
                     local _cmd_envs=()
                     local _cmd_outerenvs=()
@@ -4163,35 +4226,33 @@ _execute()
                     local SPACE_REDIR=
                     local SPACE_OUTER=
                     local SPACE_OUTERARGS=
+                    local SPACE_OUTERENV=
+                    local SPACE_OUTERDEP=
                     local SPACE_WRAP=
+                    local SPACE_WRAPARGS=
                     local SPACE_DEP=
                     local SPACE_ENV=
-                    local SPACE_OUTERDEP=
-                    local SPACE_OUTERENV=
                     # We do NOT pass the arguments
                     # into the wrapper function.
-                    local SPACE_ARGS=
+                    local SPACE_ARGS="${_fn_wrap_item_args}"
 
-                    _cmd_extract
+                    _cmd_extract "2"
                     (( $? > 0 )) && return 1
 
                     local _fn_env="${_cmd_envs[0]}"
-                    #if [[ -n ${CMDENV-} ]]; then
-                        #_fn_env="${CMDENV} ${_fn_env}"
-                    #fi
-
                     local _fn_name=${_cmd_names[0]}
                     local _fn_def=${_cmd_bodies[0]}
                     local _fn_args="${_cmd_args[0]}"
                     local _fn_call="${_fn_name} ${_fn_args}"
                     local _fn_deps="${_cmd_deps[$_index]}"
 
+                    local _export_vars=""
                     # Check if this is the outermost wrapper and
-                    # if CMDOUTER has env and dep's to it, then
+                    # if SPACE_OUTER has env and dep's to it, then
                     # we add those to this top most level.
-                    if [[ "${_i}" == "$((_wrappers-1))" ]]; then
+                    if [ "${_i}" -eq 0 ]; then
                         if [[ -n "${_fn_cmdouterenv}" ]]; then
-                            _fn_env="${_fn_cmdouterenv} ${_fn_env}"
+                            _cmd_export_vars "${_fn_cmdouterenv}" "which defined OUTER env"
                         fi
                         if [[ -n "${_fn_cmdouterdep}" ]]; then
                             local _item=
@@ -4205,7 +4266,9 @@ _execute()
                         fi
                     fi
 
-                    local _export_vars=""
+                    # Add to _export_vars,
+                    # there might be multiple variable declarations,
+                    # but that's as expected.
                     _cmd_export_vars "${_fn_env}" "${_fn_name}"
 
                     push "_fn_def"
@@ -4218,30 +4281,32 @@ _execute()
             unset _fn_wrap_item _fn_wrap_items _i
         fi
 
-        local _export_vars=""
+        # _export_vars declared way above (no not in the context isolator).
         _cmd_export_vars "${_fn_env}" "${_fn_name}"
 
-        while ((_wrappers>0)); do
-            ((_wrappers-=1))
-            _wrapped_fn_def="CMD=\$(cat <<\"${_wrappers}${_SPACEGAL_EOF_TAG}\""$'\n'"${_wrapped_fn_def}${_export_vars}${_fn_def}${_fn_call}"$'\n\n'"${_wrappers}${_SPACEGAL_EOF_TAG}"$'\n'")"$'\n\n'
+        local _i=
+        for ((_i=1; _i<$((_wrappers+1)); _i+=1)); do
+            _wrapped_fn_def="# BEGIN WRAP ${_i}"$'\n'"RUN=\$(cat <<\"${_i}${_SPACEGAL_EOF_TAG}\""$'\n'"set -u"$'\n'$'\n'"${_wrapped_fn_def}${_export_vars}${_fn_def}${_fn_call}"$'\n\n'"${_i}${_SPACEGAL_EOF_TAG}"$'\n'")"$'\n'"# END WRAP ${_i}"$'\n\n'
             pop "_export_vars"
             pop "_fn_call"
             pop "_fn_def"
         done
+        unset _i
+        unset _wrappers
 
         if [[ -n ${_fn_redir} ]]; then
             _fn_call="${_fn_call} ${_fn_redir}"
         fi
 
-        # $_fn_outer is used to make the CMD be inside a for loop
+        # $_fn_outer is used to make the RUN be inside a for loop
         # or some other prefixing or enclosing code.
         local _fn_outer_header=""
         local _fn_outer_footer=""
         if [[ -n ${_fn_outer} ]]; then
-            _fn_outer_header=${_fn_outer%_CMD_*}
-            _fn_outer_footer=${_fn_outer#*_CMD_}
+            _fn_outer_header=${_fn_outer%_RUN_*}
+            _fn_outer_footer=${_fn_outer#*_RUN_}
             if [ "${_fn_outer_header}" = "${_fn_outer_footer}" ]; then
-                _error "Outer command has no _CMD_ tag."
+                _error "Outer command has no _RUN_ tag."
                 return 1
             fi
         fi
@@ -4250,8 +4315,8 @@ _execute()
 
         _export_cmd="${_export_cmd}"'
 # Space shows error message, if non clear exit.
-_status="$?"; if [ "'${CMDSILENT:-0}'" -eq 0 ] && [ "${_status}" -ne "'${CMDEXIT:-0}'" ]; then
-    [ "'${_LOG_ENABLE_COLORS}'" = "1" ] && printf "'${_COLOR_FG_RED}'"; printf "%s\n" "[ERROR] Script exited with status: ${_status}." >&2; [ "'${_LOG_ENABLE_COLORS}'" = "1" ] && printf "'${_COLOR_DEFAULT}'"
+_status="$?"; if [ "'${SPACE_SILENT:-0}'" -eq 0 ] && [ "${_status}" -ne "'${SPACE_EXIT:-0}'" ]; then
+[ "'${_LOG_ENABLE_COLORS}'" = "1" ] && printf "'${_COLOR_FG_RED}'"; printf "%s\n" "[ERROR] Script exited with status: ${_status} (node: '${_nodecombo}')." >&2; [ "'${_LOG_ENABLE_COLORS}'" = "1" ] && printf "'${_COLOR_DEFAULT}'"
     exit "$(( ${_status} > 0 ? ${_status} : 1 ))"
 fi
 '
@@ -4284,9 +4349,9 @@ fi
         printf "%s\n" "$_exportinfo"
 
         local _helpinfo="# Node: $_nodecombo"$'\n'
-        [[ $_infotitle ]] && _helpinfo="${_helpinfo}# $_infotitle"
-        [[ $_infodesc ]] && _helpinfo="${_helpinfo}"$'\n'"# ${_infodesc//$'\n'/$'\n'\# }"
-        [[ -n $_helpinfo ]] && printf "%s\n\n" "$_helpinfo"
+        [[ $_infotitle ]] && _helpinfo="${_helpinfo}# $_infotitle"$'\n'
+        [[ $_infodesc ]] && _helpinfo="${_helpinfo}# ${_infodesc//$'\n'/$'\n'# }"$'\n'
+        [[ -n $_helpinfo ]] && printf "%s\n" "$_helpinfo"
 
         printf "%s\n" "$_export_cmd"
         return 0
@@ -4304,15 +4369,21 @@ fi
 #============
 # _cmd_extract
 #
-# Helper function to analyze and extract CMD function and headers.
+# Helper function to analyze and extract RUN function and headers.
 # The following Space header variables could or are expected to have been set with default values:
 # - SPACE_FN (required)
 # - SPACE_ENV
 # - SPACE_REDIR
 # - SPACE_OUTER
 # - SPACE_OUTERARGS
+# - SPACE_OUTERENV
+# - SPACE_OUTERDEP
 # - SPACE_ARGS
 # - SPACE_WRAP
+# - SPACE_WRAPARGS
+#
+# Parameters:
+#   $1: Space header type, 0=normal, 1=outer, 2=wrap. Default is 0.
 #
 # Expects:
 #   _cmd_names=()
@@ -4321,12 +4392,16 @@ fi
 #   _cmd_redirs=()
 #   _cmd_outers=()
 #   _cmd_wraps=()
+#   _cmd_wraps_args=()
 #   _cmd_deps=()
 #   _cmd_envs=()
 #
 #============
 _cmd_extract()
 {
+    local _headertype="${1:-0}"
+    shift || :
+
     trap '_error "Problem when evaluating SPACE_ header variables or function body for: ${_fn_name}. Look for unbound variable or other syntax error."; trap - EXIT; return 1; ' EXIT
     local _space_cmds=("${SPACE_FN}")
     local _space_cmd_index=0
@@ -4366,7 +4441,7 @@ _cmd_extract()
             local _space_cmd=$SPACE_FN
             local _fnlines=()
             local _spacelines=()
-            _cmd_extract_space_header "${_fn_body}" "${_fn_name}" "${_cmd_args_count}" "0" "${SPACE_ARGS}"
+            _cmd_extract_space_header "${_fn_body}" "${_fn_name}" "${_cmd_args_count}" "${_headertype}" "${SPACE_ARGS}"
             (( $? > 0 )) && { trap - EXIT; return 1; }
 
             # If we have any SPACE_ variables we evaluate them together
@@ -4420,62 +4495,49 @@ _cmd_extract()
                 _cmd_add_fn_dep "${SPACE_DEP}" "${_fn_name}"
                 if (( $? > 0 )); then trap - EXIT; return 1; fi
 
-                # If SPACE_OUTER, then get that body and it's headers DEP/ENV values.
-                # And we'll isolate this in a function to not pollute env variables.
+                # This is a function to isolate variables when extracting header
+                # variables out of an outer function.
                 function _space_context2()
                 {
-                    # Isolate all SPACE header variables to not get overwritten,
-                    # except SPACE_OUTERDEP and SPACE_OUTERENV.
-                    local SPACE_DEP= SPACE_ENV= SPACE_REDIR=
-                    local SPACE_WRAP= SPACE_FN= SPACE_ARGS="${SPACE_ARGS}"
-                    if [ -n "${SPACE_OUTER}" ]; then
-                        # The command is referring to an OUTER command.
-                        # We will fetch the outer command's body and it's SPACE headers:
-                        # SPACE_DEP, SPACE_ENV.
-                        local _fn_name= _fn_body=
-                        _get_fn "$SPACE_OUTER" "_fn_name" "_fn_body"
+                    local _fn_name= _fn_body=
+                    _get_fn "$SPACE_OUTER" "_fn_name" "_fn_body"
+                    if (( $? > 0 )); then
+                        _error "Function $SPACE_OUTER is not declared or syntax error."
+                        trap - EXIT
+                        return 1
+                    fi
+                    local _args=()
+                    _split_quoted "_args" "${SPACE_OUTERARGS}"
+                    local _cmd_args_count=${#_args[@]};
+                    unset _args
+                    local _fnlines=()
+                    local _spacelines=()
+                    _cmd_extract_space_header "${_fn_body}" "${_fn_name}" "${_cmd_args_count}" "1" "${SPACE_OUTERARGS}"
+                    (( $? > 0 )) && { trap - EXIT; return 1; }
+                    # If we have any SPACE_ variables we evaluate them together with the function arguments.
+                    if (( ${#_spacelines[@]} > 0 )); then
+                        local _fns=
+                        printf -v _fns "    %s\n" "${_spacelines[@]}"
+                        _fns="_set_args () {"$'\n'"${_fns}}"$'\n'"_set_args ${SPACE_OUTERARGS}"$'\n'
+                        eval "$_fns"
                         if (( $? > 0 )); then
-                            _error "Function $SPACE_OUTER is not declared or syntax error."
+                            _error "Could not evaluate function header of ${SPACE_OUTER} to set SPACE_ variables."
                             trap - EXIT
                             return 1
                         fi
-                        local _args=()
-                        _split_quoted "_args" "${SPACE_OUTERARGS}"
-                        local _cmd_args_count=${#_args[@]};
-                        unset _args
-                        local _fnlines=()
-                        local _spacelines=()
-                        _cmd_extract_space_header "${_fn_body}" "${_fn_name}" "${_cmd_args_count}" "1" "${SPACE_OUTERARGS}"
-                        (( $? > 0 )) && { trap - EXIT; return 1; }
-                        local _fn_def=
-                        printf -v _fn_def "%s\n" "${_fnlines[@]-:}"
-                        SPACE_OUTER="${_fn_name} ()"$'\n'"{"$'\n'"${_fn_def}""}"$'\n'"${_fn_name} ${SPACE_OUTERARGS}"$'\n\n'
-                        # If we have any SPACE_ variables we evaluate them together
-                        # with the function arguments.
-                        if (( ${#_spacelines[@]} > 0 )); then
-                            local _SPACE_ARGS=$SPACE_OUTERARGS
-                            local _fns=
-                            printf -v _fns "    %s\n" "${_spacelines[@]}"
-                            _fns="_set_args () {"$'\n'"${_fns}}"$'\n'"_set_args ${_SPACE_ARGS}"$'\n'
-                            eval "$_fns"
-                            if (( $? > 0 )); then
-                                _error "Could not evaluate function header of ${SPACE_OUTER} to set SPACE_ variables."
-                                trap - EXIT
-                                return 1
-                            fi
-                            unset _fns
-                        fi
-                        unset _spacelines
-                        SPACE_OUTERENV="${SPACE_ENV}"
-                        SPACE_OUTERDEP="${SPACE_DEP}"
+                        unset _fns
                     fi
+                    local _fn_def=
+                    printf -v _fn_def "%s\n" "${_fnlines[@]-:}"
+                    SPACE_OUTER="${_fn_name} ()"$'\n'"{"$'\n'"${_fn_def}""}"$'\n'"${_fn_name} ${SPACE_OUTERARGS}"$'\n\n'
+                    unset _spacelines _fnlines
                 }
-                local SPACE_OUTERDEP=
-                local SPACE_OUTERENV=
-                _space_context2
+                if [ -n "${SPACE_OUTER}" ]; then
+                    _space_context2
+                fi
                 if (( $? > 0 )); then trap - EXIT; return 1; fi
 
-                _add_cmd "${_fn_name}" "${_fn_def}" "${SPACE_ARGS}" "${SPACE_REDIR}" "${SPACE_OUTER}" "${SPACE_WRAP}" "${SPACE_DEP}" "${_fn_env}" "${SPACE_OUTERDEP}" "${SPACE_OUTERENV}"
+                _add_cmd "${_fn_name}" "${_fn_def}" "${SPACE_ARGS}" "${SPACE_REDIR}" "${SPACE_OUTER}" "${SPACE_WRAP}" "${SPACE_DEP}" "${_fn_env}" "${SPACE_OUTERDEP}" "${SPACE_OUTERENV}" "${SPACE_WRAPARGS}"
                 unset _fn_def
                 break
             fi
@@ -4506,7 +4568,7 @@ _cmd_extract_space_header ()
     local _cmd_args_count="${1-}"
     shift || :
 
-    local is_outercmd="${1-}"
+    local _headertype="${1-}"
     shift || :
 
     local _given_args="${1-}"
@@ -4519,6 +4581,8 @@ _cmd_extract_space_header ()
 
     local _line=
     local _isheader="1"
+    local _addedspacewrap=0
+    local _spacewrapargs=
     while IFS= read -r _line; do
         # Disconsider comments when evaluating header line
         if [[ $_isheader == "1" ]]; then
@@ -4547,7 +4611,64 @@ _cmd_extract_space_header ()
                             return 1
                         fi
                     fi
-                elif [ "${is_outercmd}" = "1" ]; then
+                elif [ "${_headertype}" = "1" ]; then
+                    # Outer command
+                    # NOTE: We handle the translation to OUTER names already here.
+                    if [[ ${_spacevar} == "SPACE_ENV" ]]; then
+                        # Appended to.
+                        local _s="${BASH_REMATCH[2]}"
+                        if [ "${_s: -1}" = ";" ]; then
+                            _s="${_s:0:$((${#_s}-1))}"
+                        fi
+                        if [ "${_s:0:1}" = "\"" ] || [ "${_s:0:1}" = "'" ]; then
+                            _s="${_s:1}"
+                        fi
+                        if [ "${_s: -1}" = "\"" ] || [ "${_s: -1}" = "'" ]; then
+                            _s="${_s:0:$((${#_s}-1))}"
+                        fi
+                        _spacelines+=("SPACE_OUTERENV=\"${SPACE_OUTERENV:+${SPACE_OUTERENV} }${_s}"\")
+                        unset _s
+                    elif [[ ${_spacevar} == "SPACE_DEP" ]]; then
+                        # Appended to.
+                        local _s="${BASH_REMATCH[2]}"
+                        if [ "${_s: -1}" = ";" ]; then
+                            _s="${_s:0:$((${#_s}-1))}"
+                        fi
+                        if [ "${_s:0:1}" = "\"" ] || [ "${_s:0:1}" = "'" ]; then
+                            _s="${_s:1}"
+                        fi
+                        if [ "${_s: -1}" = "\"" ] || [ "${_s: -1}" = "'" ]; then
+                            _s="${_s:0:$((${#_s}-1))}"
+                        fi
+                        _spacelines+=("SPACE_OUTERDEP=\"${SPACE_OUTERDEP:+${SPACE_OUTERDEP} }${_s}"\")
+                        unset _s
+                    elif [[ ${_spacevar} == "SPACE_ARGS" ]]; then
+                        # Always overwritten.
+                        _spacelines+=("SPACE_OUTERARGS=${BASH_REMATCH[2]}")
+                    else
+                        _error "Unknown SPACE HEADER variable: ${_spacevar}, in OUTER function: ${_fn_name}."
+                        return 1
+                    fi
+                elif [ "${_headertype}" = "2" ]; then
+                    # Wrap command
+                    if [[ ${_spacevar} == "SPACE_ENV" ]]; then
+                        # Always overwritten.
+                        _spacelines+=("SPACE_ENV=${BASH_REMATCH[2]}")
+                    elif [[ ${_spacevar} == "SPACE_DEP" ]]; then
+                        # Always overwritten.
+                        _spacelines+=("SPACE_DEP=${BASH_REMATCH[2]}")
+                    elif [[ ${_spacevar} == "SPACE_ARGS" ]]; then
+                        # Always overwritten.
+                        _spacelines+=("SPACE_ARGS=${BASH_REMATCH[2]}")
+                    elif [[ ${_spacevar} == "SPACE_FN" ]]; then
+                        # Always overwritten.
+                        _spacelines+=("SPACE_FN=${BASH_REMATCH[2]}")
+                    else
+                        _error "Unknown SPACE HEADER variable: ${_spacevar}, in WRAP function: ${_fn_name}."
+                        return 1
+                    fi
+                elif [ "${_headertype}" = "3" ]; then
+                    # Dep command
                     if [[ ${_spacevar} == "SPACE_ENV" ]]; then
                         # Always overwritten.
                         _spacelines+=("SPACE_ENV=${BASH_REMATCH[2]}")
@@ -4555,10 +4676,9 @@ _cmd_extract_space_header ()
                         # Always overwritten.
                         _spacelines+=("SPACE_DEP=${BASH_REMATCH[2]}")
                     else
-                        _error "Unknown SPACE HEADER variable: ${_spacevar}, in OUTER function: ${_fn_name}."
+                        _error "Unknown SPACE HEADER variable: ${_spacevar}, in DEP function: ${_fn_name}."
                         return 1
                     fi
-                    continue
                 else
                     if [[ ${_spacevar} == "SPACE_ENV" ]]; then
                         # Always overwritten.
@@ -4579,22 +4699,66 @@ _cmd_extract_space_header ()
                     elif [[ ${_spacevar} == "SPACE_OUTERARGS" ]]; then
                         # Always overwritten.
                         _spacelines+=("SPACE_OUTERARGS=${BASH_REMATCH[2]}")
+                    elif [[ ${_spacevar} == "SPACE_OUTERENV" ]]; then
+                        # Appended to.
+                        local _s="${BASH_REMATCH[2]}"
+                        if [ "${_s: -1}" = ";" ]; then
+                            _s="${_s:0:$((${#_s}-1))}"
+                        fi
+                        if [ "${_s:0:1}" = "\"" ] || [ "${_s:0:1}" = "'" ]; then
+                            _s="${_s:1}"
+                        fi
+                        if [ "${_s: -1}" = "\"" ] || [ "${_s: -1}" = "'" ]; then
+                            _s="${_s:0:$((${#_s}-1))}"
+                        fi
+                        _spacelines+=("SPACE_OUTERENV=\"${SPACE_OUTERENV:+${SPACE_OUTERENV} }${_s}"\")
+                        unset _s
+                    elif [[ ${_spacevar} == "SPACE_OUTERDEP" ]]; then
+                        # Appended to.
+                        local _s="${BASH_REMATCH[2]}"
+                        if [ "${_s: -1}" = ";" ]; then
+                            _s="${_s:0:$((${#_s}-1))}"
+                        fi
+                        if [ "${_s:0:1}" = "\"" ] || [ "${_s:0:1}" = "'" ]; then
+                            _s="${_s:1}"
+                        fi
+                        if [ "${_s: -1}" = "\"" ] || [ "${_s: -1}" = "'" ]; then
+                            _s="${_s:0:$((${#_s}-1))}"
+                        fi
+                        _spacelines+=("SPACE_OUTERDEP=\"${SPACE_OUTERDEP:+${SPACE_OUTERDEP} }${_s}"\")
+                        unset _s
                     elif [[ ${_spacevar} == "SPACE_ARGS" ]]; then
                         # Always overwritten.
                         _spacelines+=("SPACE_ARGS=${BASH_REMATCH[2]}")
                     elif [[ ${_spacevar} == "SPACE_WRAP" ]]; then
-                        # Always overwritten, but prepended to.
+                        # Appended to.
                         local _s="${BASH_REMATCH[2]}"
-                        if [ "${_s:0:1}" = "\"" ]; then
-                            _s="${_s:1}"
-                        fi
                         if [ "${_s: -1}" = ";" ]; then
                             _s="${_s:0:$((${#_s}-1))}"
                         fi
-                        if [ "${_s: -1}" = "\"" ]; then
+                        if [ "${_s:0:1}" = "\"" ] || [ "${_s:0:1}" = "'" ]; then
+                            _s="${_s:1}"
+                        fi
+                        if [ "${_s: -1}" = "\"" ] || [ "${_s: -1}" = "'" ]; then
                             _s="${_s:0:$((${#_s}-1))}"
                         fi
-                        _spacelines+=("SPACE_WRAP=\"${_s}${SPACE_WRAP:+ ${SPACE_WRAP}}"\")
+                        _spacelines+=("SPACE_WRAP=\"${SPACE_WRAP:+${SPACE_WRAP} }${_s}"\")
+                        unset _s
+                        _addedspacewrap=1
+                    elif [[ ${_spacevar} == "SPACE_WRAPARGS" ]]; then
+                        # Appended to.
+                        local _s="${BASH_REMATCH[2]}"
+                        if [ "${_s: -1}" = ";" ]; then
+                            _s="${_s:0:$((${#_s}-1))}"
+                        fi
+                        if [ "${_s:0:1}" = "\"" ] || [ "${_s:0:1}" = "'" ]; then
+                            _s="${_s:1}"
+                        fi
+                        if [ "${_s: -1}" = "\"" ] || [ "${_s: -1}" = "'" ]; then
+                            _s="${_s:0:$((${#_s}-1))}"
+                        fi
+                        _escape "_s" '"'
+                        _spacewrapargs=${_s}  # Save for later
                         unset _s
                     elif [[ ${_spacevar} == "SPACE_FN" ]]; then
                         # Always overwritten.
@@ -4609,6 +4773,11 @@ _cmd_extract_space_header ()
             else
                 # Stop extracting header if a row is not prefixed by "SPACE_" nor "#".
                 _isheader="0"
+                # Balance SPACE_WRAPARGS
+                if [ "${_addedspacewrap}" -eq 1 ]; then
+                    _spacewrapargs="${_spacewrapargs:-\ }"
+                    _spacelines+=("SPACE_WRAPARGS=\"\${SPACE_WRAPARGS}${_spacewrapargs}\"\$'\n'")
+                fi
             fi
         fi
         if [[ $_isheader == "0" ]]; then
@@ -4638,26 +4807,25 @@ _cmd_export_vars()
         local _fn_env_item= _k1= _k2= _v= _done=""
         for _fn_env_item in ${_fn_env}; do
             _k1=${_fn_env_item%%=*}
+            if [[ ${_done} =~ (^|[\ ])${_k1}($|[\ ]) ]]; then
+                # Variable already exported.
+                continue;
+            else
+                _done="${_done} ${_k1}"
+            fi
+            _v=""
             if [[ ${_k1} == ${_fn_env_item} ]]; then
                 _k2="\${${_fn_env_item}}"
-            else
-                _k2=${_fn_env_item##*=}
-            fi
-            if [[ ${_done} =~ (^|[\ ])${_k1}($|[\ ]) ]]; then
-                continue;
-            fi
-            _done="${_done} ${_k1}"
-            if [[ -n ${_k2} ]]; then
                 eval "_v=\"${_k2}\""
                 if [ "$?" != "0" ]; then
-                    _error "Problem when evaluating SPACE_FN(OUTER)ENV header variables associated with ${_fn_name}. Look for unbound variable or syntax error in named function or in its chain of functions."
+                    _error "Problem when evaluating SPACE_FN(OUTER)ENV header variable '${_fn_env_item}' associated with fucntion ${_fn_name}. Look for unbound variable or syntax error in function ${_fn_name} or in its chain of functions."
                     trap - EXIT
                     return 1
                 fi
             else
-                _v=""
+                _v=${_fn_env_item##*=}
             fi
-            _escape "_v"
+            _escape "_v" '"'
             _export_vars="${_export_vars}${_k1}=\""$_v"\""$'\n'
         done
         unset _fn_env_item _k _v _done
@@ -4703,11 +4871,12 @@ _cmd_add_fn_dep()
             return 1
         fi
         local _spacelines=() _fnlines=() _line=
-        # We set some space header variable to non empty because we do not
-        # want them returned in _spacelines.
-        local SPACE_DEP= SPACE_ENV= SPACE_REDIR=1
-        local SPACE_WRAP=1 SPACE_FN=1 SPACE_OUTER=1 SPACE_ARGS=1 SPACE_OUTERARGS=1
-        _cmd_extract_space_header "${_fn_dep_body}" "${_fn_dep_name}"
+        # We isolate the space header variables:
+        local SPACE_DEP= SPACE_ENV= SPACE_REDIR=
+        local SPACE_WRAP= SPACE_FN= SPACE_OUTER=
+        local SPACE_ARGS= SPACE_OUTERARGS= SPACE_WRAPARGS=
+        local SPACE_OUTERENV= SPACE_OUTERDEP=
+        _cmd_extract_space_header "${_fn_dep_body}" "${_fn_dep_name}" "" "3"
         (( $? > 0 )) && return 1
         local _fns=
         printf -v _fns "    %s\n" "${_spacelines[@]-:}"
@@ -4776,6 +4945,9 @@ _add_cmd()
 
     _cmd_outerenvs+=("${1-}")
     shift || :
+
+    _cmd_wraps_args+=("${1-}")
+    shift || :
 }
 
 #============
@@ -4803,24 +4975,30 @@ _escape_inline()
 #============
 _escape()
 {
-    local _s=$1
+    local __s=$1
     shift
-    local _c=${1-\"\$}
+
+    local __c=${1-\"\$}
     shift || :
 
-    local _s2=${!_s}
-
-    if [[ $_c =~ \" ]]; then
-        _s2=${_s2//\"/\\\"}
-        _s2=${_s2//\\\\\"/\\\\\\\"} # Adjust the odd ones...
+    if [ "${__s}" == "__s" ]; then
+        _error "Variable name collision in _escape, choose other variable name than ${__s}."
+        return 1
     fi
 
-    if [[ $_c =~ \$ ]]; then
-        _s2=${_s2//\$/\\\$}
-        _s2=${_s2//\\\\\$/\\\\\\\$} # Adjust the odd ones...
+    local __s2=${!__s}
+
+    if [[ $__c =~ \" ]]; then
+        __s2=${__s2//\"/\\\"}
+        __s2=${__s2//\\\\\"/\\\\\\\"} # Adjust the odd ones...
     fi
 
-    eval "$_s=\$_s2"
+    if [[ $__c =~ \$ ]]; then
+        __s2=${__s2//\$/\\\$}
+        __s2=${__s2//\\\\\$/\\\\\\\$} # Adjust the odd ones...
+    fi
+
+    eval "$__s=\$__s2"
     return 0
 }
 
@@ -4867,6 +5045,9 @@ _to_lower()
 _split_quoted()
 {
     # NOTE: This should have a neater solution, no?
+
+    # Subtle bug: Hello "World"!
+    #   will expand to three arguments: Hello World !
 
     local _output=$1
     shift
@@ -4940,10 +5121,18 @@ _get_fn()
     local _varbody=$1
     shift
 
+    # A special case for the dynamically defined function _anonymous.
+    if [ "${_cmdname}" = "_anonymous" ]; then
+        eval "${_varbody}=\${_anonymous}"
+        eval "${_varname}=\${_cmdname}"
+        return 0
+    fi
+
     # Look through all loaded source files to find the declaration, in reverse order.
     local _i=$((${#_SOURCE_FILES_TOTAL[@]}-1))
     while [ "${_i}" -gt -1 ]; do
         _file="${_SOURCE_FILES_TOTAL[$_i]}"
+        # EXTERNAL: cat
         local _content="$(cat ${_file})"$'\n'  # We add a '\n' so that pattern matching below works properly.
         if [[ ${_content} =~ (.?)${_cmdname}[\ ]*\(\)$'\n'\{[\ ]*$'\n'(.*$'\n') ]]; then
             if [ "${#BASH_REMATCH[1]}" -eq 0 -o "${BASH_REMATCH[1]}" = $'\n' ]; then
@@ -4964,21 +5153,25 @@ _get_fn()
 #
 # Apply the cmd line environment variables if provided.
 #
+# Parameters:
+#   $1: type of apply. "isolate" will set the variable to itself as local,
+#       to make it isolated in it's scope.
+#
 # Expects:
 #   _envE
 #===============
 _apply_cmd_env()
 {
+    local _type="${1-}"
+
     local _ev=
     for _ev in "${_envE[@]-}"; do
         if [[ $_ev =~ ([_a-zA-Z0-9]+)=(.*) ]]; then
             local _varname=${BASH_REMATCH[1]}
-            if [[ $_varname == "CMDOVERRIDE" ]]; then
-                # Protected variable
-                continue
-            fi
             if [[ ${BASH_REMATCH[2]} == "!unset" ]]; then
                 printf "%s\n" "unset $_varname"
+            elif [ "${_type}" = "isolate" ]; then
+                printf "%s\n" "local $_varname=\"\$${_varname}\""
             else
                 printf "%s\n" "local $_varname=\"${BASH_REMATCH[2]}\""
             fi

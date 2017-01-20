@@ -22,7 +22,17 @@
 
 + Add more descriptive update messages (-U switch)
 
-+ Add `#!` shebang line support `#!/usr/bin/env space [args]`
++ Add `#!` shebang line support
+
++ Add `SPACE_WRAPARGS` variable
+
++ Add support for isolating variables when applying environment variables
+
++ Add escaping for variables passed to `-e` option
+
++ Add SPACE_OUTERENV to the list of Space header variables
+
++ Add SPACE_OUTERDEP to the list of Space header variables
 
 * Fix a bug that causes sourced files not to quit on syntax error
 
@@ -54,9 +64,39 @@
 
 * Change `SPACE_CMD` to `SPACE_FN`
 
+* Change SPACE_DEP to inherit its value from YAML
+
+* Change SPACE_ENV to inherit its value from YAML
+
+* Change variable `CMD` to `RUN`
+
+* Change variable `CMDREDIR` to `SPACE_REDIR`
+
+* Change variable `CMDOUTER` to `SPACE_OUTER`
+
+* Change variable `CMDDEP` to `SPACE_DEP`
+
+* Change variable `CMDWRAP` to `SPACE_WRAP`
+
+* Change variable `CMDOUTERARGS` to `SPACE_OUTERARGS`
+
+* Change variable `ALIAS` to `RUN_ALIAS`
+
+* Change variable `CMDEXIT` to `SPACE_EXIT`
+
+* Change variable `CMDSILENT` to `SPACE_SILENT`
+
+* Change variable `CMDARGS` to `SPACE_ARGS`
+
+* Rename `_friends` functionality to `_dimensions`
+
+* Fix bug that prevents SPACE_ENV to be unset
+
 - Remove `tput` program usage
 
 - Remove `SUBST` function in favor of the string module
+
+- Remove `-c` option `CMDOVERRIDE`
 
 
 ## [0.10.0] - 2016-12-14

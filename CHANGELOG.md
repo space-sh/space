@@ -22,7 +22,7 @@
 
 + Add more descriptive update messages (-U switch)
 
-+ Add `#!` shebang line support `#!/usr/bin/env space [args]`
++ Add `#!` shebang line support
 
 + Add `SPACE_WRAPARGS` variable
 

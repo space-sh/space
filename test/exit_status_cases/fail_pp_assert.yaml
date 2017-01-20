@@ -21,5 +21,5 @@
 env:
 
 source_failure:
-    - CMD: _SOME_NON_EXISTENT_FUNCTION
+    - RUN: _SOME_NON_EXISTENT_FUNCTION
 

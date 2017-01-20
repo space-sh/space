@@ -173,7 +173,7 @@ _RUN_CHECK_OK   "Test -h switch: contains basic program info" "Space. (C) Blocki
 _RUN_CHECK_OK   "Test -h switch: contains usage section" "Usage:" $_SPACE_BIN -h
 
 # -e: Regular environment variable
-_RUN_CHECK_FAIL "Test -e switch: key=value" "No CMD environment variable specified in YAML nodes nor on command line." $_SPACE_BIN -e dummyenv=mukyanjong
+_RUN_CHECK_FAIL "Test -e switch: key=value" "No RUN environment variable specified in YAML nodes nor on command line." $_SPACE_BIN -e dummyenv=mukyanjong
 _RUN_CHECK_FAIL "Test -e switch: malformed pair" "Malformed -e switch" $_SPACE_BIN -e malformedEnv
 
 # -p: Valid preprocessing variables
@@ -226,7 +226,7 @@ echo "input" | _RUN_CHECK_OK "Test @prompt" "Enter some input" $_SPACE_BIN -C0 -
 
 # Misc base cases
 _RUN_CHECK_OK "Test misc base cases: root node" "+ print_test" $_SPACE_BIN -C0 -f ./test/exit_status_cases/test.yaml / -h
-_RUN_CHECK_OK "Test misc base cases: print_test node" "testing CMD node execution..." $_SPACE_BIN -C0 -f ./test/exit_status_cases/test.yaml /print_test/
+_RUN_CHECK_OK "Test misc base cases: print_test node" "testing RUN node execution..." $_SPACE_BIN -C0 -f ./test/exit_status_cases/test.yaml /print_test/
 
 # Fail cloning repo
 if command -v git >/dev/null; then

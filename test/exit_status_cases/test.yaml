@@ -35,8 +35,8 @@ _env:
 
 print_test:
     _env:
-        - CMD: printf "[test.yaml] testing CMD node execution... "
+        - RUN: printf "[test.yaml] testing RUN node execution... "
 
 source_failure:
-    - CMD: _SOME_NON_EXISTENT_FUNCTION
+    - RUN: _SOME_NON_EXISTENT_FUNCTION
 

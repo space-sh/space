@@ -799,19 +799,34 @@ _parse_yaml()
                         _readahead[0]=""
                     fi
                 else
-                    # Check if to collapse new lines.
-                    if [[ ${value:0:1} == ">" ]]; then
-                        # To not have spaces:
-                            #printf -v _s "%s" "${_readahead[@]}"
+                    # Newlines and multiline strings....
+                    if [[ ${value:0:10} == "!nospace >" ]]; then
+                        # Collapse newlines into one line non-space separated
+                        printf -v _s "%s" "${_readahead[@]}"
+                        _readahead=("$_s")
+                        if [[ ${value:10:1} != "-" ]]; then
+                            # Make for trailing newline.
+                            _readahead+=("")
+                        fi
+                    elif [[ ${value:0:1} == ">" ]]; then
+                        # Collapse newlines into one line space separated
                         local _s=${_readahead[*]}
                         _readahead=("$_s")
+                        if [[ ${value:1:1} != "-" ]]; then
+                            # Make for trailing newline.
+                            _readahead+=("")
+                        fi
+                    elif [[ ${value:0:1} == "|" ]]; then
+                        if [[ ${value:1:1} != "-" ]]; then
+                            # Make for trailing newline.
+                            _readahead+=("")
+                        fi
                     fi
                 fi
                 eval "$_outvarname+=(\"\$_varname\")"
                 local _line=
                 for _line in "${_readahead[@]}"; do
-                    _output=$(printf "%s" "$_line")
-                    eval "$_outvarname+=(\"\$_output\")"
+                    eval "$_outvarname+=(\"\$_line\")"
                 done
                 eval "$_outvarname+=(\"\$_SPACEGAL_EOF_TAG\")"
                 _lastkey=$_key
@@ -1348,7 +1363,7 @@ _yaml_get_next()
             # This row has a value (other than spaces)
             _rowtype="leaf"
             # Check if we should do a read ahead.
-            if [[ ${value:0:1} == "|" || ${value:0:1} == ">" ]]; then
+            if [[ ${value:0:1} == "|" || ${value:0:1} == ">" || ${value:0:10} == "!nospace >" ]]; then
                 _yaml_get_multiline "$_dopreprocess"
             fi
         else
@@ -1377,7 +1392,7 @@ _yaml_get_next()
         if [[ ${value//\ } != "" ]]; then
             # This row has a value (other than spaces)
             # Check if we should do a read ahead.
-            if [[ ${value:0:1} == "|" || ${value:0:1} == ">" ]]; then
+            if [[ ${value:0:1} == "|" || ${value:0:1} == ">" || ${value:0:10} == "!nospace >" ]]; then
                 _yaml_get_multiline "$_dopreprocess"
             fi
         fi
@@ -1391,7 +1406,7 @@ _yaml_get_next()
         if [[ ${value//\ } != "" ]]; then
             # This row has a value (other than spaces)
             # Check if we should do a read ahead.
-            if [[ ${value:0:1} == "|" || ${value:0:1} == ">" ]]; then
+            if [[ ${value:0:1} == "|" || ${value:0:1} == ">" || ${value:0:10} == "!nospace >" ]]; then
                 _yaml_get_multiline "$_dopreprocess"
             fi
         fi
@@ -2759,7 +2774,7 @@ _main()
                 if [[ $_DEBUG_OUTPUT_PARSED == "1" ]]; then
                     [[ $_line =~ local\ ([^\=]+) ]]
                     local _varname=${BASH_REMATCH[1]}
-                    eval "printf \"%s=%s\n\" $_varname \"\$$_varname\""
+                    eval "printf \"%s=\\\"%s\\\"\n\" $_varname \"\$$_varname\""
                     unset _varname
                 fi
 
@@ -3728,18 +3743,25 @@ _parsed_yaml_to_bash()
     local _allrows=()
     eval "_allrows=(\"\${"${_invarname}"[@]}\")"
 
-    local _line= _str= _varname=
+    local _line= _str= _varname= _haddata=0
     for _line in "${_allrows[@]}"; do
         if [[ -z $_varname ]]; then
             _varname="${_YAML_PREFIX}${_YAML_NAMESPACE}${_line}"
-            _str="local $_varname="$'\n'" read -d '' -r $_varname << \"$_SPACEGAL_EOF_TAG\""
+            _str="local $_varname="$'\n'"IFS= read -d '' -r $_varname << \"$_SPACEGAL_EOF_TAG\""
         elif [[ $_line == "$_SPACEGAL_EOF_TAG" ]]; then
-            _str=$_str$'\n'$_SPACEGAL_EOF_TAG$'\n'":"$'\n'
+            _str=$_str$'\n'$_SPACEGAL_EOF_TAG$'\n'
+            if [ "${_haddata}" -eq 1 ]; then
+                _str="${_str}${_varname}=\${${_varname}: 0:\$((\${#${_varname}}-1))}"$'\n'
+            else
+                _str="${_str}:"$'\n'
+            fi
             eval "$_outvarname+=(\"\$_str\")"
             _str=""
             _varname=
+            _haddata=0
         else
             _str=$_str$'\n'$_line
+            _haddata=1
         fi
     done
 }
@@ -3933,14 +3955,16 @@ _loadnode()
                     fi
 
                     if [[ "$_value" == "!unset" ]]; then
-                        local _s="unset ${_key}"$'\n'":"$'\n'
+                        local _s="unset ${_key}"$'\n'
                         eval "$_output+=( \"\$_s\" )"
                     elif [[ "${_value:0:1}" == \' && "${_value: -1}" == \' ]]; then
-                        local _s="[[ \${$_key-} == \"\" && \${$_key-unset} == \"unset\" ]] && local ${_key} || local ${_key}=\$${_key}; read -d '' -r ${_key} << \"$_SPACEGAL_EOF_TAG\""$'\n'"${_value:1:$((${#_value}-2))}"$'\n'"$_SPACEGAL_EOF_TAG"$'\n'":"$'\n'
+                        local _s="[[ \${$_key+spacegal} == \"\" ]] && local ${_key} || local ${_key}=\$${_key}; IFS= read -d '' -r ${_key} << \"$_SPACEGAL_EOF_TAG\""$'\n'"${_value:1:$((${#_value}-2))}"$'\n'"$_SPACEGAL_EOF_TAG"$'\n'
+                        _s="${_s}${_key}=\${${_key}: 0:\$((\${#${_key}}-1))}"$'\n'
                         eval "$_output+=( \"\$_s\" )"
                     else
                         if [[ "${_value:0:1}" == \" && "${_value: -1}" == \" ]]; then
                             _value="${_value:1:$((${#_value}-2))}"
+                            # Descape quotes
                             _value=${_value//\\\"/\"}
                         fi
 
@@ -3958,7 +3982,8 @@ _loadnode()
                             _value="${_left}\$(_escape_inline \"${_middle}\")${_right}"
                         done
 
-                        local _s="[[ \${$_key-} == \"\" && \${$_key-unset} == \"unset\" ]] && local ${_key} || local ${_key}=\$${_key}; read -d '' -r ${_key} << $_SPACEGAL_EOF_TAG"$'\n'"${_value}"$'\n'"$_SPACEGAL_EOF_TAG"$'\n'":"$'\n'
+                        local _s="[[ \${$_key+spacegal} == \"\" ]] && local ${_key} || local ${_key}=\$${_key}; IFS= read -d '' -r ${_key} << $_SPACEGAL_EOF_TAG"$'\n'"${_value}"$'\n'"$_SPACEGAL_EOF_TAG"$'\n'
+                        _s="${_s}${_key}=\${${_key}: 0:\$((\${#${_key}}-1))}"$'\n'
                         eval "$_output+=( \"\$_s\" )"
                     fi
                 done

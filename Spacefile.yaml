@@ -31,13 +31,13 @@ _dep_install:
     _info:
         title: Verify Space dependencies
     _env:
-        - CMD: SPACE_DEP_INSTALL
+        - RUN: SPACE_DEP_INSTALL
 
 _build:
     _info:
         title: Build Space Docker image
     _env:
-        - CMD: SPACE_BUILD
+        - RUN: SPACE_BUILD
 
 install:
     _info:
@@ -50,7 +50,7 @@ install:
             Example (using default values):
                 ./space /install/ -- "/usr/local" "/usr/share/bash-completion/completions"
     _env:
-        - CMD: SPACE_INSTALL
+        - RUN: SPACE_INSTALL
 
 uninstall:
     _info:
@@ -58,5 +58,5 @@ uninstall:
         desc:|
             Auto detects and lists all the files originally installed by SpaceGal shell.
     _env:
-        - CMD: SPACE_UNINSTALL
+        - RUN: SPACE_UNINSTALL
 

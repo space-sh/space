@@ -1,4 +1,4 @@
-_sg1_0a95env_0_CMD=here it is
+_sg1_0a95env_0_RUN=here it is
 _sg1_0a95env_0_CMD2=something more
 _sg1_0a95env_0_CMD3=""
 _sg1_0a95env_1_PIPE=input comes from here
@@ -24,7 +24,9 @@ _sg1_2_abcdef_1=ignored:no it becomes an indexed array value.
 _sg1_3_OK=some text
 _sg1_3_OK2=One row,
 two rows.
+
 _sg1_3_OK3=One row, still one row.
+
 _sg1_strange0a95place=indeed
 _sg1_hej_0_a=Testing syntax
 _sg1_hej_1_b=Works
@@ -33,6 +35,7 @@ _sg1_hej2_0_A=More syntax.
 _sg1_hej2_1_B=B
 _sg1_hej2_2_C=One row,
 two rows.
+
 _sg1_4_OK4=Yes!
 _sg1_4_OK4a_0=
 _sg1_4_OK4a_1=
@@ -41,10 +44,12 @@ _sg1_4_OK4a_3="Astro Physics"
 _sg1_4_OK4a_4=Multiline
 right here,
 thanks.
+
 _sg1_5=Old school.
 _sg1_6=Great school.
 _sg1_7=Astro School.
 _sg1_8=Gotta love these collapsed lines.
+
 _sg1_9_0_A=Aaa
 _sg1_9_0_A2=A2aa
 _sg1_9_1_B=Bbb
@@ -59,4 +64,4 @@ _sg1_names=
 _sg1_names_2=John Smith
 _sg1_names_3=Susan Williams
 _sg1_names_4=Bill Jones
-_sg1_0a95env_9999_CMD=OK prio
+_sg1_0a95env_9999_RUN=OK prio

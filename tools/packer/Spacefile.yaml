@@ -38,5 +38,5 @@ make:
             along with exporting code documentation and user man page.
             Also creates hashes and GPG signature for verifying file integrity and authorship.
     _env:
-        - CMD: SPACE_PACKER_MAKE
+        - RUN: SPACE_PACKER_MAKE
 

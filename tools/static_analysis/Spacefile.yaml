@@ -35,7 +35,7 @@ shellcheck:
             Example:
                 ./space -f ./tools/static_analysis/Spacefile.yaml /shellcheck/ -- "space" "checks.txt"
     _env:
-        - CMD: _RUN_SHELLCHECK
+        - RUN: _RUN_SHELLCHECK
 
 checkbashisms:
     _info:
@@ -48,7 +48,7 @@ checkbashisms:
             Example:
                 ./space -f ./tools/static_analysis/Spacefile.yaml /checkbashisms/ -- "space" "bashisms.txt"
     _env:
-        - CMD: _RUN_CHECKBASHISMS
+        - RUN: _RUN_CHECKBASHISMS
 
 all:
     _info:
@@ -61,7 +61,7 @@ all:
             Example:
                 ./space -f ./tools/static_analysis/Spacefile.yaml /all/ -- "space" "results"
     _env:
-        - CMD: _RUN_ALL
+        - RUN: _RUN_ALL
 
 all_recursively:
     _info:
@@ -74,5 +74,5 @@ all_recursively:
             Example:
                 ./space -f ./tools/static_analysis/Spacefile.yaml /all_recursively/ -- "results"
     _env:
-        - CMD: _RUN_ALL_RECURSIVELY
+        - RUN: _RUN_ALL_RECURSIVELY
 

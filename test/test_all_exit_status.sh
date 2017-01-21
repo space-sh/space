@@ -282,8 +282,6 @@ _RUN_CHECK_OK   "Test -K1 switch" "" $_SPACE_BIN   / -h -K1
 _RUN_CHECK_FAIL "Test -K3 switch: unknown" "Unknown -K argument 3" $_SPACE_BIN   / -h -K3
 _RUN_CHECK_FAIL "Test -K6 switch: unknown" "Unknown -K argument 6" $_SPACE_BIN   / -h -K6
 
-# Clone and load, adding a dummy CMDOVERRIDE
-#_RUN_CHECK_OK "Test CMDOVERRIDE" "" $_SPACE_BIN -M os -c echo dummy_command / -h
 # Completion returns 1
 _RUN_CHECK_FAIL "Test -3 switch: completion" "" $_SPACE_BIN -3 -m os / -h
 # Multi modules

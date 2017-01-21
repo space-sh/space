@@ -4556,6 +4556,15 @@ _cmd_extract_space_header ()
         if [[ $_isheader == "1" ]]; then
             if [[ $_line =~ ^[\ ]*(SPACE_[^=]+)=(.+) ]]; then
                 local _spacevar=${BASH_REMATCH[1]}
+                # We check so it's properly wrapped in double quotes,
+                # we reserve single quote wrapping for later.
+                # we'll just do a lazy check, checking left side.
+                local _spacevalue=${BASH_REMATCH[2]}
+                if [ "${_spacevalue:0:1}" != '"' ]; then
+                    _error "SPACE_ headers must always define their values inside double quotes as: $_spacevar=\"values\""
+                    return 1
+                fi
+
                 if [[ ${_spacevar} == "SPACE_SIGNATURE" ]]; then
                     if [[ -n ${_cmd_args_count-} ]]; then
                         # Check so that signature matches.

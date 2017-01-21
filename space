@@ -2222,7 +2222,7 @@ _main()
                 _isshebang=1
                 # Break $1 into parts.
                 local _args_shebang=()
-                _split_quoted "_args_shebang" "${1}"
+                _split_args "_args_shebang" "${1}"
                 local _filename="${2}"
                 shift 2
                 local _args=("$@")
@@ -3948,7 +3948,7 @@ _loadnode()
                         # after "--" already here, to avoid variables not being declared.
                         # Use case is when overriding arguments from command line with the "--" switch.
                         # NOTE: There's a small probability that the first -- encountered is not
-                        # a switch. We could use _split_quoted instead, but it feels a bit overkill.
+                        # a switch. We could use _split_args instead, but it feels a bit overkill.
                         if [[ $_value =~ (.+)[\ ]--[\ ] ]]; then
                             _value=${BASH_REMATCH[1]}
                         fi
@@ -4046,7 +4046,7 @@ _execute()
 
     # Split string into array of arguments.
     local _args=()
-    _split_quoted "_args" "$_defaultargs"
+    _split_args "_args" "$_defaultargs"
 
     # Any arguments in _RUN after -- (including) have already been cut away by now.
     # If it was not we now remove the -- token.
@@ -4433,7 +4433,7 @@ _cmd_extract()
             fi
 
             local _args=()
-            _split_quoted "_args" "${SPACE_ARGS}"
+            _split_args "_args" "${SPACE_ARGS}"
             local _cmd_args_count=${#_args[@]};
             unset _args
 
@@ -4507,7 +4507,7 @@ _cmd_extract()
                         return 1
                     fi
                     local _args=()
-                    _split_quoted "_args" "${SPACE_OUTERARGS}"
+                    _split_args "_args" "${SPACE_OUTERARGS}"
                     local _cmd_args_count=${#_args[@]};
                     unset _args
                     local _fnlines=()

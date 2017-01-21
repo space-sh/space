@@ -4815,24 +4815,20 @@ _cmd_export_vars()
     shift
 
     trap '_error "Problem when evaluating SPACE_FN(OUTER)ENV header variables associated with ${_fn_name}. Look for unbound variable or syntax error in named function or in its chain of functions."; trap - EXIT; return 1; ' EXIT
+
     if [[ -n ${_fn_env} ]]; then
-        local _fn_env_item= _k1= _k2= _v= _done=""
-        for _fn_env_item in ${_fn_env}; do
+        local _arr=()
+        local _fn_env_item= _k1= _v=
+        _split_args "_arr" "${_fn_env}"
+        for _fn_env_item in "${_arr[@]}"; do
             _k1=${_fn_env_item%%=*}
-            if [[ ${_done} =~ (^|[\ ])${_k1}($|[\ ]) ]]; then
-                # Variable already exported.
-                continue;
-            else
-                _done="${_done} ${_k1}"
-            fi
-            _v=""
             if [[ ${_k1} == ${_fn_env_item} ]]; then
-                _k2="\${${_fn_env_item}}"
-                eval "_v=\"${_k2}\""
+                # Let's evalutate the variable.
+                _v="${_k1}"
+                _eval_var "_v"
                 if [ "$?" != "0" ]; then
-                    _error "Problem when evaluating SPACE_FN(OUTER)ENV header variable '${_fn_env_item}' associated with fucntion ${_fn_name}. Look for unbound variable or syntax error in function ${_fn_name} or in its chain of functions."
-                    trap - EXIT
-                    return 1
+                    # Exit will trigger the trap.
+                    exit
                 fi
             else
                 _v=${_fn_env_item##*=}
@@ -4840,8 +4836,9 @@ _cmd_export_vars()
             _escape "_v" '"'
             _export_vars="${_export_vars}${_k1}=\""$_v"\""$'\n'
         done
-        unset _fn_env_item _k _v _done
+        unset _fn_env_item _k1 _v
     fi
+
     trap - EXIT
 }
 

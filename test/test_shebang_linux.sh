@@ -25,4 +25,9 @@
 set -o nounset
 
 ./test/exit_status_cases/shebang_linux.sh -m docker /run_wrap/ -- 2
-
+_status="$?"
+if [ "${_status}" -ne 1 ]; then
+    # TODO: catch stderr to check output is expected:
+    # [INFO]  UTILS_WAITFORFILE: Wait for files timeouted after 2 seconds.
+    echo "Wrong status returned: ${_status}, was expecting 1." >&2
+fi

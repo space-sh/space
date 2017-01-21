@@ -4785,6 +4785,34 @@ _cmd_extract_space_header ()
         fi
     done <<< "${_fn_body}"
     unset _line _isheader
+
+#==========
+# _eval_var
+#
+# Evaluates the variable pointed to by $1 and
+# then populates the variable named by $1.
+#
+# Parameters:
+#   $1: Variable name.
+#
+# Expects:
+#   $1: Pointed to variable to exist.
+#
+#==========
+_eval_var()
+{
+    local _varname="${1}"
+    shift
+
+    trap '_error "Variable $_varname2 is undefined but referenced."; trap - EXIT; return 1;' EXIT
+    if [[ $_varname =~ ^([a-zA-Z0-9_])+$ ]]; then
+        local _varname2=${!_varname}
+        eval "${_varname}=\${$_varname2}"
+        trap - EXIT
+        return
+    fi
+    trap - EXIT
+    return 1
 }
 
 #==========
@@ -4971,6 +4999,7 @@ _escape_inline()
 # Escape a variable which name is given by $1.
 # Double quotes are escaped one up.
 # Dollar signs are escaped one up.
+# Paranthesis are escaped one up.
 #
 #============
 _escape()
@@ -4978,7 +5007,7 @@ _escape()
     local __s=$1
     shift
 
-    local __c=${1-\"\$}
+    local __c=${1:-\"\$\(}
     shift || :
 
     if [ "${__s}" == "__s" ]; then
@@ -4996,6 +5025,13 @@ _escape()
     if [[ $__c =~ \$ ]]; then
         __s2=${__s2//\$/\\\$}
         __s2=${__s2//\\\\\$/\\\\\\\$} # Adjust the odd ones...
+    fi
+
+    if [[ $__c =~ \( ]]; then
+        __s2=${__s2//\(/\\\(}
+        __s2=${__s2//\\\\\(/\\\\\\\(} # Adjust the odd ones...
+        __s2=${__s2//\)/\\\)}
+        __s2=${__s2//\\\\\)/\\\\\\\)} # Adjust the odd ones...
     fi
 
     eval "$__s=\$__s2"
@@ -5030,6 +5066,38 @@ _to_lower()
         _s2="${_s2}${_c}"
     done
     echo "${_s2}"
+}
+
+#============
+# _split_args
+#
+# Takes one string of arguments and splits them
+# respecting quotes.
+#
+# Parameters:
+#   $1 the variable name of the array to add extracted arguments to.
+#   $2 The string to parse.
+#
+# Expects:
+#   $1: to have the variable it points to have been
+#       initialized as an empty array by the caller.
+#
+#============
+_split_args()
+{
+    function _split_args_inner()
+    {
+        local _item=
+        for _item; do
+            eval "$_output+=(\"\$_item\")"
+        done
+    }
+    local _output=$1
+    shift
+    local _s="${1-}"
+    shift || :
+    _escape "_s" '$('
+    eval "_split_args_inner ${_s}"
 }
 
 #==========

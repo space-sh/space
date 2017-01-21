@@ -2236,7 +2236,7 @@ _main()
                         _shebang__=$_rowindex
                         break
                     else
-                        _newargs=("${_newargs[@]}" "${_args_shebang[$_rowindex]}")
+                        _newargs+=("${_args_shebang[$_rowindex]}")
                     fi
                 done
 
@@ -2247,18 +2247,18 @@ _main()
                         # We have -- args.
                         # Add filename as first -- args
                         _hadargs=1
-                        _newargs=("${_newargs[@]}" "--" "${_filename}")
+                        _newargs+=("--" "${_filename}")
                         # Keep on adding args.
                     else
-                        _newargs=("${_newargs[@]}" "${_args[$_rowindex]}")
+                        _newargs+=("${_args[$_rowindex]}")
                     fi
                 done
 
                 # If -- args not added, see if we have from shebang args.
                 if [ "${_hadargs}" = 0 ]; then
-                    _newargs=("${_newargs[@]}" "--" "${_filename}")
+                    _newargs+=("--" "${_filename}")
                    if [ "${_shebang__}" -gt "-1" ]; then
-                       _newargs=("${_newargs[@]}" "${_args_shebang[@]:$((_shebang__+1))}")
+                       _newargs+=("${_args_shebang[@]:$((_shebang__+1))}")
                    fi
                 fi
                 while shift; do :; done

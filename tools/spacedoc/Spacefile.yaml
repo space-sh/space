@@ -41,7 +41,7 @@ markdown:
             Example:
                 ./space -f ./tools/spacedoc/Spacefile.yaml /markdown/ -- ./space
     _env:
-        - CMD: _EXPORT_MARKDOWN
+        - RUN: _EXPORT_MARKDOWN
 
 html:
     _info:
@@ -60,7 +60,7 @@ html:
                 ./space -f ./tools/spacedoc/Spacefile.yaml /html/ -- ./space
 
     _env:
-        - CMD: _EXPORT_HTML
+        - RUN: _EXPORT_HTML
 
 module:
     _info:
@@ -78,5 +78,5 @@ module:
             Example:
                 GENERATE_VARIABLES=0 GENERATE_TOC=0 space -f ../space/tools/spacedoc/Spacefile.yaml /module/ -- Spacefile.sh
     _env:
-        - CMD: _EXPORT_MODULE
+        - RUN: _EXPORT_MODULE
 

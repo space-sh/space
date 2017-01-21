@@ -374,7 +374,7 @@ These are set from the YAML structure and modules Bash files or with command lin
         Not inherited between nodes, just as RUN_ALIAS and RUN.
 
   * `SPACE_OUTER`:
-        Use to have $RUN wrapped inside a for loop or similar. $RUN is substituted with _CMD_.  
+        Use to have $RUN wrapped inside a for loop or similar. $RUN is substituted with _RUN_.  
         Set from modules Bash functions.  
         Not inherited.
 
@@ -388,7 +388,7 @@ These are set from the YAML structure and modules Bash files or with command lin
 
   * `SPACE_WRAPARGS`:
 
-  * `CMDENV`:
+  * `SPACE_ENV`:
         Space separated list of variable names to export with the RUN function.
 
   * `SPACE_EXIT`:
@@ -418,7 +418,7 @@ When RUN points to a function name, that function will be parsed for Space heade
        A space separated list of variables to export out together with the functions.
        These variables will be evaluated at build time to reflect values set in
        the YAML or present for other reasons. "var=\${var-defaultvalue}" means
-       Default value taken from CMDENV variable. Which could be set in the YAML.
+       Default value taken from SPACE_ENV variable. Which could be set in the YAML.
        Always overwritten by the space header if present, and each function that
        is dependant on environment variables should always set their own SPACE_ENV.
        It is important not to introduce spaces in values inside the SPACE_ENV

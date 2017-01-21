@@ -35,7 +35,7 @@ man:
             Example:
                 ./space -f ./tools/manpage_exporter/Spacefile.yaml /man/ -- ./doc/space.md
     _env:
-        - CMD: _EXPORT_MAN
+        - RUN: _EXPORT_MAN
 
 html:
     _info:
@@ -47,5 +47,5 @@ html:
             Example:
                 ./space -f ./tools/manpage_exporter/Spacefile.yaml /html/ -- ./doc/space.md
     _env:
-        - CMD: _EXPORT_HTML
+        - RUN: _EXPORT_HTML
 

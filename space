@@ -4440,26 +4440,8 @@ _cmd_extract()
             # Separate the SPACE_ variables header and the function body.
             local _space_cmd=$SPACE_FN
             local _fnlines=()
-            local _spacelines=()
             _cmd_extract_space_header "${_fn_body}" "${_fn_name}" "${_cmd_args_count}" "${_headertype}" "${SPACE_ARGS}"
             (( $? > 0 )) && { trap - EXIT; return 1; }
-
-            # If we have any SPACE_ variables we evaluate them together
-            # with the function arguments.
-            if (( ${#_spacelines[@]} > 0 )); then
-                local _SPACE_ARGS=$SPACE_ARGS
-                local _fns=
-                printf -v _fns "    %s\n" "${_spacelines[@]}"
-                _fns="_set_args () {"$'\n'"${_fns}}"$'\n'"_set_args ${_SPACE_ARGS}"$'\n'
-                eval "$_fns"
-                if (( $? > 0 )); then
-                    _error "Could not evaluate function header of ${SPACE_FN} to set SPACE_ variables."
-                    trap - EXIT
-                    return 1
-                fi
-                unset _fns
-            fi
-            unset _spacelines
 
             # Check if this function is a compile time wrapper for another function,
             # if so we want to evaluate it now to let it do its variable manipulation.
@@ -4511,26 +4493,12 @@ _cmd_extract()
                     local _cmd_args_count=${#_args[@]};
                     unset _args
                     local _fnlines=()
-                    local _spacelines=()
                     _cmd_extract_space_header "${_fn_body}" "${_fn_name}" "${_cmd_args_count}" "1" "${SPACE_OUTERARGS}"
                     (( $? > 0 )) && { trap - EXIT; return 1; }
-                    # If we have any SPACE_ variables we evaluate them together with the function arguments.
-                    if (( ${#_spacelines[@]} > 0 )); then
-                        local _fns=
-                        printf -v _fns "    %s\n" "${_spacelines[@]}"
-                        _fns="_set_args () {"$'\n'"${_fns}}"$'\n'"_set_args ${SPACE_OUTERARGS}"$'\n'
-                        eval "$_fns"
-                        if (( $? > 0 )); then
-                            _error "Could not evaluate function header of ${SPACE_OUTER} to set SPACE_ variables."
-                            trap - EXIT
-                            return 1
-                        fi
-                        unset _fns
-                    fi
                     local _fn_def=
                     printf -v _fn_def "%s\n" "${_fnlines[@]-:}"
                     SPACE_OUTER="${_fn_name} ()"$'\n'"{"$'\n'"${_fn_def}""}"$'\n'"${_fn_name} ${SPACE_OUTERARGS}"$'\n\n'
-                    unset _spacelines _fnlines
+                    unset _fnlines
                 }
                 if [ -n "${SPACE_OUTER}" ]; then
                     _space_context2
@@ -4552,8 +4520,7 @@ _cmd_extract()
 # Helper function to extract space headers from the function body.
 #
 # Expects:
-#   _fnlines
-#   _spacelines
+#   _fnlines=()
 #   SPACE_xyz
 #
 #==========
@@ -4579,6 +4546,7 @@ _cmd_extract_space_header ()
     # But we do want it in all the other functions exported, for PRINT to use.
     [[ $_fn_name != "PRINT" ]] && _fnlines+=("    local _SPACE_NAME=\"${_fn_name}\"")
 
+    local _spacelines=()
     local _line=
     local _isheader="1"
     local _addedspacewrap=0
@@ -4786,6 +4754,22 @@ _cmd_extract_space_header ()
     done <<< "${_fn_body}"
     unset _line _isheader
 
+    # If we have any SPACE_ variables we evaluate them
+    # together with the function arguments.
+    if (( ${#_spacelines[@]} > 0 )); then
+        local _fns=
+        printf -v _fns "%s\n" "${_spacelines[@]}"
+        _fns="_set_args() {"$'\n'"${_fns}}"$'\n'"_set_args ${_given_args}"$'\n'
+        eval "$_fns"
+        if (( $? > 0 )); then
+            _error "Could not evaluate function header of ${_fn_name} to set SPACE_ variables."
+            return 1
+        fi
+        unset _fns
+    fi
+    unset _spacelines
+}
+
 #==========
 # _eval_var
 #
@@ -4898,7 +4882,7 @@ _cmd_add_fn_dep()
             _error "Dependency function not found or syntax error: ${_fn_dep_item}. Referred from function: ${_fn_name}."
             return 1
         fi
-        local _spacelines=() _fnlines=() _line=
+        local _fnlines=() _line=
         # We isolate the space header variables:
         local SPACE_DEP= SPACE_ENV= SPACE_REDIR=
         local SPACE_WRAP= SPACE_FN= SPACE_OUTER=
@@ -4906,11 +4890,6 @@ _cmd_add_fn_dep()
         local SPACE_OUTERENV= SPACE_OUTERDEP=
         _cmd_extract_space_header "${_fn_dep_body}" "${_fn_dep_name}" "" "3"
         (( $? > 0 )) && return 1
-        local _fns=
-        printf -v _fns "    %s\n" "${_spacelines[@]-:}"
-        _fns="_set_args () {"$'\n'"${_fns}}"$'\n'"_set_args"
-        eval "$_fns"
-        unset _fns
         local _fns=
         printf -v _fns "%s\n" "${_fnlines[@]-:}"
         _fn_def="${_fn_def}${_fn_dep_name}()"$'\n'"{"$'\n'"${_fns}}"$'\n\n'
@@ -4931,7 +4910,7 @@ _cmd_add_fn_dep()
             done
             unset _arr2 _item2
         fi
-        unset _spacelines _fnlines _line SPACE_DEP
+        unset _fnlines _line SPACE_DEP
     done
     unset _fn_dep_name _fn_dep_body _fn_dep_item _i _arr
 }

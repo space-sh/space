@@ -1,6 +1,6 @@
 # Space - Change log
 
-## [current]
+## [0.11.0 - 2017-01-22]
 
 + Add build node to base _Space_ module
 

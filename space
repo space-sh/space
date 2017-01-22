@@ -70,7 +70,7 @@ set -o nounset
 #
 
 # Version
-readonly _VERSION="0.10.0"
+readonly _VERSION="0.11.0"
 # Full path the space script it self.
 readonly _SPACEBIN=$0
 # Absolute path to the directory where space is located.

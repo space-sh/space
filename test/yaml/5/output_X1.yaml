@@ -1,0 +1,10 @@
+test_gt: !nospace >
+    Now these lines 
+    will be joined
+    but with no spaces inbetween!
+    But line will end with \n
+test_gt_dash: !nospace >- 
+    And these lines
+    will be joined
+    also with no spaces inbetween!
+    But line will not end with \n thanks to the '-'.

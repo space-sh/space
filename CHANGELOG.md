@@ -34,6 +34,8 @@
 
 + Add SPACE_OUTERDEP to the list of Space header variables
 
++ Add a check to force SPACE_ variables to always wrap values inside double quotes
+
 * Fix a bug that causes sourced files not to quit on syntax error
 
 * Change error messages around SPACE header variables to be more descriptive
@@ -91,6 +93,8 @@
 * Rename `_friends` functionality to `_dimensions`
 
 * Fix bug that prevents SPACE_ENV to be unset
+
+* Fix bug about bash3 referencing empty arrays
 
 - Remove `tput` program usage
 

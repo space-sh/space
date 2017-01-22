@@ -24,10 +24,69 @@
 #======================
 set -o nounset
 
-./test/exit_status_cases/shebang_linux.sh -m docker /run_wrap/ -- 2
-_status="$?"
-if [ "${_status}" -ne 1 ]; then
-    # TODO: catch stderr to check output is expected:
-    # [INFO]  UTILS_WAITFORFILE: Wait for files timeouted after 2 seconds.
-    echo "Wrong status returned: ${_status}, was expecting 1." >&2
-fi
+#======================
+# _CHECK_CONTAINS
+#
+# Checks if a piece of data is part of a bigger string
+#
+# Parameters:
+#   1: the string to find
+#   2: the data to check against
+#
+# Returns:
+#   1 if it finds a match
+#
+#======================
+_CHECK_CONTAINS()
+{
+    local _contains="$1"
+    local _string="$2"
+    if [ -z "${_string##*$_contains*}" ]; then
+        return 1
+    else
+        return 0
+    fi
+}
+
+#======================
+# _RUN_CHECK_FAIL
+#
+# Wraps a Space command line call for testing
+#
+# Note:
+#   Avoiding command substitution and subshelling while still 
+#   providing full command call via parameters.
+#   Makes it so that the test toolset can keep track of function calls.
+#
+# Parameters:
+#   1: message describing what the check is about
+#   2: expected message on stdout/err
+#   3: command line to test
+#======================
+_RUN_CHECK_FAIL()
+{
+    local _message_description=$1
+    shift
+    local _expected_message=$1
+    shift
+    local _command_line=$@
+    local _status=
+    local _output=
+
+    _output=$($_command_line 2>&1)
+    _status="$?"
+    if [ "$_status" -ne 0 ]; then
+        _CHECK_CONTAINS "$_expected_message" "$_output"
+        if [ "$?" -eq 1 ]; then
+            printf "\033[32m[OK] %s\033[0m\n" "$_message_description"
+        else
+            printf "\033[31m[ERROR] %s\n\tCommand: \"%s\"\n\tExpected output to contain: \"%s\"\n\tOutput: \"%s\"\033[0m\n" "$_message_description" "$_command_line" "$_expected_message" "$_output"
+            exit 1
+        fi
+    else
+        printf "\033[31m[ERROR] %s\n\tCommand: \"%s\"\n\tFailed with exit status (%s)\n\tOutput: \"%s\"\033[0m\n" "$_message_description" "$_command_line" "$_status" "$_output"
+        exit 1
+    fi
+}
+
+_RUN_CHECK_FAIL "Test shebang line" "Wait for files timeouted after 2 seconds" ./test/exit_status_cases/shebang_linux.sh -m docker /run_wrap/ -- 2

@@ -197,7 +197,7 @@ image_test:
   script:
     - IMAGE_VERSION=$(grep "\_VERSION\=" space | cut -d'=' -f2 | cut -d"\"" -f2)
     - docker pull $CI_REGISTRY_IMAGE:$IMAGE_VERSION
-    - bash test/test_build.sh
+    - sh test/test_build.sh
   only:
     - tags
 

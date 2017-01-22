@@ -4561,7 +4561,7 @@ _cmd_extract_space_header ()
                 # we'll just do a lazy check, checking left side.
                 local _spacevalue=${BASH_REMATCH[2]}
                 if [ "${_spacevalue:0:1}" != '"' ]; then
-                    _error "SPACE_ headers must always define their values inside double quotes as: $_spacevar=\"values\""
+                    _error "SPACE_ headers must always define their values inside double quotes as: $_spacevar=\"values\". In function ${_fn_name}."
                     return 1
                 fi
 

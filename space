@@ -611,7 +611,7 @@ _sort_pad()
 
     local _s2="" _tmp=""
     while [[ $_s =~ ([^0-9.]*)([0-9]+)(.*) ]]; do
-        _tmp=$(printf "%010d" "${BASH_REMATCH[2]}")
+        printf -v _tmp "%010d" "${BASH_REMATCH[2]}"
         _s2=$_s2${BASH_REMATCH[1]}$_tmp
         _s=${BASH_REMATCH[3]}
     done
@@ -844,16 +844,16 @@ _parse_yaml()
                 local _subrows=()
                 # Reinsert the key value of first line to have it handled as a normal leaf.
                 if [ -z "$_key" ]; then
-                    _output=$(printf "%*s%s" $_i "" "$_count: $value")
+                    printf -v _output "%*s%s" $_i "" "$_count: $value"
                 else
-                    _output=$(printf "%*s%s" $_i "" "$_key: $value")
+                    printf -v _output "%*s%s" $_i "" "$_key: $value"
                 fi
                 _subrows+=("$_output")
                 if ((${#_readahead[@]} > 0)); then
                     _i=$(( _i + 4 ))
                     local _line=
                     for _line in "${_readahead[@]}"; do
-                        _output=$(printf "%*s%s" $_i "" "$_line")
+                        printf -v _output "%*s%s" $_i "" "$_line"
                         _subrows+=("$_output")
                     done
                 fi
@@ -1001,7 +1001,7 @@ _pp_yaml()
                 local _subrow= _subrows=()
                 for _subrow in "${_subdoc[@]}"; do
                     local _i=$(($_indent+$_nextindent))
-                    _subrow=$(printf "%*s%s" $_i "" "$_subrow")
+                    printf -v _subrow "%*s%s" $_i "" "$_subrow"
                     _subrows+=("$_subrow")
                 done
                 _allrows=("${_allrows[@]:0:$_rowindex}" "${_subrows[@]}" \
@@ -1070,7 +1070,7 @@ _pp_yaml()
                     fi
                 done
                 if [ -n "$_repos" ]; then
-                    _output=$(printf "%*s%s" $_i "" "_source: $_repos")
+                    printf -v _output "%*s%s" $_i "" "_source: $_repos"
                     eval "$_varname+=(\"\$_output\")"
                 fi
                 ;;
@@ -1100,16 +1100,16 @@ _pp_yaml()
             leaf) # A regular key value row.
                 local _i=$(($_indent-$_filterindent+$_inheritedindent))
                 if [ "${#value}" -eq 0 ]; then
-                    _output=$(printf "%*s%s" $_i "" "$_key:")
+                    printf -v _output "%*s%s" $_i "" "$_key:"
                 else
-                    _output=$(printf "%*s%s" $_i "" "$_key: $value")
+                    printf -v _output "%*s%s" $_i "" "$_key: $value"
                 fi
                 eval "$_varname+=(\"\$_output\")"
                 if ((${#_readahead[@]} > 0)); then
                     _i=$(( _i + 4 ))
                     local _line=
                     for _line in "${_readahead[@]}"; do
-                        _output=$(printf "%*s%s" $_i "" "$_line")
+                        printf -v _output "%*s%s" $_i "" "$_line"
                         eval "$_varname+=(\"\$_output\")"
                     done
                 fi
@@ -1117,7 +1117,7 @@ _pp_yaml()
             object) # Start of new object
                 local _i=$(($_indent-$_filterindent+$_inheritedindent))
                 local _i2=$(($_i+$_nextindent))
-                _output=$(printf "%*s%s" $_i "" "$_key:")
+                printf -v _output "%*s%s" $_i "" "$_key:"
                 eval "$_varname+=(\"\$_output\")"
                 # Set the parent node for the sub nodes following
                 _parents[$_i2]=$_key
@@ -1129,17 +1129,17 @@ _pp_yaml()
                 local _i4=$(($_i2+$_i3+4))
                 if [ -z "$_key" ]; then
                     # index item
-                    _output=$(printf "%*s-%*s%s" $_i2 "" $_i3 "" "$value")
+                    printf -v _output "%*s-%*s%s" $_i2 "" $_i3 "" "$value"
                 elif [ -n "$value" ]; then
-                    _output=$(printf "%*s-%*s%s" $_i2 "" $_i3 "" "$_key: $value")
+                    printf -v _output "%*s-%*s%s" $_i2 "" $_i3 "" "$_key: $value"
                 else
-                    _output=$(printf "%*s-%*s%s" $_i2 "" $_i3 "" "$_key:")
+                    printf -v _output "%*s-%*s%s" $_i2 "" $_i3 "" "$_key:"
                 fi
                 eval "$_varname+=(\"\$_output\")"
                 if ((${#_readahead[@]} > 0)); then
                     local _line=
                     for _line in "${_readahead[@]}"; do
-                        _output=$(printf "%*s%s" $_i4 "" "$_line")
+                        printf -v _output "%*s%s" $_i4 "" "$_line"
                         eval "$_varname+=(\"\$_output\")"
                     done
                 fi
@@ -1500,8 +1500,8 @@ _yaml_get_multiline()
                     if [ "$_subindent2" -lt "$_subindent" ]; then
                         break
                     fi
-                    _subvalue=$(printf "%*s%s" $(($_subindent2-$_subindent)) "" \
-                        "${BASH_REMATCH[2]}")
+                    printf -v _subvalue "%*s%s" $(($_subindent2-$_subindent)) "" \
+                        "${BASH_REMATCH[2]}"
                     _readahead+=("$_subvalue")
                 else
                     break

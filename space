@@ -4874,7 +4874,7 @@ _cmd_export_vars()
         for _fn_env_item in "${_arr[@]}"; do
             _k1=${_fn_env_item%%=*}
             if [[ ${_k1} == ${_fn_env_item} ]]; then
-                # Let's evalutate the variable.
+                # Let's evaluate the variable.
                 _v="${_k1}"
                 _eval_var "_v"
                 if [ "$?" != "0" ]; then
@@ -4882,7 +4882,7 @@ _cmd_export_vars()
                     exit
                 fi
             else
-                _v=${_fn_env_item##*=}
+                _v=${_fn_env_item#*=}
             fi
             _escape "_v" '"'
             _export_vars="${_export_vars}${_k1}=\""$_v"\""$'\n'
@@ -4943,7 +4943,7 @@ _cmd_add_fn_dep()
         _fn_def="${_fn_def}${_fn_dep_name}()"$'\n'"{"$'\n'"${_fns}}"$'\n\n'
         unset _fns
         if [[ -n ${SPACE_ENV} ]]; then
-            _fn_env="${_fn_env} ${SPACE_ENV}"
+            _fn_env="${_fn_env:+${_fn_env} }${SPACE_ENV}"
         fi
 
         # Now check for further dependencies.

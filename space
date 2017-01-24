@@ -5270,8 +5270,13 @@ _split_args()
     shift
     local _s="${1-}"
     shift || :
+    trap '_error "Syntax error (unmatched quote?) in parsing arguments: $_s"; trap - ERR; return 1;' ERR
+    if [ "${_s//$'\n'}" != "${_s}" ]; then
+        _error "Can't split arguments containing newline: ${_s}."
+        trap - ERR
+        return 1
+    fi
     _escape "_s" '$('
-    trap '_error "Syntax error (unmatched quote?) in parsing arguments: $_s"; trap - ERR; exit 1;' ERR
     eval "_split_args_inner ${_s}"
     trap - ERR
 }

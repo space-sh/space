@@ -916,9 +916,13 @@ _pp_yaml()
         _count=$(( _count + 1 ))
     done
     if [[ ${_filter:0:1} != "/" ]]; then
+        _error "Make sure the preprocessing include filter starts with a slash (/), \"${_filter}\" does not."
+        return 1
         _filter="/$_filter"
     fi
     if [[ ${_filter: -1} != "/" ]]; then
+        _error "Make sure the preprocessing include filter ends with a slash (/), \"${_filter}\" does not."
+        return 1
         _filter="$_filter/"
     fi
     local _subdoc=()
@@ -948,7 +952,7 @@ _pp_yaml()
 
     # Check so that the YAML file exists.
     if [ ! -e "$_filepath" ]; then
-        return 1
+        return 2
     fi
 
     # Preprocess variable that points to the dir of the YAML file being processed.
@@ -1053,10 +1057,10 @@ _pp_yaml()
                 fi
                 _pp_yaml "$_varname" "${_includefile:-$_filepath}" "$_includefilter" $_i "${_parentpath}" $_includevariables
                 local _status=$?
-                if [ $_status -eq 1 ]; then
+                if [ $_status -eq 2 ]; then
                     _error "[$_filepath: $(($_rowindex))] Could not find file \"$_includefile\"."
-                    return 2
-                elif [ $_status -gt 1 ]; then
+                    return 1
+                elif [ $_status -gt 0 ]; then
                     return $_status
                 fi
                 ;;
@@ -1069,7 +1073,7 @@ _pp_yaml()
                     local _status=$?
                     if [ $_status -gt 0 ]; then
                         _error "[$_filepath: $(($_rowindex))] Could not clone module repository \"$value\"."
-                        return 3
+                        return 1
                     fi
                     if [ -n "$_retrepo" ]; then
                         _repos="$_repos $_retrepo"
@@ -1095,7 +1099,7 @@ _pp_yaml()
                     fi
                     if [ "$_fn" = "nonempty" ] && [ -z "$_val" ]; then
                         _error "Assertion failed: $value: $_filepath:$_rowindex"
-                        return 4
+                        return 1
                     fi
                 fi
                 ;;
@@ -3498,12 +3502,11 @@ _load_yaml()
         fi
         _pp_yaml "_yamlrows" $_yamlfile
         local _status=$?
-        if (($_status == 1)); then
-            _error "Could not find file $_yamlfile"
+        if (($_status == 2)); then
+            _error "Could not find file: $_yamlfile"
             return 1
-        elif (($_status > 1)); then
-            _error "Preprocessing of YAML aborted with status code: $_status"
-            return $_status
+        elif (($_status > 0)); then
+            return 1
         fi
         _debug "...done preprocessing."
         unset _status

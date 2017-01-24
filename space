@@ -4372,6 +4372,49 @@ fi
     fi
 }
 
+#==========
+# YIELD
+#
+# We export this and use it from build time functions to
+# "yield" out a variable and it's value from the restricted sub shell.
+# It does this by writing to FD 3, which should have been opened prior.
+#
+# Note that when Space is parsing back the variables the variable must already
+# have been declared in YAML or using -e.
+#
+# Variables are not allowed to beging with an underscore, since these could be within
+# Space's "protected" internal variable space.
+#
+# Parameters:
+#   $1: variable name which will get yielded out.
+#   $2: unset flag, set to 1 to have the variable unset.
+#
+# Expects:
+#   FD 3: to be open and writable.
+#
+# Return:
+#   1 if variable begins with underscore.
+#
+#==========
+YIELD()
+{
+    if [ "${1:0:1}" = "_" ]; then
+        printf "%s\n" "[ERROR] Yielded variable names cannot start with underscore." >&2
+        return 1
+    fi
+
+    if [ "${2-}" = "unset" ]; then
+        printf "%s unset\n" "${1}" >&3
+    else
+        local _lines="${!1}"
+        _lines="${_lines//[!$'\n']}"
+        _lines="${#_lines}"
+        (( _lines += 1 ))
+        printf "%s %s\n" "${1}" "${_lines}" >&3
+        printf "%s\n" "${!1}" >&3
+    fi
+}
+
 #============
 # _cmd_extract
 #

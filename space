@@ -4486,36 +4486,113 @@ _cmd_extract()
             local _cmd_args_count=${#_args[@]};
             unset _args
 
+            # Declare these variables here since they are local only.
+            local SPACE_BUILD_DEP= SPACE_BUILD_ENV= SPACE_BUILD_ARGS=
+
             # Separate the SPACE_ variables header and the function body.
             local _space_cmd=$SPACE_FN
             local _fnlines=()
             _cmd_extract_space_header "${_fn_body}" "${_fn_name}" "${_cmd_args_count}" "${_headertype}" "${SPACE_ARGS}"
             (( $? > 0 )) && { trap - EXIT; return 1; }
 
-            # Check if this function is a compile time wrapper for another function,
+            # Check if this function is a build time wrapper for another function,
             # if so we want to evaluate it now to let it do its variable manipulation.
             #if [[ -n ${SPACE_CMDFORK} ]]; then
                 # TODO: fork many commands from this command, by adding
                 # to _space_cmds.
                 # Not implemented yet.
             if [[ ${SPACE_FN} != ${_space_cmd} ]]; then
-                local _SPACE_ARGS=$SPACE_ARGS
                 local _fns=
                 # Not using "set -e" anymore, if got too shakey (see http://mywiki.wooledge.org/BashFAQ/105).
                 # printf -v _fns "set -e;\n%s\nset +e;\n" "${_fnlines[@]-:}"
                 printf -v _fns "%s\n" "${_fnlines[@]-:}"
-                local _export_vars=""
-                if [ -n "${SPACE_ENV}" ]; then
-                    # We will provide this in case SPACE_ARGS uses any of them.
-                    _cmd_export_vars "${SPACE_ENV}" "${_fn_name}"
+                if [ "${_fns//\ $'\n'}" = "" ]; then
+                    # Empty body
+                    continue
                 fi
-                _fns="_wrapper () {"$'\n'"${_fns}}"$'\n'"${_export_vars}"$'\n'"_wrapper ${_SPACE_ARGS}"$'\n'
-                eval "$_fns"
+                local _fn_env=""
+                local _fn_def=""
+                _cmd_add_fn_dep "${SPACE_BUILD_DEP:+${SPACE_BUILD_DEP} }YIELD" "${_space_cmd}"
+                (( $? > 0 )) && { trap - EXIT; return 1; }
+
+                if [ -n "${SPACE_BUILD_ENV-}" ]; then
+                    _fn_env="${_fn_env:+${_fn_env} }${SPACE_BUILD_ENV}"
+                fi
+                local _export_vars=""
+                if [ -n "${_fn_env}" ]; then
+                    # We will provide this in case SPACE_ARGS uses any of them.
+                    _debug "Export vars for build time function ${_fn_name}: ${_fn_env}."
+                    _cmd_export_vars "${_fn_env}" "${_fn_name}"
+                fi
+                _fns="set -u"$'\n'"${_fn_def}_wrapper() {"$'\n'"${_fns}}"$'\n'"${_export_vars}"$'\n'"_wrapper ${SPACE_BUILD_ARGS}"$'\n'
+                # Null these.
+                SPACE_BUILD_DEP=
+                SPACE_BUILD_ENV=
+                SPACE_BUILD_ARGS=
+
+                # EXTERNAL: mktemp, bash, rm, rmdir
+                local _tmpdir=$(mktemp -d 2>/dev/null || mktemp -d -t 'sometmpdir')
+                (( $? > 0 )) && { _error "Could not mktemp dir for SPACE_FN isolation."; return 1; }
+                local _tmpfile="${_tmpdir}/output"
+                local _restrictedcode=$_fns
+                exec 3<> ${_tmpfile}
+                ( cd $_tmpdir; PATH= ${_BASHBIN} -rc "${_restrictedcode}" )
                 if (( $? > 0 )); then
-                    _error "Error in wrapper function: ${_space_cmd}."
+                    _error "Error returned from build time function: ${_space_cmd}."
                     trap - EXIT
+                    rm ${_tmpfile}
+                    rmdir $_tmpdir
                     return 1
                 fi
+                unset _restrictedcode
+                local _line=
+                local _varname=
+                local _linecount=0
+                local _value=
+                while IFS= read -r _line; do
+                    if [ -z "${_varname}" ]; then
+                        if [[ $_line =~ ^([a-zA-Z0-9][a-zA-Z0-9_]*)\ (.+)$ ]]; then
+                            _varname=${BASH_REMATCH[1]}
+                            _linecount=${BASH_REMATCH[2]}
+                            _value=""
+                            eval "[ \"\${${_varname}+isset}\" = \"isset\" ]"
+                            if [ "$?" -gt 0 ] && [ "${_linecount}" != "unset" ]; then
+                                # Variable is unset
+                                 _error "Yielded variable $_varname in function $_fn_name must have been declared prior to build function."
+                                 trap - EXIT
+                                 rm ${_tmpfile}
+                                 rmdir $_tmpdir
+                                 return 1
+                            fi
+                            if [ "${_linecount}" = 0 ]; then
+                                eval "${_varname}="
+                            elif [ "${_linecount}" = "unset" ]; then
+                                eval "unset ${_varname}"
+                            fi
+                        else
+                            _error "Could not translated yielded variables out from ${_fn_name}."
+                            trap - EXIT
+                            rm ${_tmpfile}
+                            rmdir $_tmpdir
+                            return 1
+                        fi
+                    else
+                        (( _linecount -= 1 ))
+                        _value="${_value}${_line}"
+                        if [ "${_linecount}" -gt 0 ]; then
+                            _value="${_value}"$'\n'
+                        else
+                            eval "${_varname}=\${_value}"
+                            _varname=
+                            _value=
+                        fi
+                    fi
+                done < ${_tmpfile}
+                unset _line
+                rm ${_tmpfile}
+                unset _tmpfile
+                rmdir $_tmpdir
+                unset _tmpdir
                 unset _fns
             else
                 # This function is the actual function.

@@ -4783,6 +4783,19 @@ _cmd_extract_space_header ()
                     elif [[ ${_spacevar} == "SPACE_FN" ]]; then
                         # Always overwritten.
                         _spacelines+=("SPACE_FN=${BASH_REMATCH[2]}")
+                        _hasfn=1
+                    elif [[ ${_spacevar} == "SPACE_BUILD_ENV" ]]; then
+                        # Always overwritten.
+                        _spacelines+=("SPACE_BUILD_ENV=${BASH_REMATCH[2]}")
+                        _hasbuildenv=1
+                    elif [[ ${_spacevar} == "SPACE_BUILD_DEP" ]]; then
+                        # Always overwritten.
+                        _spacelines+=("SPACE_BUILD_DEP=${BASH_REMATCH[2]}")
+                        _hasbuilddep=1
+                    elif [[ ${_spacevar} == "SPACE_BUILD_ARGS" ]]; then
+                        # Always overwritten.
+                        _spacelines+=("SPACE_BUILD_ARGS=${BASH_REMATCH[2]}")
+                        _hasbuildargs=1
                     else
                         _error "Unknown SPACE HEADER variable: ${_spacevar}, in WRAP function: ${_fn_name}."
                         return 1

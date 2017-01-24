@@ -4954,6 +4954,8 @@ _cmd_extract_space_header ()
         trap '_error "Could not evaluate SPACE_ headers for ${_fn_name}."; trap - EXIT; return 1;' EXIT
         local _fns=
         printf -v _fns "%s\n" "${_spacelines[@]}"
+        # TODO: this eval must be replaced by variable subst.
+        _escape "_given_args" '$'
         _fns="_set_args() {"$'\n'"${_fns}}"$'\n'"_set_args ${_given_args}"$'\n'
         eval "$_fns"
         if (( $? > 0 )); then

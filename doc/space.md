@@ -382,6 +382,8 @@ These are set from the YAML structure and modules Bash files or with command lin
 
   * `SPACE_OUTERENV`:
 
+  * `SPACE_OUTERARGS`:
+
   * `SPACE_WRAP`:
         Set to FUNC that takes $RUN as argument, often used for ssh wrapping.  
         Will be inherited downwards on nodes.
@@ -390,6 +392,8 @@ These are set from the YAML structure and modules Bash files or with command lin
 
   * `SPACE_ENV`:
         Space separated list of variable names to export with the RUN function.
+
+  * `SPACE_DEP`:
 
   * `SPACE_EXIT`:
         If this is set in YAML (or using -e) to "1", then the return status of RUN must be equal to SPACE_EXIT or else it's regarded as an error and will return 1.
@@ -438,6 +442,8 @@ When RUN points to a function name, that function will be parsed for Space heade
   * `SPACE_OUTERDEP`:
 
   * `SPACE_OUTERENV`:
+
+  * `SPACE_OUTERARGS`:
 
   * `SPACE_ARGS`:
        Default value taken from SPACE_ARGS variable. Which could be set in the YAML.
@@ -490,6 +496,12 @@ When RUN points to a function name, that function will be parsed for Space heade
        those variables.
 
   * `SPACE_WRAPARGS`:
+
+  * `SPACE_BUILDENV`:
+
+  * `SPACE_BUILDDEP`:
+
+  * `SPACE_BUILDARGS`:
 
 ## NOTES
 **Space** is made to work with Bash version 3.2 and later.  

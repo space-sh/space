@@ -2229,6 +2229,7 @@ _main()
                 # Break $1 into parts.
                 local _args_shebang=()
                 _split_args "_args_shebang" "${1}"
+                (( $? > 0 )) && return 1
                 local _filename="${2}"
                 shift 2
                 local _args=("$@")
@@ -4053,6 +4054,7 @@ _execute()
     # Split string into array of arguments.
     local _args=()
     _split_args "_args" "$_defaultargs"
+    (( $? > 0 )) && return 1
 
     # Any arguments in _RUN after -- (including) have already been cut away by now.
     # If it was not we now remove the -- token.
@@ -4172,6 +4174,7 @@ _execute()
         if [[ -z "${_fn_wrap}" ]]; then
             if [[ -n "${_fn_cmdouterenv}" ]]; then
                 _cmd_export_vars "${_fn_cmdouterenv}" "which defined OUTER env"
+                (( $? > 0 )) && return 1
             fi
             if [[ -n "${_fn_cmdouterdep}" ]]; then
                 local _item=
@@ -4259,6 +4262,7 @@ _execute()
                     if [ "${_i}" -eq 0 ]; then
                         if [[ -n "${_fn_cmdouterenv}" ]]; then
                             _cmd_export_vars "${_fn_cmdouterenv}" "which defined OUTER env"
+                            (( $? > 0 )) && return 1
                         fi
                         if [[ -n "${_fn_cmdouterdep}" ]]; then
                             local _item=
@@ -4276,6 +4280,7 @@ _execute()
                     # there might be multiple variable declarations,
                     # but that's as expected.
                     _cmd_export_vars "${_fn_env}" "${_fn_name}"
+                    (( $? > 0 )) && return 1
 
                     push "_fn_def"
                     push "_fn_call"
@@ -4289,6 +4294,7 @@ _execute()
 
         # _export_vars declared way above (no not in the context isolator).
         _cmd_export_vars "${_fn_env}" "${_fn_name}"
+        (( $? > 0 )) && return 1
 
         local _i=
         for ((_i=1; _i<$((_wrappers+1)); _i+=1)); do
@@ -4483,6 +4489,7 @@ _cmd_extract()
 
             local _args=()
             _split_args "_args" "${SPACE_ARGS}"
+            (( $? > 0 )) && { trap - EXIT; return 1; }
             local _cmd_args_count=${#_args[@]};
             unset _args
 
@@ -4523,6 +4530,7 @@ _cmd_extract()
                     # We will provide this in case SPACE_ARGS uses any of them.
                     _debug "Export vars for build time function ${_fn_name}: ${_fn_env}."
                     _cmd_export_vars "${_fn_env}" "${_fn_name}"
+                    (( $? > 0 )) && { trap - EXIT; return 1; }
                 fi
                 _fns="set -u"$'\n'"${_fn_def}_wrapper() {"$'\n'"${_fns}}"$'\n'"${_export_vars}"$'\n'"_wrapper ${SPACE_BUILD_ARGS}"$'\n'
                 # Null these.
@@ -4616,6 +4624,7 @@ _cmd_extract()
                     fi
                     local _args=()
                     _split_args "_args" "${SPACE_OUTERARGS}"
+                    (( $? > 0 )) && { trap - EXIT; return 1; }
                     local _cmd_args_count=${#_args[@]};
                     unset _args
                     local _fnlines=()
@@ -4991,6 +5000,7 @@ _cmd_export_vars()
         local _arr=()
         local _fn_env_item= _k1= _v=
         _split_args "_arr" "${_fn_env}"
+        (( $? > 0 )) && { trap - EXIT; return 1; }
         for _fn_env_item in "${_arr[@]}"; do
             _k1=${_fn_env_item%%=*}
             if [[ ${_k1} == ${_fn_env_item} ]]; then

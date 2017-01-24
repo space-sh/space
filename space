@@ -4412,6 +4412,10 @@ YIELD()
     if [ "${2-}" = "unset" ]; then
         printf "%s unset\n" "${1}" >&3
     else
+        if [ "${!1+set}" != "set" ]; then
+            printf "%s\n" "[ERROR] Yielded variable ${1} is undeclared in build function." >&2
+            return 1
+        fi
         local _lines="${!1}"
         _lines="${_lines//[!$'\n']}"
         _lines="${#_lines}"

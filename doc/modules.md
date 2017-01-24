@@ -45,3 +45,5 @@ GENERATE_VARIABLES=0 GENERATE_TOC=0 space -f ../space/tools/spacedoc/Spacefile.y
 
 9. Always take careful action when making decisions based on data gathered, be it locally or remotely, because data could be tampered, misdirected or turned into malicious by third party operators.
 
+10. Make sure build time module functions specify `SPACE_FN` header variable at the beginning of the function scope for clarity. Preferably in the very first line.
+

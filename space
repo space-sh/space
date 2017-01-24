@@ -4498,7 +4498,7 @@ _cmd_extract()
             unset _args
 
             # Declare these variables here since they are local only.
-            local SPACE_BUILD_DEP= SPACE_BUILD_ENV= SPACE_BUILD_ARGS=
+            local SPACE_BUILDDEP= SPACE_BUILDENV= SPACE_BUILDARGS=
 
             # Separate the SPACE_ variables header and the function body.
             local _space_cmd=$SPACE_FN
@@ -4523,11 +4523,11 @@ _cmd_extract()
                 fi
                 local _fn_env=""
                 local _fn_def=""
-                _cmd_add_fn_dep "${SPACE_BUILD_DEP:+${SPACE_BUILD_DEP} }YIELD" "${_space_cmd}"
+                _cmd_add_fn_dep "${SPACE_BUILDDEP:+${SPACE_BUILDDEP} }YIELD" "${_space_cmd}"
                 (( $? > 0 )) && { trap - EXIT; return 1; }
 
-                if [ -n "${SPACE_BUILD_ENV-}" ]; then
-                    _fn_env="${_fn_env:+${_fn_env} }${SPACE_BUILD_ENV}"
+                if [ -n "${SPACE_BUILDENV-}" ]; then
+                    _fn_env="${_fn_env:+${_fn_env} }${SPACE_BUILDENV}"
                 fi
                 local _export_vars=""
                 if [ -n "${_fn_env}" ]; then
@@ -4536,11 +4536,11 @@ _cmd_extract()
                     _cmd_export_vars "${_fn_env}" "${_fn_name}"
                     (( $? > 0 )) && { trap - EXIT; return 1; }
                 fi
-                _fns="set -u"$'\n'"${_fn_def}_wrapper() {"$'\n'"${_fns}}"$'\n'"${_export_vars}"$'\n'"_wrapper ${SPACE_BUILD_ARGS}"$'\n'
+                _fns="set -u"$'\n'"${_fn_def}_wrapper() {"$'\n'"${_fns}}"$'\n'"${_export_vars}"$'\n'"_wrapper ${SPACE_BUILDARGS}"$'\n'
                 # Null these.
-                SPACE_BUILD_DEP=
-                SPACE_BUILD_ENV=
-                SPACE_BUILD_ARGS=
+                SPACE_BUILDDEP=
+                SPACE_BUILDENV=
+                SPACE_BUILDARGS=
 
                 # EXTERNAL: mktemp, bash, rm, rmdir
                 local _tmpdir=$(mktemp -d 2>/dev/null || mktemp -d -t 'sometmpdir')
@@ -4784,17 +4784,17 @@ _cmd_extract_space_header ()
                         # Always overwritten.
                         _spacelines+=("SPACE_FN=${BASH_REMATCH[2]}")
                         _hasfn=1
-                    elif [[ ${_spacevar} == "SPACE_BUILD_ENV" ]]; then
+                    elif [[ ${_spacevar} == "SPACE_BUILDENV" ]]; then
                         # Always overwritten.
-                        _spacelines+=("SPACE_BUILD_ENV=${BASH_REMATCH[2]}")
+                        _spacelines+=("SPACE_BUILDENV=${BASH_REMATCH[2]}")
                         _hasbuildenv=1
-                    elif [[ ${_spacevar} == "SPACE_BUILD_DEP" ]]; then
+                    elif [[ ${_spacevar} == "SPACE_BUILDDEP" ]]; then
                         # Always overwritten.
-                        _spacelines+=("SPACE_BUILD_DEP=${BASH_REMATCH[2]}")
+                        _spacelines+=("SPACE_BUILDDEP=${BASH_REMATCH[2]}")
                         _hasbuilddep=1
-                    elif [[ ${_spacevar} == "SPACE_BUILD_ARGS" ]]; then
+                    elif [[ ${_spacevar} == "SPACE_BUILDARGS" ]]; then
                         # Always overwritten.
-                        _spacelines+=("SPACE_BUILD_ARGS=${BASH_REMATCH[2]}")
+                        _spacelines+=("SPACE_BUILDARGS=${BASH_REMATCH[2]}")
                         _hasbuildargs=1
                     else
                         _error "Unknown SPACE HEADER variable: ${_spacevar}, in WRAP function: ${_fn_name}."
@@ -4897,17 +4897,17 @@ _cmd_extract_space_header ()
                         # Always overwritten.
                         _spacelines+=("SPACE_FN=${BASH_REMATCH[2]}")
                         _hasfn=1
-                    elif [[ ${_spacevar} == "SPACE_BUILD_ENV" ]]; then
+                    elif [[ ${_spacevar} == "SPACE_BUILDENV" ]]; then
                         # Always overwritten.
-                        _spacelines+=("SPACE_BUILD_ENV=${BASH_REMATCH[2]}")
+                        _spacelines+=("SPACE_BUILDENV=${BASH_REMATCH[2]}")
                         _hasbuildenv=1
-                    elif [[ ${_spacevar} == "SPACE_BUILD_DEP" ]]; then
+                    elif [[ ${_spacevar} == "SPACE_BUILDDEP" ]]; then
                         # Always overwritten.
-                        _spacelines+=("SPACE_BUILD_DEP=${BASH_REMATCH[2]}")
+                        _spacelines+=("SPACE_BUILDDEP=${BASH_REMATCH[2]}")
                         _hasbuilddep=1
-                    elif [[ ${_spacevar} == "SPACE_BUILD_ARGS" ]]; then
+                    elif [[ ${_spacevar} == "SPACE_BUILDARGS" ]]; then
                         # Always overwritten.
-                        _spacelines+=("SPACE_BUILD_ARGS=${BASH_REMATCH[2]}")
+                        _spacelines+=("SPACE_BUILDARGS=${BASH_REMATCH[2]}")
                         _hasbuildargs=1
                     else
                         _error "Unknown SPACE HEADER variable: ${_spacevar}, in function: ${_fn_name}."
@@ -4935,15 +4935,15 @@ _cmd_extract_space_header ()
     # Check some constraints.
     if [ "${_hasfn}" = 0 ]; then
         if [ "${_hasbuildenv}" = 1 ]; then
-            _error "SPACE_BUILD_ENV is a build time only variable cannot be declared without also declaring SPACE_FN."
+            _error "SPACE_BUILDENV is a build time only variable cannot be declared without also declaring SPACE_FN."
             return 1
         fi
         if [ "${_hasbuilddep}" = 1 ]; then
-            _error "SPACE_BUILD_DEP is a build time only variable cannot be declared without also declaring SPACE_FN."
+            _error "SPACE_BUILDDEP is a build time only variable cannot be declared without also declaring SPACE_FN."
             return 1
         fi
         if [ "${_hasbuildargs}" = 1 ]; then
-            _error "SPACE_BUILD_ARGS is a build time only variable cannot be declared without also declaring SPACE_FN."
+            _error "SPACE_BUILDARGS is a build time only variable cannot be declared without also declaring SPACE_FN."
             return 1
         fi
     fi

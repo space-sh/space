@@ -274,11 +274,12 @@ $_USAGE
               ssh://gitlab.com/filippsen/somemodule.
               The protocol defaults to https.
           -M  [giturl/][username]/reponame module to load. (e.g. \"gitlab.com/blockie-org/amodule\")
-              Clone and load modules. Separate multiple by space within quotes,
+              Clone and load modules shell file. Separate multiple by space within quotes,
               or use multiple -M switches, one for each module.
-              Usually used together with '-m' option to load a needed module for use
+              Usually used together with '-m' option to load a needed modules Spacefile.sh for use
               with SPACE_WRAP environment variable.
               Example: space -m dropalot -M ssh -e SPACE_WRAP=SSH_WRAP -e sshhost=1.2.3.4
+              Using the -M switch alone will not do anything since Space needs a target node to load.
           -e  environment variable to forcefully apply/overwrite before parsing the YAML.
               -e var1="value1".
               Use one -e for each variable.

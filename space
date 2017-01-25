@@ -1000,7 +1000,7 @@ _pp_yaml()
             if [ "$_filterindent" -eq -1 ]; then
                 _filterindent=$_indent
             fi
-            if [[ $_rowtype != "assign" && $_rowtype != "debug" && $_rowtype != "clone" && ${_key:0:1} != "_" && "$_prefix$_key/" =~ ^${_filter}([a-zA-Z0-9_])+/$ ]]; then
+            if [[ $_rowtype != "assign" && $_rowtype != "assert"  && $_rowtype != "cache" && $_rowtype != "prompt" && $_rowtype != "source"  && $_rowtype != "debug" && $_rowtype != "clone" && ${_key:0:1} != "_" && "$_prefix$_key/" =~ ^${_filter}([a-zA-Z0-9_])+/$ ]]; then
                 _immediatechild=1
             fi
             if [[ $_rowtype == "include" && "$_prefix$_key/" =~ ^${_filter}/$ ]]; then
@@ -1095,12 +1095,9 @@ _pp_yaml()
                 ;;
             assert) # Do assertion
                 _debug "@assert: $value"
-                if [[ $value =~ (.*)\ ([a-zA-Z0-9@][a-zA-Z0-9_]*) ]]; then
+                if [[ $value =~ (.*)\ (.*) ]]; then
                     local _fn=${BASH_REMATCH[1]}
                     local _val=${BASH_REMATCH[2]}
-                    if [[ ${_val:0:1} == "@" && $((${#_val} > 1)) ]]; then
-                        eval "_val=\${_PP_${_val:1}-}"
-                    fi
                     if [ "$_fn" = "nonempty" ] && [ -z "$_val" ]; then
                         _error "Assertion failed: $value: $_filepath:$_rowindex"
                         return 1
@@ -1210,6 +1207,12 @@ _yaml_get_row()
             fi
         else
             local _substvar=_PP_$_s
+            if [ "${_substvar: -1}" = "-" ]; then
+                _substvar="${_substvar:0:$((${#_substvar}-1))}"
+            fi
+            if [ "${_substvar: -1}" = ":" ]; then
+                _substvar="${_substvar:0:$((${#_substvar}-1))}"
+            fi
             local _substvalue=${!_substvar-}
         fi
 

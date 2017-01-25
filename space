@@ -959,7 +959,12 @@ _pp_yaml()
     local _PP_DIR=${_filepath%/*}
 
     local _allrows=() _rowindex=0
-    IFS=$'\n' read -d '' -r -a _allrows < "$_filepath"
+    # Read all lines and keeping blank lines for correct row counting.
+    local _aline=
+    while IFS= read  -r _aline; do
+        _allrows+=("${_aline}")
+    done < "${_filepath}"
+    unset _aline
     local _numrows=${#_allrows[@]}
 
     if [[ ! $_yamlfilelist =~ "$_filepath " ]]; then
@@ -1432,7 +1437,11 @@ _yaml_get_next()
         fi
     else
         # Unknown row
-        :
+        if [[ $_row =~ ^[\ ]*([^\#^\ ].*) ]]; then
+            if [ "${BASH_REMATCH[1]}" != "---" ] && [ "${BASH_REMATCH[1]}" != "..." ]; then
+                _warning "Can't parse the row: $_row"
+            fi
+        fi
     fi
     return 0
 }

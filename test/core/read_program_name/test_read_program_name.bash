@@ -16,8 +16,6 @@
 # along with Space.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-_source "${DIR}/test_read_program_name_source.bash"
-
 _READ_PROGRAM_NAME()
 {
     SPACE_DEP="PRINT _READ_PROGRAM_NAME_SOURCE"

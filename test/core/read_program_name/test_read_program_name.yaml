@@ -16,7 +16,8 @@
 # along with Space.  If not, see <http://www.gnu.org/licenses/>.
 #
 
----
+@source: "@{DIR}/test_read_program_name_source.bash"
+
 _env:
 
 tests:

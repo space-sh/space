@@ -77,7 +77,7 @@ _TEST_PP_YAML_CHECK_STATUS_FAIL_1()
     _pp_yaml "_yamlrows" $_yamlfile
 
     # Expecting failure here
-    if [ "$?" -eq 1 ]; then
+    if [ "$?" -eq 2 ]; then
         PRINT "_pp_yaml OK!" "ok"
         return 0
     else
@@ -100,7 +100,7 @@ _TEST_PP_YAML_CHECK_STATUS_FAIL_2()
     _pp_yaml "_yamlrows" $_yamlfile 2> /dev/null
 
     # Expecting failure here
-    if [ "$?" -eq 2 ]; then
+    if [ "$?" -eq 1 ]; then
         PRINT "_pp_yaml OK!" "ok"
         return 0
     else
@@ -123,7 +123,7 @@ _TEST_PP_YAML_CHECK_STATUS_FAIL_3()
     _pp_yaml "_yamlrows" $_yamlfile 2> /dev/null
 
     # Expecting failure here
-    if [ "$?" -eq 3 ]; then
+    if [ "$?" -eq 1 ]; then
         PRINT "_pp_yaml OK!" "ok"
         return 0
     else
@@ -146,7 +146,7 @@ _TEST_PP_YAML_CHECK_STATUS_FAIL_4()
     _pp_yaml "_yamlrows" $_yamlfile 2> /dev/null
 
     # Expecting failure here
-    if [ "$?" -eq 4 ]; then
+    if [ "$?" -eq 1 ]; then
         PRINT "_pp_yaml OK!" "ok"
         return 0
     else

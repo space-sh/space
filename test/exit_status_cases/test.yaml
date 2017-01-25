@@ -23,8 +23,8 @@
 @cache: 1
 
 # Include good and bad files, filtered files, modules
-@include: Spacefile.yaml|uninstall/
-@include: Spacefile.yaml|/install
+@include: Spacefile.yaml|/uninstall/
+@include: Spacefile.yaml|/install/
 @include:- non_existent_is_fine_with_dash.yaml
 
 # Clone good repo

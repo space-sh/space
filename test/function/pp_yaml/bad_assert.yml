@@ -17,7 +17,7 @@
 #
 
 ---
-@assert: nonempty $tTt2
+@assert: nonempty @{tTt2}
 
 _env:
     - SOME_VAR: "false"

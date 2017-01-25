@@ -31,7 +31,7 @@ list:
     - B:
         info: B
 SUM:
-    @include: |/list
+    @include: |/list/
         # Uncomment this line and it crasches!
         #Add: yes
 
@@ -41,9 +41,9 @@ nodes:
 
 nodes2:
     # This works.
-    @include: |/nodes
+    @include: |/nodes/
 
 nodes3:
     # But this does not include anything... Which is not good.
-    @include: |/nodes/A
+    @include: |/nodes/A/
 ...

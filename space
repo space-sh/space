@@ -675,7 +675,10 @@ _source()
 #==========
 # _source_file
 #
-# Source a file
+# Source a file, but never actually sourcing it.
+# Only checking that it exists and adding it to the
+# list of files from which we can extract functions from.
+# Any code outside functions will be ignored.
 #
 # Parameters:
 #   $1: file path(s), relative or absolute.
@@ -703,17 +706,10 @@ _source_file()
         done
         unset _i
         _debug "Source file \"$_filepath\""
-        local _status=0
-        trap '_status=$?; trap - ERR;' ERR
-        # DIR is a "global" variable which could be used to get the directory
-        # for the current file being sourced.
-        # shellcheck disable=2034
-        local DIR=${_filepath%/*}
-        # shellcheck disable=1090
-        . "$_filepath"
-        unset DIR
-        trap - ERR
-        [ "$_status" -gt 0 ] && { _error "Could not source script ${_filepath}. Syntax error?"; return 1; }
+        if [ ! -e "${_filepath}" ]; then
+            _error "Could not find and source file: ${_filepath}."
+            return 1
+        fi
         _SOURCE_FILES_TOTAL+=("${_filepath}")
     done
 }
@@ -4127,8 +4123,9 @@ _execute()
     local _cmd_outerdeps=()
 
     # Check if $_RUN is a function or just a snippet.
-    declare -f -F $_RUN &>/dev/null
-    if (($? > 0)); then
+    local _tmpname="" _tmpfunc=""
+    _get_fn "${_RUN}" "_tmpname" "_tmpfunc"
+    if [ -z "${_tmpname}" ]; then
         # $_RUN is not a function, it's an external executable or a Bash snippet
         _debug "RUN is snippet or executable: $_RUN"
         # We want to create an anonymous function containing $_RUN,
@@ -4141,6 +4138,7 @@ _execute()
         # $RUN is a function.
         _debug "RUN is function: $_RUN"
     fi
+    unset _tmpname _tmpfunc
 
     _debug "RUN args: $_cmd_args_str"
     _debug "RUN wrap: ${SPACE_WRAP-}"

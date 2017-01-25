@@ -1072,17 +1072,22 @@ _pp_yaml()
                     _module_clone "_retrepo" "$_v"
                     local _status=$?
                     if [ $_status -gt 0 ]; then
-                        _error "[$_filepath: $(($_rowindex))] Could not clone module repository \"$value\"."
+                        _error "[$_filepath: $(($_rowindex))] Could not clone module repository \"$_v\"."
                         return 1
                     fi
-                    if [ -n "$_retrepo" ]; then
-                        _repos="$_repos $_retrepo"
+                    if [ -n "${_retrepo}" ]; then
+                        _repos="${_repos:+${_repos} }${_retrepo}"
                     fi
                 done
                 if [ -n "$_repos" ]; then
-                    printf -v _output "%*s%s" $_i "" "_source: $_repos"
+                    printf -v _output "%*s%s" $_i "" "_clone_source: $_repos"
                     eval "$_varname+=(\"\$_output\")"
                 fi
+                ;;
+            source) # Source module(s) shell file
+                local _i=$(($_indent-$_filterindent+$_inheritedindent))
+                printf -v _output "%*s%s" $_i "" "_source: ${value}"
+                eval "$_varname+=(\"\$_output\")"
                 ;;
             debug) # Output debug info
                 _debug "@debug: $value"
@@ -1289,6 +1294,11 @@ _yaml_get_next()
         _key=
         value=${BASH_REMATCH[3]}
         _rowtype="clone"
+    elif [[ $_row =~ ^([\ ]*)(\@source)[\ ]*:[\ ]+(.*) ]]; then
+        _indent=${#BASH_REMATCH[1]}
+        _key=
+        value=${BASH_REMATCH[3]}
+        _rowtype="source"
     elif [[ $_row =~ ^([\ ]*)(\@debug)[\ ]*:[\ ]+(.*) ]]; then
         _indent=${#BASH_REMATCH[1]}
         _key=
@@ -1539,7 +1549,7 @@ _yaml_get_multiline()
 #   1: failure
 #
 #==================
-clone()
+_clone()
 {
     local _modules="$@"
     shift
@@ -2656,7 +2666,7 @@ _main()
 
     if [[ -n $_loadmodules ]]; then
         _debug "Load modules $_loadmodules"
-        clone "${_loadmodules}"
+        _clone "${_loadmodules}"
         (( $? > 0 )) && return 1
     fi
 
@@ -2730,7 +2740,7 @@ _main()
             # Load module.
             local _module=$_path
             _debug "Include module $_module"
-            clone "${_module}"
+            _clone "${_module}"
             (( $? > 0 )) && return 1
 
             local _protocol= _domain= _domainuser= _username= _reponame="" _commit= _str_commit= _repofullname=
@@ -3915,6 +3925,11 @@ _loadnode()
 
         local _src=
         _copy "_src" "${_nodepath}_source"
+        if [[ -n $_src ]]; then
+            local _s='_source "'$_src'"'$'\n'
+            eval "$_output+=( \"\$_s\" )"
+        fi
+        _copy "_src" "${_nodepath}_clone_source"
         if [[ -n $_src ]]; then
             local _s='_source "'$_src'"'$'\n'
             eval "$_output+=( \"\$_s\" )"

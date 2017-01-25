@@ -16,7 +16,7 @@
 # along with Space.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-@assert: nonempty $non_existent_value
+@assert: nonempty @{non_existent_value}
 
 env:
 

@@ -1043,8 +1043,7 @@ _pp_yaml()
         case "${_rowtype}" in
             assign) # Assign a preprocess variable
                 local _ppkey=_PP_$_key
-                local _s="local ${_ppkey} ; read -d '' -r ${_ppkey} << $_SPACEGAL_EOF_TAG"$'\n'"${value}"$'\n'"$_SPACEGAL_EOF_TAG"$'\n'":"$'\n'
-                eval "$_s"
+                eval "local ${_ppkey}=\$value"
                 unset _s _ppkey
                 ;;
             prompt) # Prompt a value for a pp variable.
@@ -1099,13 +1098,11 @@ _pp_yaml()
                 ;;
             assert) # Do assertion
                 _debug "@assert: $value"
-                if [[ $value =~ (.*)\ (.*) ]]; then
+                if [[ $value =~ (.*)\ ([a-zA-Z0-9@][a-zA-Z0-9_]*) ]]; then
                     local _fn=${BASH_REMATCH[1]}
                     local _val=${BASH_REMATCH[2]}
-                    if [[ ${_val:0:1} == "@" ]]; then
+                    if [[ ${_val:0:1} == "@" && $((${#_val} > 1)) ]]; then
                         eval "_val=\${_PP_${_val:1}-}"
-                    elif [[ ${_val:0:1} == "$" ]]; then
-                        eval "_val=\${${_val:1}-}"
                     fi
                     if [ "$_fn" = "nonempty" ] && [ -z "$_val" ]; then
                         _error "Assertion failed: $value: $_filepath:$_rowindex"

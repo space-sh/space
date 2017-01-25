@@ -309,12 +309,13 @@ Value Set preprocess variable "var1" only if "var1" has value.
 * `@{varname-default value if unset}` or `@{varname:-default value if empty}`:
 Use @{varname} anywhere to have that substituted with the value of the variable.
 Default value could be another variable from the preprocessor such as @{var2}.
+Ex: @{var1-@{var2}}
 
 ### PREPROCESSOR KEYWORDS
 The following keywords are functions and cannot be used as preprocess variables:
 
-  * `@assert: nonempty $variable|@variable`:
-       Do nonempty assertion of Bash environment variable or space preprocess variable.
+  * `@assert: nonempty @{variable}`:
+       Do nonempty assertion of space preprocess variable expression.
 
   * `@prompt: var1 Text to prompt user with`:
        Will output the text and read input from stdin which will be stored in preprocess variable "var1".

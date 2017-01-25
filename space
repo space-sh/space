@@ -2106,35 +2106,36 @@ _security()
                *  to the Space.sh site to see that everything else is OK.      *
                *****************************************************************
 _EOF
-    [ "$_LOG_ENABLE_COLORS" = "1" ] && printf "${_COLOR_FG_MAGENTA}"
+    [ "$_LOG_ENABLE_COLORS" = "1" ] && printf "${_COLOR_FG_MAGENTA}" >&2
     _print "[SEC]   $_msg"
-    [ "$_LOG_ENABLE_COLORS" = "1" ] && printf "${_COLOR_DEFAULT}"
+    [ "$_LOG_ENABLE_COLORS" = "1" ] && printf "${_COLOR_DEFAULT}" >&2
 }
 
 _error()
 {
     if (( $_VERBOSITY >= 1 )); then
-        [ "$_LOG_ENABLE_COLORS" = "1" ] && printf "${_COLOR_FG_RED}"
+        [ "$_LOG_ENABLE_COLORS" = "1" ] && printf "${_COLOR_FG_RED}" >&2
         _print "[ERROR] $@"
-        [ "$_LOG_ENABLE_COLORS" = "1" ] && printf "${_COLOR_DEFAULT}"
+        [ "$_LOG_ENABLE_COLORS" = "1" ] && printf "${_COLOR_DEFAULT}" >&2
     fi
 }
 
 _warning()
 {
     if (( $_VERBOSITY >= 2 )); then
-        [ "$_LOG_ENABLE_COLORS" = "1" ] && printf "${_COLOR_FG_YELLOW}"
+        [ "$_LOG_ENABLE_COLORS" = "1" ] && printf "${_COLOR_FG_YELLOW}" >&2
         _print "[WARN]  $@"
-        [ "$_LOG_ENABLE_COLORS" = "1" ] && printf "${_COLOR_DEFAULT}"
+        [ "$_LOG_ENABLE_COLORS" = "1" ] && printf "${_COLOR_DEFAULT}" >&2
+
     fi
 }
 
 _info()
 {
     if (( $_VERBOSITY >= 3 )); then
-        [ "$_LOG_ENABLE_COLORS" = "1" ] && printf "${_COLOR_FG_WHITE}"
+        [ "$_LOG_ENABLE_COLORS" = "1" ] && printf "${_COLOR_FG_WHITE}" >&2
         _print "[INFO]  $@"
-        [ "$_LOG_ENABLE_COLORS" = "1" ] && printf "${_COLOR_DEFAULT}"
+        [ "$_LOG_ENABLE_COLORS" = "1" ] && printf "${_COLOR_DEFAULT}" >&2
     fi
 }
 
@@ -2145,9 +2146,9 @@ _runinfo()
         shift
         local _color=${1-$_COLOR_DEFAULT}
         shift || :
-        [ "$_LOG_ENABLE_COLORS" = "1" ] && printf "${_color}"
+        [ "$_LOG_ENABLE_COLORS" = "1" ] && printf "${_color}" >&2
         _print "[RUN]   $_msg"
-        [ "$_LOG_ENABLE_COLORS" = "1" ] && printf "${_COLOR_DEFAULT}"
+        [ "$_LOG_ENABLE_COLORS" = "1" ] && printf "${_COLOR_DEFAULT}" >&2
     fi
 }
 
@@ -4354,7 +4355,7 @@ _execute()
         _export_cmd="${_export_cmd}"'
 # Space shows error message, if non clear exit.
 _status="$?"; if [ "'${SPACE_SILENT:-0}'" -eq 0 ] && [ "${_status}" -ne "'${SPACE_EXIT:-0}'" ]; then
-[ "'${_LOG_ENABLE_COLORS}'" = "1" ] && printf "'${_COLOR_FG_RED}'"; printf "%s\n" "[ERROR] Script exited with status: ${_status} (node: '${_nodecombo}')." >&2; [ "'${_LOG_ENABLE_COLORS}'" = "1" ] && printf "'${_COLOR_DEFAULT}'"
+[ "'${_LOG_ENABLE_COLORS}'" = "1" ] && printf "'${_COLOR_FG_RED}'" >&2; printf "%s\n" "[ERROR] Script exited with status: ${_status} (node: '${_nodecombo}')." >&2; [ "'${_LOG_ENABLE_COLORS}'" = "1" ] && printf "'${_COLOR_DEFAULT}'" >&2
     exit "$(( ${_status} > 0 ? ${_status} : 1 ))"
 fi
 '

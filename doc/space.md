@@ -288,9 +288,11 @@ The directory from where Space was invoked.
 
 * `@{PARENT}`:
 The current parent node name.
+For list items, it's the list objects parent node name.
 
 * `@{PARENTPATH}`:
 The full current parent node path.
+For list items, it's the list objects parent node path.
 
 * `@varname`: 
 Some value Set preprocess variable "var1".
@@ -304,10 +306,9 @@ Value Set preprocess variable "var1" only if "var1" lacks value or is unset.
 * `@varname:+`: 
 Value Set preprocess variable "var1" only if "var1" has value.
 
-* `${varname-default value if unset}` or `${varname:-default value if empty}`:
-Use ${varname} anywhere to have that substituted with the value of the variable.
+* `@{varname-default value if unset}` or `@{varname:-default value if empty}`:
+Use @{varname} anywhere to have that substituted with the value of the variable.
 Default value could be another variable from the preprocessor such as @{var2}.
-Note that values of preprocessed variables are evaluated, meaning that you could use Bash variables and commands as ${USER}, $(cat value.txt), etc.
 
 ### PREPROCESSOR KEYWORDS
 The following keywords are functions and cannot be used as preprocess variables:
@@ -322,11 +323,11 @@ The following keywords are functions and cannot be used as preprocess variables:
   * `@clone: space-sh/ssh space-sh/docker`:
        Clone those modules
 
-  * `@debug: varname is: ${varname}`:
-       Output using "_debug" during preprocess stage.
+  * `@debug: varname is: @{varname}`:
+       Output using "_debug" during preprocess stage, you need to use the -v4 flag to see the debug output.
 
   * `@include: path/ssh.yaml|/some/node/(arg1 arg2)`:
-       Include the ssh.yaml file and filter on /some/node, also assign the preprocess variables @{1} and @{2} to values arg1 resp arg2. The arguments are space separated and optional.  
+       Include the ssh.yaml file and filter on /some/node, also assign the preprocess variables @{1} and @{2} the values arg1 resp arg2. The arguments are space separated and optional.  
        The filter is also optional.  
        To include from within the same file leave out the filename, as: `@include |/filter/.`  
        Absolute paths are also allowed.  

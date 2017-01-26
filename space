@@ -4769,7 +4769,7 @@ _cmd_extract_space_header ()
                         _signature2=${_signature2//[^\ ]}
                         (( _sigcount += ${#_signature2} ))
                         if (( _sigcount > _cmd_args_count )); then
-                            _error "Missing $((_sigcount-_cmd_args_count)) argument(s). Function $_space_cmd has the signature: ${_signature}, but only these arguments where provided: ${_given_args}."
+                            _error "Missing $((_sigcount-_cmd_args_count)) argument(s). Function ${_fn_name} has the signature: ${_signature}, but only these arguments where provided: ${_given_args}."
                             return 1
                         fi
                     fi

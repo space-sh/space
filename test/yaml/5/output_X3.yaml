@@ -1,2 +1,3 @@
-test_gt: Now these lines will be joinedbut with no spaces inbetween!But line will end with \n\n
+test_gt: |
+    Now these lines will be joinedbut with no spaces inbetween!But line will end with \n
 test_gt_dash: And these lineswill be joinedalso with no spaces inbetween!But line will not end with \n thanks to the '-'.

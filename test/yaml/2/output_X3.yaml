@@ -20,8 +20,11 @@
         1: ignored:no it becomes an indexed array value.
 3:
     OK: some text
-    OK2: One row,\ntwo rows.\n
-    OK3: One row, still one row.\n
+    OK2: |
+        One row,
+        two rows.
+    OK3: |
+        One row, still one row.
 4:
     OK4: Yes!
     OK4a:
@@ -29,11 +32,15 @@
         1:
         2: Spaces removed. index 2.
         3: "Astro Physics"
-        4: Multiline\nright here,\nthanks.\n
+        4: |
+            Multiline
+            right here,
+            thanks.
 5: Old school.
 6: Great school.
 7: Astro School.
-8: Gotta love these collapsed lines.\n
+8: |
+    Gotta love these collapsed lines.
 9:
     0:
         A: Aaa
@@ -84,7 +91,9 @@ hej2:
     1:
         B: B
     2:
-        C: One row,\ntwo rows.\n
+        C: |
+            One row,
+            two rows.
 names:
     0: Mary Smith
     1: "Ester J:son"

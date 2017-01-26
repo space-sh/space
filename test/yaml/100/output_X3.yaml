@@ -7,4 +7,5 @@ test_node_name:
         _s_b_u_: "123456789042!"
         _sub_: "TeSt"
         s_b_u:
-            1234: Multiline just  for kicks\n
+            1234: |
+                Multiline just  for kicks

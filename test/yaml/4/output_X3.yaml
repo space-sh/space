@@ -1,2 +1,6 @@
-test_dash0: Multi line\nstring,\nwith new lines kept.\nThanks to '-' this line does not end with \n
+test_dash0: |-
+    Multi line
+    string,
+    with new lines kept.
+    Thanks to '-' this line does not end with \n
 test_dash1: These lines will be one one long line, where each line will be space separated. But the single line will not have \n thanks to '-'

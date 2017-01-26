@@ -24,7 +24,7 @@
 # Definitions
 _current_directory="$PWD"
 _program_name="space"
-_version="0.11.0"
+_version="0.12.0"
 _package_base="${_program_name}-${_version}"
 _package_name="${_package_base}.tar.gz"
 _package_sha1='7d02f16bf3f086ccb2885885cf118605ff8355d1'

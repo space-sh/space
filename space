@@ -1479,7 +1479,6 @@ _yaml_find_nextindent()
             return
         fi
         local _peekrow=${_allrows[$_i]}
-        #_error PEEK $_peekrow
         _i=$(( _i + 1 ))
         if [[ $_peekrow =~ ^([\ ]*)\-([\ ]+)[a-zA-Z0-9_]+[\ ]*:[\ ]*.* ]]; then
             _yamlindent=$((${#BASH_REMATCH[1]}+${#BASH_REMATCH[2]}+1))
@@ -1488,7 +1487,10 @@ _yaml_find_nextindent()
             _yamlindent=${#BASH_REMATCH[1]}
             break
         elif [[ $_peekrow =~ ^([\ ]*)\-[\ ]*$ ]]; then
-            _yamlindent=$((${#BASH_REMATCH[1]}))
+            _yamlindent=${#BASH_REMATCH[1]}
+            break
+        elif [[ $_peekrow =~ ^([\ ]*)\-[\ ]*.+$ ]]; then
+            _yamlindent=${#BASH_REMATCH[1]}
             break
         fi
     done

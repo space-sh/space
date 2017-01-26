@@ -678,6 +678,8 @@ _source()
     local _filename=$1
     shift
 
+    _debug "Add source: \"$_filename\""
+
     if [ "${_filename##*.}" = "bash" ]; then
         _FORCE_BASH="1"
     fi
@@ -718,7 +720,6 @@ _source_file()
             fi
         done
         unset _i
-        _debug "Source file \"$_filepath\""
         if [ ! -e "${_filepath}" ]; then
             _error "Could not find and source file: ${_filepath}."
             return 1
@@ -1080,7 +1081,7 @@ _pp_yaml()
             clone) # Clone module(s)
                 local _i=$(($_indent-$_filterindent+$_inheritedindent))
                 # _retrepo variable is populated by _module_clone
-                local _retrepo='' _repos="" _v=
+                local _retrepo= _v=
                 for _v in $value; do
                     _module_clone "_retrepo" "$_v"
                     local _status=$?
@@ -1088,18 +1089,17 @@ _pp_yaml()
                         _error "[$_filepath: $(($_rowindex))] Could not clone module repository \"$_v\"."
                         return 1
                     fi
-                    if [ -n "${_retrepo}" ]; then
-                        _repos="${_repos:+${_repos} }${_retrepo}"
-                    fi
-                done
-                if [ -n "$_repos" ]; then
-                    printf -v _output "%*s%s" $_i "" "_clone_source: $_repos"
+                    printf -v _output "%*s%s" $_i "" "_source:"
                     eval "$_varname+=(\"\$_output\")"
-                fi
+                    printf -v _output "%*s    - %s" $_i "" "$_retrepo"
+                    eval "$_varname+=(\"\$_output\")"
+                done
                 ;;
             source) # Source module(s) shell file
                 local _i=$(($_indent-$_filterindent+$_inheritedindent))
-                printf -v _output "%*s%s" $_i "" "_source: ${value}"
+                printf -v _output "%*s%s" $_i "" "_source:"
+                eval "$_varname+=(\"\$_output\")"
+                printf -v _output "%*s    - %s" $_i "" "$value"
                 eval "$_varname+=(\"\$_output\")"
                 ;;
             debug) # Output debug info
@@ -3944,17 +3944,18 @@ _loadnode()
         _copy "_str" "${_nodepath}_info/title"
         [[ -n $_str ]] && _infotitle="$_str"
 
-        local _src=
-        _copy "_src" "${_nodepath}_source"
-        if [[ -n $_src ]]; then
-            local _s='_source "'$_src'"'$'\n'
-            eval "$_output+=( \"\$_s\" )"
+        local _srcs=()
+        _list "_srcs" "${_nodepath}_source/" "1" "1"
+        if (( ${#_srcs[@]} > 0 )); then
+            local _src=
+            local _key=
+            for _key in "${_srcs[@]}"; do
+                _copy "_src" "${_nodepath}_source/${_key}"
+                local _s='_source "'${_src}'"'$'\n'
+                eval "$_output+=( \"\$_s\" )"
+            done
         fi
-        _copy "_src" "${_nodepath}_clone_source"
-        if [[ -n $_src ]]; then
-            local _s='_source "'$_src'"'$'\n'
-            eval "$_output+=( \"\$_s\" )"
-        fi
+
         local _envarrkeys=()
         _list "_envarrkeys" "${_nodepath}_env/" "1"
         if [[ -z ${_envarrkeys-} || ((${#_envarrkeys} == 0)) ]]; then

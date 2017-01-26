@@ -20,9 +20,6 @@
 # Space Packer tool
 #
 
-_source "${CWD}/tools/spacedoc/Spacefile.bash"
-_source "${CWD}/tools/manpage_exporter/Spacefile.sh"
-
 # Check if command is available
 SPACE_PACKER_CHECK_AVAILABLE()
 {
@@ -196,4 +193,3 @@ SPACE_PACKER_MAKE()
     fi
 
 }
-

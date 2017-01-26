@@ -438,7 +438,19 @@ _transform_to_yaml()
         fi
     else
         # Is leaf.
-        printf "%s%s%s%s\n" "$_indent" "$_node" ": " "${_value//$'\n'/\\n}"
+        if [ "${_value//$'\n'}" != "${_value}" ]; then
+            local _trailingnewline="-"
+            if [ "${_value: -1}" = $'\n' ]; then
+                _trailingnewline=""
+                _value="${_value:0:$((${#_value}-1))}"
+            fi
+            local _multiline="${_indent}    ${_value//$'\n'/$'\n'$_indent    }"
+            printf "%s%s%s\n" "$_indent" "$_node" ": |${_trailingnewline}"
+            printf "%s\n" "${_multiline}"
+        else
+            # We might want to split up long strings using multiline.
+            printf "%s%s%s%s\n" "$_indent" "$_node" ": " "${_value}"
+        fi
     fi
 }
 

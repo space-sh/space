@@ -4994,18 +4994,22 @@ _cmd_extract_space_header ()
     # together with the function arguments.
     if (( ${#_spacelines[@]} > 0 )); then
         trap '_error "Could not evaluate SPACE_ headers for ${_fn_name}."; trap - EXIT; return 1;' EXIT
-        local _fns=
-        printf -v _fns "%s\n" "${_spacelines[@]}"
-        # TODO: this eval must be replaced by variable subst.
         _escape "_given_args" '$'
-        _fns="_set_args() {"$'\n'"${_fns}}"$'\n'"_set_args ${_given_args}"$'\n'
-        eval "$_fns"
-        if (( $? > 0 )); then
-            _error "Could not evaluate function header of ${_fn_name} to set SPACE_ variables."
-            trap - EXIT
-            return 1
-        fi
+        # We'll evaluate one row at a time, to let definitions "sink in" before next row is evaluated.
+        local _row=
+        local _fns=
+        for _row in "${_spacelines[@]}"; do
+            _fns="_set_args() {"$'\n'"${_row}"$'\n'"}"$'\n'"_set_args ${_given_args}"$'\n'
+            # TODO: this eval must be replaced by variable subst.
+            eval "$_fns"
+            if (( $? > 0 )); then
+                _error "Could not evaluate function header of ${_fn_name} to set SPACE_ variables."
+                trap - EXIT
+                return 1
+            fi
+        done
         unset _fns
+        unset _row
         trap - EXIT
     fi
     unset _spacelines

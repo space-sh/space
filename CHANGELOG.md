@@ -1,5 +1,57 @@
 # Space - Change log
 
+## [current]
+
+
+## [0.12.0 - 2017-01-26]
+
++ Add trap for `_split_args` to catch syntax errors
+
++ Add `_BASHBIN` global
+
++ Add `SPACE_BUILD_{ENV,DEP,ARGS}` Space headers
+
++ Add `YIELD` function
+
++ Add better error handling for `_split_args`
+
++ Add `SPACE_BUILD` variables to wrapper functions
+
++ Add slashes constraint for preprocessing node filters
+
++ Add `@source` functionality to preprocessing
+
++ Add better help for `-M` option
+
++ Add support for multiple `@clone` on same node
+
++ Add support for multiple `@source` on same node
+
+* Change `printf` subshells to `printf -v` instead
+
+* Fix a bug in `_cmd_export_vars`
+
+* Change build functions to run in restricted Bash subshells
+
+* Rename `clone` to `_clone`
+
+* Change YAML parser to read and count empty lines
+
+* Change source module file behaviour to not source file at all
+
+* Change all printf calls for color and style to go to stderr
+
+* Change `_transform_to_yaml` to output proper multilines instead of `\n\n`
+
+* Change `SPACE` header variables to be evaluated one at a time
+
+- Remove `_split_quoted` function
+
+- Remove `@assert`
+
+- Remove `@assign`
+
+
 ## [0.11.0 - 2017-01-22]
 
 + Add build node to base _Space_ module

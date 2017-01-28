@@ -33,9 +33,9 @@ When running **Space**, the following steps occur:
 
   * `-f` [Spacefile.yaml]:
         YAML file to load, relative or absolute path. Both `-f` and `-m` options define namespaces in where to look for nodes, for a given dimension of nodes. There can be maximum three namespaces and three dimensions. One namespace can have more than one dimension. Dimension two and three could be found from namespace one below the node in dimension 1.  
-        If only one dimension is given Space looks below `node/_dimensions/second` for a space separated set of lists that makes up the second dimension.  
+        If only one dimension is given, **Space** looks below `node/_dimensions/second` for a space separated set of lists that makes up the second dimension.  
         The second dimension then uses second namespace if defined else first namespace.
-        If two dimensions are given Space looks below `node/_dimensions/third` for a space separated list, each list object's "match" node is matched against the node in the second dimension, if match then the list below "nodes" makes up the third dimension.
+        If two dimensions are given **Space** looks below `node/_dimensions/third` for a space separated list, each list object's "match" node is matched against the node in the second dimension, if match then the list below "nodes" makes up the third dimension.
         The third dimension then uses third namespace if defined else first namespace.  
         Defaults to: ./Spacefile.yaml.
 
@@ -43,7 +43,7 @@ When running **Space**, the following steps occur:
         Module to run.  
         Direct access to run nodes in a module.  
         Modules are referenced as protocol://user@domain/username/reponame:commit, for example https://gitlab.com/space-sh/os:master  
-        Only the Space specific user gitlab.com/space-sh could be denoted using only reponame, then username is set to space-sh and giturl is set to https://gitlab.com/.  
+        Only the Space specific user gitlab.com/space-sh could be denoted using only reponame, then username is set to `space-sh` and giturl is set to https://gitlab.com/.  
         All other users must specify domainname/username/reponame, for example ssh://gitlab.com/username/somemodule.  
         The protocol defaults to https.  
 
@@ -86,20 +86,20 @@ When running **Space**, the following steps occur:
         Allow HTTPS fallback for downloading modules using curl or wget when git is not available.  
 
   * `-h`:
-        Help, show Space usage or help on specific node.  
+        Help, show **Space** usage or help on specific node.  
         Node(s) Pattern of one or many nodes to run.  
         If no node path is given the root node "/" is implied.  
-        If node path(s) are given but none matches then Space aborts.  
+        If node path(s) are given but none matches then **Space** aborts.  
         A node pattern is defined after a namespace (-f/-m) and then belongs to that namespace.  
         Nodes support regular expressions to run multiple nodes in sequence.  
         Ex: "/west/.*" will match all nodes below /west/,
           "/we.*/ will match /west/ and /web/ nodes.  
-        When using asterisk make sure you use quotes so that Bash will not expand that before passing it to Space as arguments.  
+        When using asterisk make sure you use quotes so that Bash will not expand that before passing it to **Space** as arguments.  
         /we{st,b}/ without quotes will get expanded by Bash as two arguments  
-        /west/ and /web/ that are passed to Space, which is cool of that is what you meant.
+        /west/ and /web/ that are passed to **Space**, which is cool of that is what you meant.
 
   * `-V`:
-        Show Space version information
+        Show **Space** version information
 
   * `-a`:
         All. Adds a ".*" to the node it suffixes, to match all it's nodes below.
@@ -113,7 +113,7 @@ When running **Space**, the following steps occur:
 
   * `-U`:
         Update module(s). Performs a Git pull on matched module(s) then quit.  
-        Space will update repositories both in local space_modules and also in shared space_modules directories.  
+        **Space** will update repositories both in local Space_Modules and also in shared Space_Modules directories.  
         -U ""    means update all modules.  
         -U "ssh" means update gitlab.com/space-sh/ssh.  
         -U "gitlab.com/blockie-org/ssh" means update gitlab.com/blockie-org/ssh repository.  
@@ -151,7 +151,7 @@ Default: ~/.space/space_modules
 
 ## YAML SYNTAX
 
-The YAML syntax supported in Space is a subset of the standard.
+The YAML syntax supported in **Space** is a subset of the standard.
 Nodes without any value are ignored.
 To set a node to an empty string:  
 
@@ -223,7 +223,7 @@ But at observation date would be: \$(date)
        keybb: bbb
 ```  
 
-   Space YAML supports a kind of list, it's an associative array with numeric keys. When fetching all keys for a list the key names are guaranteed to come sorted so the order of the list is preserved if keys are numbers.  
+   **Space** YAML supports a kind of list, it's an associative array with numeric keys. When fetching all keys for a list the key names are guaranteed to come sorted so the order of the list is preserved if keys are numbers.  
 
 ```
    node:
@@ -233,7 +233,7 @@ But at observation date would be: \$(date)
 
 ### SPECIAL KEYS
 
-All nodes with names beginning with an underscore are treated as hidden nodes and cannot be referenced from command line. They also might have special meaning to Space.
+All nodes with names beginning with an underscore are treated as hidden nodes and cannot be referenced from command line. They also might have special meaning to **Space**.
 
   * `_info`:
    Used purely for information and documentation about a node.
@@ -284,7 +284,7 @@ Preprocessing variable assignments, usage and directives:
 The current processed YAML files directory.
 
 * `@{CWD}`: 
-The directory from where Space was invoked.
+The directory from where **Space** was invoked.
 
 * `@{PARENT}`:
 The current parent node name.
@@ -344,12 +344,12 @@ The following keywords are functions and cannot be used as preprocess variables:
         Adding the dash will ignore a missing YAML file. Also it's subdoc will be ignored.
 
   * `@include: [username/]repo`:  
-        Instead of including filenames you could name a module then Space will search for the right module and YAML file to include.
+        Instead of including filenames you could name a module then **Space** will search for the right module and YAML file to include.
 
 ## INTERNAL VARIABLES
 
   * `CWD`:
-        The directory from where the user invoked space.
+        The directory from where the user invoked **Space**.
   * `DIR`:
     The directory of where the sourced Bash file is located.
     Use this as "_source ${DIR}/somefile.bash" in the module bash file header.
@@ -367,7 +367,7 @@ These are set from the YAML structure and modules Bash files or with command lin
         Set in YAML or using -eARGS= switch.
 
   * `RUN_ALIAS`:
-        If set to a node name space will reinvoke running that node instead. Arguments will get passed on just like the would on command line using --.  
+        If set to a node name **Space** will reinvoke running that node instead. Arguments will get passed on just like the would on command line using --.  
         Not inherited between nodes, just as RUN.  
         RUN_ALIAS shadows RUN.
 
@@ -403,10 +403,10 @@ These are set from the YAML structure and modules Bash files or with command lin
   * `SPACE_SILENT`:
         If this is set in YAML (or using -e) to "1", then the return status of RUN will be ignored.
 
-When RUN points to a function name, that function will be parsed for Space header variables, which are on the format "SPACE_xyz=value". Header variables must be at the absolute top of the function to be considered header variables. These are the header variables available to be put at the top of your module functions to which RUN refers to.
+When RUN points to a function name, that function will be parsed for **Space** header variables, which are on the format "SPACE_xyz=value". Header variables must be at the absolute top of the function to be considered header variables. These are the header variables available to be put at the top of your module functions to which RUN refers to.
 
   * `SPACE_SIGNATURE="arg1 arg2 [optarg1 optarg2]"`:
-        Describes the number of arguments that the function is expecting. Space
+        Describes the number of arguments that the function is expecting. **Space**
         will exit with error if not fulfilled. Bracketed arguments are optional.
 
   * `SPACE_DEP="FUNC2 PRINT"`:
@@ -414,8 +414,8 @@ When RUN points to a function name, that function will be parsed for Space heade
        on. All those functions will be exported together with the referring function.
        Those function modules must have been cloned (and automatically included)
        by issuing "clone mod1 mod2" in the referrings modules script file.
-       PRINT is a function that is provided by Space for export for outputting text.
-       Always overwritten by the space header if present, and each function that
+       PRINT is a function that is provided by **Space** for export for outputting text.
+       Always overwritten by the Space Header if present, and each function that
        is dependant on other functions should always set their own SPACE_DEP.
        All dependency functions and their dependencies will be exported, also their
        SPACE_ENV will get added to the first functions SPACE_ENV.
@@ -425,7 +425,7 @@ When RUN points to a function name, that function will be parsed for Space heade
        These variables will be evaluated at build time to reflect values set in
        the YAML or present for other reasons. "var=\${var-defaultvalue}" means
        Default value taken from SPACE_ENV variable. Which could be set in the YAML.
-       Always overwritten by the space header if present, and each function that
+       Always overwritten by the Space Header if present, and each function that
        is dependant on environment variables should always set their own SPACE_ENV.
        It is important not to introduce spaces in values inside the SPACE_ENV
        variable, because it will result in syntax error. Always escape default
@@ -433,12 +433,12 @@ When RUN points to a function name, that function will be parsed for Space heade
 
   * `SPACE_REDIR`:
        Default value taken from SPACE_REDIR variable. Which could be set in the YAML.
-       Only read from space header if not already set in the environment when building.
+       Only read from Space Header if not already set in the environment when building.
        Only settable from the first level function (not from the wrappers).
 
   * `SPACE_OUTER`:
        Default value taken from SPACE_OUTER variable. Which could be set in the YAML.
-       Only read from space header if not already set in the environment when building.
+       Only read from Space Header if not already set in the environment when building.
        Only settable from the first level function (not from the wrappers).
 
   * `SPACE_OUTERDEP`:
@@ -449,17 +449,17 @@ When RUN points to a function name, that function will be parsed for Space heade
 
   * `SPACE_ARGS`:
        Default value taken from SPACE_ARGS variable. Which could be set in the YAML.
-       Always overwritten by the space header if present.
+       Always overwritten by the Space Header if present.
 
   * `SPACE_FN`:
        If this variable is set, the function that it refers to will replace the
        current function as being the RUN.
        The referring RUN functions body will be run at this point giving the
-       function very powerful ways of altering the environment variables and space
-       header variables.
+       function very powerful ways of altering the environment variables and Space
+       Header variables.
        For example the function body of the chaining command could do "SPACE_REDIR=..."
        to override a value that is already set, but which could not have been overwritten
-       simply using the space header variables, since SPACE_REDIR is not allowed
+       simply using the Space Header variables, since SPACE_REDIR is not allowed
        to be overwritten in that manner.
        A chained function could chain to another function, etc. All the above variable
        extraction rules apply.
@@ -476,9 +476,9 @@ When RUN points to a function name, that function will be parsed for Space heade
        The first name in the list is the innermost wrapper and the last name is
        the outermost wrapper.
        Default value taken from SPACE_WRAP variable. Which could be set in the YAML.
-       Always prepended by the space header if present, meaning that each function
+       Always prepended by the Space Header if present, meaning that each function
        could define a wrapper and all wrappers will be used.  
-       A function that is a wrapper uses a limited set of the space headers.
+       A function that is a wrapper uses a limited set of the Space Headers.
        Good to know is that wrapper functions do not get the arguments that the
        original function gets, meaning that a wrapper function should not use the
        SPACE_SIGNATURE header. However the wrapper function often refers to another.

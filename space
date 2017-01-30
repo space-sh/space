@@ -4324,9 +4324,9 @@ _execute()
                     _cmd_export_vars "${_fn_env}" "${_fn_name}"
                     (( $? > 0 )) && return 1
 
-                    push "_fn_def"
-                    push "_fn_call"
-                    push "_export_vars"
+                    _push "_fn_def"
+                    _push "_fn_call"
+                    _push "_export_vars"
                 }
                 _spacegal_context
                 (( $? > 0 )) && return 1
@@ -4341,9 +4341,9 @@ _execute()
         local _i=
         for ((_i=1; _i<$((_wrappers+1)); _i+=1)); do
             _wrapped_fn_def="# BEGIN WRAP ${_i}"$'\n'"RUN=\$(cat <<\"${_i}${_SPACEGAL_EOF_TAG}\""$'\n'"set -u"$'\n'$'\n'"${_wrapped_fn_def}${_export_vars}${_fn_def}${_fn_call}"$'\n\n'"${_i}${_SPACEGAL_EOF_TAG}"$'\n'")"$'\n'"# END WRAP ${_i}"$'\n\n'
-            pop "_export_vars"
-            pop "_fn_call"
-            pop "_fn_def"
+            _pop "_export_vars"
+            _pop "_fn_call"
+            _pop "_fn_def"
         done
         unset _i
         unset _wrappers
@@ -5413,7 +5413,7 @@ _apply_cmd_env()
 }
 
 #=============
-# push
+# _push
 #
 # Push variable onto stack.
 # Note: Only handles strings, for now.
@@ -5422,7 +5422,7 @@ _apply_cmd_env()
 #   $1: variable name
 #
 #=============
-push()
+_push()
 {
     ((_STACK_POINTER+=1))
 
@@ -5431,7 +5431,7 @@ push()
 }
 
 #=============
-# pop
+# _pop
 #
 # Pop variable from stack.
 #
@@ -5439,7 +5439,7 @@ push()
 #   $1: variable name to pop into.
 #
 #=============
-pop()
+_pop()
 {
     if ((_STACK_POINTER == 0)); then
         return 1;

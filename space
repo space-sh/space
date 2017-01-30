@@ -2788,6 +2788,12 @@ _main()
         local _parsedyaml=()
         local _parsedyamlcompletion=()
 
+        if [[ $_DEBUG_OUTPUT_PREPROCESSED == "1" ]]; then
+            # Output divider between namespaces if more than 1.
+            if [ "${#_namespaces[@]}" -gt 1 ]; then
+                printf "\n%s\n" "# Namespace ${_counter} follows:"
+            fi
+        fi
         _load_yaml
         local _status=$?
         if (( _status > 0 )); then

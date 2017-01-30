@@ -3112,6 +3112,9 @@ _main()
 
     local _status=0
     local _nodecombo=
+    local _dimorder=""
+    _YAML_NAMESPACE=1
+    _copy "_dimorder" "/_dimensions_order"
     for _first in "${_dim1[@]}"; do
     _context()
     {
@@ -3140,12 +3143,12 @@ _main()
                     if (( ${#_dim3[@]} > 0 )); then
                         for _third in "${_dim3[@]}"; do
                             printf -v _nodecombo "%s:%s %s:%s %s:%s" "$_dim1ns" "$_first" "$_dim2ns" "$_second" "$_dim3ns" "$_third"
-                            _exec_dimensions "$_dim1ns" "$_first" "$_dim2ns" "$_second" "$_dim3ns" "$_third" "$@"
+                            _exec_dimensions "$_dim1ns" "$_first" "$_dim2ns" "$_second" "$_dim3ns" "$_third" "$_dimorder" "$@"
                             _status=$?
                             (( _status > 0 )) && break
                         done
                     else
-                        _exec_dimensions "$_dim1ns" "$_first" "$_dim2ns" "$_second" "" "" "$@"
+                        _exec_dimensions "$_dim1ns" "$_first" "$_dim2ns" "$_second" "" "" "$_dimorder" "$@"
                         _status=$?
                     fi
                 }
@@ -3153,7 +3156,7 @@ _main()
                 (( _status > 0 )) && break
             done
         else
-            _exec_dimensions "$_dim1ns" "$_first" "" "" "" "" "$@"
+            _exec_dimensions "$_dim1ns" "$_first" "" "" "" "" "$_dimorder" "$@"
             _status=$?
         fi
     }
@@ -3196,7 +3199,6 @@ _get_second_dimension()
     _YAML_NAMESPACE=1
     local _l=()
     _list "_l" "/_dimensions/" "1"
-    _debug "dimensions ${_l[@]-}"
 
     if (( ${#_l[@]} > 0 )); then
         local _i=
@@ -3231,12 +3233,16 @@ _get_second_dimension()
                             _error "Friend nodes defined for second dimension but then not found in namespace ${_ns}: ${_second}."
                             return 1
                         fi
-                        _debug "Friends _dimensions/${_i}$_first+$_second matched ${#_nodes[@]} nodes for second dimension in namespace ${_ns}."
+                        _debug "Friends _dimensions/${_i}/ Pattern: $_first $_second matched ${#_nodes[@]} nodes for second dimension in namespace ${_ns}."
                         _dim2+=("${_nodes[@]}")
                     done
                     break # No point checking next first if current matched.
                 fi
             done
+            if [ "${#_dim2[@]}" -gt 0 ]; then
+                # Quit
+                break 2
+            fi
         done
     fi
 }
@@ -3320,12 +3326,16 @@ _get_third_dimension()
                                     _error "Friend nodes defined for third dimension but then not found in namespace ${_ns}: ${_third}."
                                     return 1
                                 fi
-                                _debug "Friends _dimensions/${_i}$_first+$_second+$_third matched ${#_nodes[@]} nodes for second dimension in namespace ${_ns}."
+                                _debug "Friends _dimensions/${_i}/ Pattern: $_first $_second $_third matched ${#_nodes[@]} nodes for third dimension in namespace ${_ns}."
                                 _dim3+=("${_nodes[@]}")
                             done
                             break # No point in checkin further.
                         fi
                     done
+                    if [ "${#_dim3[@]}" -gt 0 ]; then
+                        # Exit
+                        break 2
+                    fi
                     break # No point in checkin further.
                 fi
             done
@@ -3359,6 +3369,53 @@ _exec_dimensions()
 
     local _node3=$1
     shift
+
+    local _dimorder=$1
+    shift
+
+    if [ -n "${_dimorder}" ]; then
+        # Arrange dimensions and their namespaces according to _dimorder.
+        _debug "The dimension order specified is: ${_dimorder}."
+        if [[ -n $_node3 ]]; then
+            local _i=
+            for _i in ${_dimorder}; do
+                _debug "Push $_i"
+                if [ "${_i}" -eq 1 ]; then
+                    _push "_ns1"
+                    _push "_node1"
+                elif [ "${_i}" -eq 2 ]; then
+                    _push "_ns2"
+                    _push "_node2"
+                elif [ "${_i}" -eq 3 ]; then
+                    _push "_ns3"
+                    _push "_node3"
+                fi
+            done
+            _pop "_node3"
+            _pop "_ns3"
+            _pop "_node2"
+            _pop "_ns2"
+            _pop "_node1"
+            _pop "_ns1"
+        elif [[ -n $_node2 ]]; then
+            _push "_node2"
+            _push "_ns2"
+            _push "_node1"
+            _push "_ns1"
+            local _i=
+            for _i in ${_dimorder}; do
+                if [ "${_i}" -eq 1 ]; then
+                    _pop "_ns1"
+                    _pop "_node1"
+                elif [ "${_i}" -eq 2 ]; then
+                    _pop "_ns2"
+                    _pop "_node2"
+                else
+                    continue
+                fi
+            done
+        fi
+    fi
 
     local _nodecombo=
     printf -v _nodecombo "%s%s%s" "$_node1" "${_node2:+ $_node2}" "${_node3:+ $_node3}"

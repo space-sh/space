@@ -100,7 +100,8 @@ centos_test_all:
   stage: test
   image: centos:latest
   script:
-    - yum -y update && yum -y install curl git which
+    - yum -y update
+    - yum -y install curl git which
     - mkdir ~/.ssh
     - printf "Host *\n StrictHostKeyChecking no" > ~/.ssh/config
     - which bash
@@ -115,7 +116,8 @@ debianjessie_test_all:
   stage: test
   image: debian:jessie
   script:
-    - apt-get update -qq && apt-get install -y -qq curl git
+    - apt-get update -qq
+    - apt-get install -y -qq curl git
     - mkdir ~/.ssh
     - printf "Host *\n StrictHostKeyChecking no" > ~/.ssh/config
     - which bash
@@ -129,7 +131,8 @@ debianjessie_curl_test_all:
   stage: test
   image: debian:jessie
   script:
-    - apt-get update -qq && apt-get install -y -qq curl
+    - apt-get update -qq
+    - apt-get install -y -qq curl
     - mkdir ~/.ssh
     - printf "Host *\n StrictHostKeyChecking no" > ~/.ssh/config
     - which bash
@@ -143,7 +146,8 @@ debianjessie_wget_test_all:
   stage: test
   image: debian:jessie
   script:
-    - apt-get update -qq && apt-get install -y -qq wget
+    - apt-get update -qq
+    - apt-get install -y -qq wget
     - mkdir ~/.ssh
     - printf "Host *\n StrictHostKeyChecking no" > ~/.ssh/config
     - which bash
@@ -157,7 +161,8 @@ debianlatest_test_all:
   stage: test
   image: debian:latest
   script:
-    - apt-get update -qq && apt-get install -y -qq curl git
+    - apt-get update -qq
+    - apt-get install -y -qq curl git
     - mkdir ~/.ssh
     - printf "Host *\n StrictHostKeyChecking no" > ~/.ssh/config
     - which bash

@@ -1,0 +1,79 @@
+A:
+    0:
+        final: |-
+            A string value
+            A multiline
+            value here
+            A string value
+    1:
+        final: A string value A multiline value here A string value
+        o: 1
+    2: A string value A multiline value here A string value
+    3: |-
+        A string value
+        A multiline
+        value here
+        A string value
+    4: |
+        A string valueA multilinevalue hereA string value
+B:
+    b1: Another string
+    b2: Even More multiline strings
+    b3: |
+        Further More
+        multiline
+        strings
+        A multiline
+        value here
+        A string value
+    b4: |-
+        Much of More
+        multiline
+        strings
+        A string value
+C:
+    c1: |
+        -- Here comes /A/.*
+        A string value
+        A multiline
+        value here
+        A string value
+        1
+        A string value
+        A multiline
+        value here
+        A string value
+        A string value
+        A multiline
+        value here
+        A string value
+        A string value
+        A multiline
+        value here
+        A string value
+        A string value
+        A multiline
+        value here
+        A string value
+        -- Here comes /B/.*
+        Another string
+        More
+        multiline
+        strings
+        Even More
+        multiline
+        strings
+        Further More
+        multiline
+        strings
+        A multiline
+        value here
+        A string value
+        Much of More
+        multiline
+        strings
+        A string value
+        -- end
+str1: A string value
+str2: |
+    A multiline value here A string value

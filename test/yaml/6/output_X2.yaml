@@ -1,0 +1,73 @@
+_sg1_str1=A string value
+_sg1_str2=A multiline value here A string value
+
+_sg1_A_0_final=A string value
+A multiline
+value here
+A string value
+_sg1_A_1_o=1
+_sg1_A_1_final=A string value A multiline value here A string value
+_sg1_A_2=A string value A multiline value here A string value
+_sg1_A_3=A string value
+A multiline
+value here
+A string value
+_sg1_A_4=A string valueA multilinevalue hereA string value
+
+_sg1_B_b1=Another string
+_sg1_B_b2=More multiline strings
+
+_sg1_B_b2=Even More multiline strings
+_sg1_B_b3=Further More
+multiline
+strings
+A multiline
+value here
+A string value
+
+_sg1_B_b4=Much of More
+multiline
+strings
+A string value
+_sg1_C_c1=-- Here comes /A/.*
+A string value
+A multiline
+value here
+A string value
+1
+A string value
+A multiline
+value here
+A string value
+A string value
+A multiline
+value here
+A string value
+A string value
+A multiline
+value here
+A string value
+A string value
+A multiline
+value here
+A string value
+-- Here comes /B/.*
+Another string
+More
+multiline
+strings
+Even More
+multiline
+strings
+Further More
+multiline
+strings
+A multiline
+value here
+A string value
+Much of More
+multiline
+strings
+A string value
+-- end
+

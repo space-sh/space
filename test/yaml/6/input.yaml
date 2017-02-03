@@ -1,0 +1,71 @@
+#
+# Copyright 2016-2017 Blockie AB
+#
+# This file is part of Space.
+#
+# Space is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation version 3 of the License.
+#
+# Space is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with Space.  If not, see <http://www.gnu.org/licenses/>.
+#
+
+---
+# Test @include from within multilines.
+str1: A string value
+str2: >
+    A multiline
+    value here
+    @include: |/str1
+
+A:
+    # Using regex is ok
+    # ending with $ is recommended for "open" node paths.
+    - final: |-
+          @include: |/str.$
+    - o: 1
+      final: >-
+          @include: |/str1$
+          @include: |/str2$
+    - >-
+          @include: |/str1$
+          @include: |/str2$
+    - |-
+          @include: |/str1$
+          @include: |/str2$
+    - !nospace >
+          @include: |/str1$
+          @include: |/str2$
+B:
+    b1: Another string
+    b2: >
+        More
+        multiline
+        strings
+    b2: >-
+        Even More
+        multiline
+        strings
+    b3: |
+        Further More
+        multiline
+        strings
+        @include: |/str2$
+    b4: |-
+        Much of More
+        multiline
+        strings
+        @include: |/str1$
+C:
+    c1: |
+        -- Here comes /A/.*
+        @include: |/A/.*
+        -- Here comes /B/.*
+        @include: |/B/.*
+        -- end

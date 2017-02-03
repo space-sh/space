@@ -925,16 +925,6 @@ _pp_yaml()
         shift
         _count=$(( _count + 1 ))
     done
-    if [[ ${_filter:0:1} != "/" ]]; then
-        _error "Make sure the preprocessing include filter starts with a slash (/), \"${_filter}\" does not."
-        return 1
-        _filter="/$_filter"
-    fi
-    if [[ ${_filter: -1} != "/" ]]; then
-        _error "Make sure the preprocessing include filter ends with a slash (/), \"${_filter}\" does not."
-        return 1
-        _filter="$_filter/"
-    fi
     local _subdoc=()
     if [[ -n ${_readahead[@]-} && (( ${#_readahead[@]} > 0 )) ]]; then
         _subdoc=("${_readahead[@]}")  # Inherited from recursive parent.
@@ -985,6 +975,7 @@ _pp_yaml()
     local _indent=0 _rowtype='' _key='' _readahead=() _nextindent=0
     local _includefile='' _includefilter='' _includevariables=''
     local _arrayextraindent=0 _output=''
+    local _isarrayobjectfiltered=0
     while _yaml_get_next 1;
     do
         if [ "$_rowtype" = "" ]; then
@@ -1008,7 +999,7 @@ _pp_yaml()
         local _immediatechild=0
 
         # Check if filtering wants this.
-        if [[ "$_prefix$_key" =~ ^$_filter ]]; then
+        if [[ "$_prefix$_key" =~ ^$_filter ]] || [[ -z $_key && "$_prefix${_key}.*" =~ ^$_filter ]]; then
             # Filter matched, if first time save indent as the base level indent.
             if [ "$_filterindent" -eq -1 ]; then
                 _filterindent=$_indent
@@ -1122,18 +1113,37 @@ _pp_yaml()
                 ;;
             leaf) # A regular key value row.
                 local _i=$(($_indent-$_filterindent+$_inheritedindent))
-                if [ "${#value}" -eq 0 ]; then
-                    printf -v _output "%*s%s" $_i "" "$_key:"
+                if [[ "$_prefix$_key" =~ ^$_filter$ ]]; then
+                    # Filter is for leaf content.
+                    if [ "${_isarrayobjectfiltered}" = "1" ]; then
+                        _i=$((_i-2))
+                    fi
+                    if [ "${value}" != "" ] && [ "${value:0:1}" != ">" ] && [ "${value:0:1}" != "|" ] && [ "${value:0:1}" != "!" ]; then
+                        printf -v _output "%*s%s" $_i "" "$value"
+                        eval "$_varname+=(\"\$_output\")"
+                    fi
                 else
-                    printf -v _output "%*s%s" $_i "" "$_key: $value"
-                fi
-                eval "$_varname+=(\"\$_output\")"
-                if ((${#_readahead[@]} > 0)); then
+                    if [ "${#value}" -eq 0 ]; then
+                        printf -v _output "%*s%s" $_i "" "$_key:"
+                    else
+                        printf -v _output "%*s%s" $_i "" "$_key: $value"
+                    fi
+                    eval "$_varname+=(\"\$_output\")"
                     _i=$(( _i + 4 ))
+                fi
+                if ((${#_readahead[@]} > 0)); then
                     local _line=
                     for _line in "${_readahead[@]}"; do
-                        printf -v _output "%*s%s" $_i "" "$_line"
-                        eval "$_varname+=(\"\$_output\")"
+                        if [[ $_line =~ ^(\@include)[\ ]*:(-?)[\ ]+(.*) ]]; then
+                            _yaml_pp_multiline_include "$_i"
+                            local _status=$?
+                            if [ $_status -gt 0 ]; then
+                                return $_status
+                            fi
+                        else
+                            printf -v _output "%*s%s" $_i "" "$_line"
+                            eval "$_varname+=(\"\$_output\")"
+                        fi
                     done
                 fi
                 ;;
@@ -1149,21 +1159,48 @@ _pp_yaml()
                 # Output key index at given indent, also readahead.
                 local _i2=$(($_indent-$_filterindent+$_inheritedindent))
                 local _i3=$(($_arrayextraindent-1))
-                local _i4=$(($_i2+$_i3+4))
-                if [ -z "$_key" ]; then
-                    # index item
-                    printf -v _output "%*s-%*s%s" $_i2 "" $_i3 "" "$value"
-                elif [ -n "$value" ]; then
-                    printf -v _output "%*s-%*s%s" $_i2 "" $_i3 "" "$_key: $value"
+                _isarrayobjectfiltered=0
+                if [[ -n $_key && $_prefix$_key =~ ^$_filter$ ]] || [[ -z $_key && "$_prefix${_key}.*" =~ ^$_filter$ ]]; then
+                    # Handle "/.*" filtering.
+                    if [ "${value}" != "" ] && [ "${value:0:1}" != ">" ] && [ "${value:0:1}" != "|" ] && [ "${value:0:1}" != "!" ]; then
+                        if [ -z "$_key" ]; then
+                            # index item
+                            printf -v _output "%*s%s" $_i2 "" "$value"
+                            eval "$_varname+=(\"\$_output\")"
+                        elif [ -n "$value" ]; then
+                            printf -v _output "%*s%s" $_i2 "" "$value"
+                            eval "$_varname+=(\"\$_output\")"
+                        fi
+                    else
+                        _i2=$((_i2-4))
+                    fi
+                    _i3=0
+                    _isarrayobjectfiltered=1
                 else
-                    printf -v _output "%*s-%*s%s" $_i2 "" $_i3 "" "$_key:"
+                    if [ -z "$_key" ]; then
+                        # index item
+                        printf -v _output "%*s-%*s%s" $_i2 "" $_i3 "" "$value"
+                    elif [ -n "$value" ]; then
+                        printf -v _output "%*s-%*s%s" $_i2 "" $_i3 "" "$_key: $value"
+                    else
+                        printf -v _output "%*s-%*s%s" $_i2 "" $_i3 "" "$_key:"
+                    fi
+                    eval "$_varname+=(\"\$_output\")"
                 fi
-                eval "$_varname+=(\"\$_output\")"
+                local _i4=$(($_i2+$_i3+4))
                 if ((${#_readahead[@]} > 0)); then
                     local _line=
                     for _line in "${_readahead[@]}"; do
-                        printf -v _output "%*s%s" $_i4 "" "$_line"
-                        eval "$_varname+=(\"\$_output\")"
+                        if [[ $_line =~ ^(\@include)[\ ]*:(-?)[\ ]+(.*) ]]; then
+                            _yaml_pp_multiline_include "$_i4"
+                            local _status=$?
+                            if [ $_status -gt 0 ]; then
+                                return $_status
+                            fi
+                        else
+                            printf -v _output "%*s%s" $_i4 "" "$_line"
+                            eval "$_varname+=(\"\$_output\")"
+                        fi
                     done
                 fi
                 ;;
@@ -1171,6 +1208,64 @@ _pp_yaml()
         unset _parentpath
     done
 }
+
+#==========
+# _yaml_pp_multiline_include
+#
+# Macro helper function for handling
+# @include directives inside multiline variables.
+#
+# Parameters
+#   $1: indent used in multiline
+#
+# Expects:
+#   To have $BASH_REMATCH:
+#     if [[ $_line =~ ^(\@include)[\ ]*:(-?)[\ ]+(.*) ]]; then
+#
+#==========
+_yaml_pp_multiline_include()
+{
+    local _i=$1
+    shift
+
+    local _readahead=
+    local _row= _rowtype=
+    local _op=${BASH_REMATCH[2]}
+    local _value=${BASH_REMATCH[3]}
+    local _includevariables=
+    local _includefile=
+    local _includefilter=
+    local _includevariables=
+    if [[ $_value =~ ^(.*)[\ ]*\|[\ ]*(.*) ]]; then
+        _includefile=${BASH_REMATCH[1]}
+        local _s=${BASH_REMATCH[2]}
+        if [[ $_s =~ (.*)\((.*)\)$ ]]; then
+            _includefilter=${BASH_REMATCH[1]}
+            _includevariables=${BASH_REMATCH[2]}
+        else
+            _includefilter=$_s
+        fi
+    else
+        _includefile=$_value
+        _includefilter=""
+    fi
+    # Check if $_includefile is a module
+    if [[ -n $_includefile && ! $_includefile =~ \.yaml$ ]]; then
+        _module_find_yaml "$_includefile" "_includefile"
+    fi
+    if [ -n "${_includefile}" ] && [ ! -f "$_includefile" ]; then
+        if [ "$_op" = "-" ]; then
+            # Ignore missing yaml file.
+            continue
+        else
+            _error "[$_filepath: $(($_rowindex))] Could not find file \"$_includefile\"."
+            return 1
+        fi
+    fi
+
+    _pp_yaml "$_varname" "${_includefile:-$_filepath}" "$_includefilter" $_i "${_parentpath}" $_includevariables
+}
+
 
 #==========
 # _yaml_get_row
@@ -1448,7 +1543,7 @@ _yaml_get_next()
         # Unknown row
         if [[ $_row =~ ^[\ ]*([^\#^\ ].*) ]]; then
             if [ "${BASH_REMATCH[1]}" != "---" ] && [ "${BASH_REMATCH[1]}" != "..." ]; then
-                _warning "Can't parse the row: $_row"
+                _warning "Can't parse the row [$_rowindex]: $_row"
             fi
         fi
     fi

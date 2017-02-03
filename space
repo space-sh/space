@@ -83,7 +83,7 @@ readonly _SPACEBIN=$0
 readonly _BASEDIR=$( cd "${_SPACEBIN%/*}" 2>/dev/null && pwd )
 # Usage help string
 readonly _USAGE="Usage:
-    space [-f|m namespace [-M modules] [-ep key=value] [-c cmd] [node] [-a]] [-vkKCBX value] [-dlShg] [-- args]
+    space [-f|m namespace [-M modules] [-ep key=value] [node] [-a]] [-vkKCBX value] [-dlShg] [-- args]
     space [-hV]
     space -U [module]"
 

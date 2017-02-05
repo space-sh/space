@@ -3323,12 +3323,12 @@ _get_second_dimension()
                             return 1
                         fi
                         local _nodes=()
-                        _match_node "_parsedyamlnodelist${_YAML_PREFIX}${_ns}" "$_second"
+                        _match_node "_parsedyamlnodelist${_YAML_PREFIX}${_ns}" "$_second" "1"
                         if (( ${#_nodes[@]} == 0 )); then
                             _error "Friend nodes defined for second dimension but then not found in namespace ${_ns}: ${_second}."
                             return 1
                         fi
-                        _debug "Friends _dimensions/${_i}/ Pattern: $_first $_second matched ${#_nodes[@]} nodes for second dimension in namespace ${_ns}."
+                        _debug "_dimensions _dimensions/$((_i+1))}/ Pattern: $_first $_second matched ${#_nodes[@]} nodes for second dimension in namespace ${_ns}."
                         _dim2+=("${_nodes[@]}")
                     done
                     break # No point checking next first if current matched.
@@ -3416,12 +3416,12 @@ _get_third_dimension()
                                     return 1
                                 fi
                                 local _nodes=()
-                                _match_node "_parsedyamlnodelist${_YAML_PREFIX}${_ns}" "$_third"
+                                _match_node "_parsedyamlnodelist${_YAML_PREFIX}${_ns}" "$_third" "1"
                                 if (( ${#_nodes[@]} == 0 )); then
                                     _error "Friend nodes defined for third dimension but then not found in namespace ${_ns}: ${_third}."
                                     return 1
                                 fi
-                                _debug "Friends _dimensions/${_i}/ Pattern: $_first $_second $_third matched ${#_nodes[@]} nodes for third dimension in namespace ${_ns}."
+                                _debug "_dimensions _dimensions/$((_i+1))/ Pattern: $_first $_second $_third matched ${#_nodes[@]} nodes for third dimension in namespace ${_ns}."
                                 _dim3+=("${_nodes[@]}")
                             done
                             break # No point in checkin further.
@@ -3474,7 +3474,6 @@ _exec_dimensions()
         if [[ -n $_node3 ]]; then
             local _i=
             for _i in ${_dimorder}; do
-                _debug "Push $_i"
                 if [ "${_i}" -eq 1 ]; then
                     _push "_ns1"
                     _push "_node1"

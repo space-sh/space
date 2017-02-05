@@ -2958,30 +2958,30 @@ _main()
             if (( ${#_namespaces[@]} == 1 )); then
                 # We only have one ns so far, see if to add the second.
                 local _file=
-                _copy "_file" "/_namespaces/0/file"
+                _copy "_file" "/_namespaces/second/file"
                 local _module=
-                _copy "_module" "/_namespaces/0/module"
+                _copy "_module" "/_namespaces/second/module"
                 if [[ -n $_file ]]; then
                     _namespaces+=("file=$_file")
-                    _debug "Friends auto added namespace 2: ${_namespaces[$((${#_namespaces[@]}-1))]}."
+                    _debug "_dimensions auto added namespace 2: ${_namespaces[$((${#_namespaces[@]}-1))]}."
                 elif [[ -n $_module ]]; then
                     _namespaces+=("module=$_module")
-                    _debug "Friends auto added namespace 2: ${_namespaces[$((${#_namespaces[@]}-1))]}."
+                    _debug "_dimensions auto added namespace 2: ${_namespaces[$((${#_namespaces[@]}-1))]}."
                 fi
                 unset _file _module
             fi
             if (( ${#_namespaces[@]} == 2 )); then
                 # We only have two ns's so far, see if to add the third.
                 local _file=
-                _copy "_file" "/_namespaces/1/file"
+                _copy "_file" "/_namespaces/third/file"
                 local _module=
-                _copy "_module" "/_namespaces/1/module"
+                _copy "_module" "/_namespaces/third/module"
                 if [[ -n $_file ]]; then
                     _namespaces+=("file=$_file")
-                    _debug "Friends auto added namespace 3: ${_namespaces[$((${#_namespaces[@]}-1))]}."
+                    _debug "_dimensions auto added namespace 3: ${_namespaces[$((${#_namespaces[@]}-1))]}."
                 elif [[ -n $_module ]]; then
                     _namespaces+=("module=$_module")
-                    _debug "Friends auto added namespace 3: ${_namespaces[$((${#_namespaces[@]}-1))]}."
+                    _debug "_dimensions auto added namespace 3: ${_namespaces[$((${#_namespaces[@]}-1))]}."
                 fi
                 unset _file _module
             fi

@@ -130,7 +130,7 @@ readonly _SPACEGAL_EOF_TAG="_SPACEGAL_SAYS_END_OF_FINITY_"
 # Use caching. 0 = no, 1 = yes (default), 2 = regenerate cache.
 _CACHE_LEVEL=1
 # Internal identifier of the cache files current format.
-readonly _CACHE_FORMAT="2.1"
+readonly _CACHE_FORMAT="2.2"
 
 # Array of files that will get sourced before executing.
 # Added using _source function.

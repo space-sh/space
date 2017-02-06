@@ -260,9 +260,9 @@ $_USAGE
               -f and -m options define namespaces in where to look for nodes, for a given dimension of nodes.
               There can be maximum three namespaces and three dimensions. One namespace can have more than one dimension.
               Dimension two and three could be found from namespace one below the node in dimension 1.
-              If only one dimension is given Space looks below "node/_friends/second" for a space separated set of lists that makes up the second dimension.
+              If only one dimension is given Space looks below "node/_dimensions/second" for a space separated set of lists that makes up the second dimension.
               The second dimension then uses second namespace if defined else first namespace.
-              If two dimensions are given Space looks below "node/_friends/third" for a space separated list, each list object's "match" node is matched
+              If two dimensions are given Space looks below "node/_dimensions/third" for a space separated list, each list object's "match" node is matched
               against the node in the second dimension, if match then the list below "nodes" makes up the third dimension.
               The third dimension then uses third namespace if defined else first namespace.
           -m  [giturl/][username]/reponame module to run.

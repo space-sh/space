@@ -4234,7 +4234,7 @@ _execute()
     # in the sense that A=1 isn't treated as the command and the rest as arguments.
     local _defaultargs=
     local _RUN="${RUN}"  # Isolate this since we are changing it. As a courtesy.
-    if [[ $_RUN =~ ([^ ]+)[\ ]+(.+) ]]; then
+    if [[ $_RUN =~ ([^ ]+)[\ ]+(.*) ]]; then
         _RUN=${BASH_REMATCH[1]}
         _defaultargs=${BASH_REMATCH[2]}
         if [[ $_RUN =~ \= ]]; then
@@ -4303,8 +4303,8 @@ _execute()
     local _tmpname="" _tmpfunc=""
     _get_fn "${_RUN}" "_tmpname" "_tmpfunc"
     if [ -z "${_tmpname}" ]; then
-        # $_RUN is not a function, it's an external executable or a Bash snippet
-        _debug "RUN is snippet or executable: $_RUN"
+        # $_RUN is not a function, it's an external executable or a shell snippet
+        _debug "RUN is shell snippet or executable: $_RUN"
         # We want to create an anonymous function containing $_RUN,
         # so it then could be handled in the general way, just as any other function.
         # We create this variable, and it will be available for _get_fn to read from

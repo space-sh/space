@@ -165,7 +165,7 @@ _GENERATE_DOC()
                         elif [ "$_is_list" -eq 1 ] && [ -n "$comment" ]; then
                             printf "%s  \n" "- ${comment//_/\\_}" >> "${_doc_save_path}${_doc_tmp_funs_name}"
                         elif [ "$_is_example" -eq 1 ] && [ -n "$comment" ]; then
-                            printf "%s  \n" "\` ${comment//_/\\_} \`" >> "${_doc_save_path}${_doc_tmp_funs_name}"
+                            printf "%s  \n" "\` ${comment} \`" >> "${_doc_save_path}${_doc_tmp_funs_name}"
                         else
                             printf "%s  \n" "${comment//_/\\_}" >> "${_doc_save_path}${_doc_tmp_funs_name}"
                         fi

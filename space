@@ -3345,20 +3345,24 @@ _get_second_dimension()
                             return 1
                         fi
                         local _nodes=()
-                        _match_node "_parsedyamlnodelist${_YAML_PREFIX}${_ns}" "$_second" "1"
-                        if (( ${#_nodes[@]} == 0 )); then
-                            _error "Friend nodes defined for second dimension but then not found in namespace ${_ns}: ${_second}."
-                            return 1
+                        local _includehidden=0
+                        if [[ ${_second} =~ ^.*/_[^/]+/.*$ ]]; then
+                            _includehidden=1
                         fi
-                        _debug "_dimensions _dimensions/$((_i+1))}/ Pattern: $_first $_second matched ${#_nodes[@]} nodes for second dimension in namespace ${_ns}."
-                        _dim2+=("${_nodes[@]}")
+                        _match_node "_parsedyamlnodelist${_YAML_PREFIX}${_ns}" "$_second" "${_includehidden}"
+                        if (( ${#_nodes[@]} == 0 )); then
+                            _debug "Friend nodes defined for second dimension but then not found in namespace ${_ns}: ${_second}."
+                        else
+                            _debug "_dimensions _dimensions/$((_i+1))/ Pattern: $_first $_second matched ${#_nodes[@]} nodes for second dimension in namespace ${_ns}."
+                            _dim2+=("${_nodes[@]}")
+                        fi
                     done
-                    break # No point checking next first if current matched.
+                    break # No point checking further if current first matched.
                 fi
             done
             if [ "${#_dim2[@]}" -gt 0 ]; then
-                # Quit
-                break 2
+                # Quit if matched.
+                break
             fi
         done
     fi
@@ -3438,22 +3442,25 @@ _get_third_dimension()
                                     return 1
                                 fi
                                 local _nodes=()
-                                _match_node "_parsedyamlnodelist${_YAML_PREFIX}${_ns}" "$_third" "1"
+                                local _includehidden=0
+                                if [[ ${_third} =~ ^.*/_[^/]+/.*$ ]]; then
+                                    _includehidden=1
+                                fi
+                                _match_node "_parsedyamlnodelist${_YAML_PREFIX}${_ns}" "$_third" "${_includehidden}"
                                 if (( ${#_nodes[@]} == 0 )); then
                                     _error "Friend nodes defined for third dimension but then not found in namespace ${_ns}: ${_third}."
-                                    return 1
+                                else
+                                    _debug "_dimensions _dimensions/$((_i+1))/ Pattern: $_first $_second $_third matched ${#_nodes[@]} nodes for third dimension in namespace ${_ns}."
+                                    _dim3+=("${_nodes[@]}")
                                 fi
-                                _debug "_dimensions _dimensions/$((_i+1))/ Pattern: $_first $_second $_third matched ${#_nodes[@]} nodes for third dimension in namespace ${_ns}."
-                                _dim3+=("${_nodes[@]}")
                             done
-                            break # No point in checkin further.
+                            break # No point in check next second if already matched.
                         fi
                     done
                     if [ "${#_dim3[@]}" -gt 0 ]; then
-                        # Exit
+                        # Quit if matched.
                         break 2
                     fi
-                    break # No point in checkin further.
                 fi
             done
         done
@@ -4050,7 +4057,8 @@ _match_node()
     else
         _match=""
         for ((i=0; i<$_levels; i++)); do
-            if ((i < _levels-1)) || [[ $_includehidden == "1" ]]; then
+            #if ((i < _levels-1)) || [[ $_includehidden == "1" ]]; then
+            if [[ $_includehidden == "1" ]]; then
                 _match="${_match}/[a-zA-Z0-9_]+"
             else
                 _match="${_match}/[a-zA-Z0-9][a-zA-Z0-9_]*"

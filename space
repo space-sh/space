@@ -925,6 +925,14 @@ _pp_yaml()
         shift
         _count=$(( _count + 1 ))
     done
+    # Reset all other preprocess @include variables
+    while [ "${_count}" -lt 10 ]; do
+        # We first set the variable as local, then unset it.
+        # We can't unset it right away becaue that would unset it in the caller context.
+        eval "local _PP_$_count="
+        eval "unset _PP_$_count"
+        _count=$(( _count + 1 ))
+    done
     local _subdoc=()
     if [[ -n ${_readahead[@]-} && (( ${#_readahead[@]} > 0 )) ]]; then
         _subdoc=("${_readahead[@]}")  # Inherited from recursive parent.

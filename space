@@ -4799,7 +4799,7 @@ _cmd_extract()
                             eval "[ \"\${${_varname}+isset}\" = \"isset\" ]"
                             if [ "$?" -gt 0 ] && [ "${_linecount}" != "unset" ]; then
                                 # Variable is unset
-                                 _error "Yielded variable $_varname in function $_fn_name must have been declared prior to build function."
+                                 _error "Yielded variable '$_varname' in function $_fn_name must be declared prior to build function."
                                  trap - EXIT
                                  rm ${_tmpfile}
                                  rmdir $_tmpdir

@@ -2712,6 +2712,11 @@ _main()
                 _error "Dimensions (node collections) cannot exceed three in total."
                 return 1
             fi
+            # If no namespace defined, we inject default Spacefile.yaml as ns 1.
+            if (( ${#_namespaces[@]} == 0 )); then
+                # This means look for default file names for the first namespace.
+                _namespaces+=("file=")
+            fi
             shift
         fi
     done

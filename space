@@ -3222,13 +3222,21 @@ _main()
     local _status=0
     local _nodecombo=
     local _dimorder=""
+    local _dimensions_fill=0
     _YAML_NAMESPACE=1
     _copy "_dimorder" "/_dimensions_order"
+    _copy "_dimensions_fill" "/_dimensions_fill"
+    if [ -z "${_dimensions_fill}" ]; then
+        _dimensions_fill=0
+    elif [[ ! $_dimensions_fill =~ [0-3] ]]; then
+        _error "_dimensions_fill must be a number: 0 to 3."
+        return 1
+    fi
     for _first in "${_dim1[@]}"; do
     _context()
     {
         printf -v _nodecombo "%s:%s" "$_dim1ns" "$_first"
-        if (( ${#_dim2[@]} == 0 )); then
+        if (( ${#_dim2[@]} == 0 )) && [ "${_dimensions_fill}" -le 2 ]; then
             local _dim2=()
             _get_second_dimension "$_first" "$_dim2ns"
             _status=$?
@@ -3243,7 +3251,7 @@ _main()
                 _context2()
                 {
                     printf -v _nodecombo "%s:%s %s:%s" "$_dim1ns" "$_first" "$_dim2ns" "$_second"
-                    if (( ${#_dim3[@]} == 0 )); then
+                    if (( ${#_dim3[@]} == 0 )) && [ "${_dimensions_fill}" -le 3 ]; then
                         local _dim3=()
                         _get_third_dimension "$_first" "$_second" "$_dim3ns"
                         _status=$?

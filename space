@@ -1299,7 +1299,7 @@ _yaml_get_row()
     shift
 
     _row=${_allrows[$_index]}
-    while [[ $_dopreprocess == "1" && $_row =~ ^(.*)\@\{([\ @a-zA-Z0-9_:-]+)\}(.*)$ ]]; do
+    while [[ $_dopreprocess == "1" ]] && [[ $_row =~ ^(.*)\@\{([^}]+)\}(.*)$ ]]; do
         # Substitute preprocessed variable
         local _left=${BASH_REMATCH[1]}
         local _s=${BASH_REMATCH[2]}

@@ -2486,7 +2486,8 @@ _main()
                     (return 1)
                     ;;
                 p)
-                    if [[ ! $OPTARG =~ ^[a-zA-Z0-9_]+\=[.a-zA-Z0-9_-]*$ ]]; then
+                    if [[ ! $OPTARG =~ ^[a-zA-Z0-9_]+\=.*$ ]]; then
+                        _error "Malformed -p switch not on format [a-ZA-Z0-9_]+=.*: $OPTARG"
                         #if [[ $_BASH_COMPLETION != "2" ]]; then
                             #_error "Malformed -p switch not on format [a-ZA-Z0-9_]+=[a-ZA-Z0-9_-.]*: $OPTARG"
                             #return 1

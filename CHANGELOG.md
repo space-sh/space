@@ -2,6 +2,42 @@
 
 ## [current]
 
++ Add node dimensions order
+
++ Add preprocess `@include` functionality from within multilines
+
++ Add automatic injection of default namespaces when no namespaces are provided
+
++ Add `_dimensions_fill` functionality
+
++ Add `FILTER` function
+
+* Rename `push` to `_push`
+
+* Rename `pop` to `_pop`
+
+* Change preprocess output to include a divider between multiple namespaces
+
+* Fix duplicated node combo bug
+
+* Update help usage string to not list old `-c` option
+
+* Change `_namespaces` from array to object keys: `second` and `third`
+
+* Bump `_CACHE_FORMAT`
+
+* Fix a bug for when `RUN` is followed by undeclared variable
+
+* Fix preprocess stage to reset `@include` argument variables properly
+
+* Fix to allow better preprocess variable substitution
+
+* Fix to allow more complex preprocess `-p` variables to be set
+
+* Change node listing output to be more descriptive
+
+* Change `-S` option to force fallback to HTTPS modules
+
 
 ## [0.12.0 - 2017-01-26]
 

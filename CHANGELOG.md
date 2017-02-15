@@ -12,6 +12,8 @@
 
 + Add `FILTER` function
 
++ Add a check to protect against using reserved `EOF` tag
+
 * Rename `push` to `_push`
 
 * Rename `pop` to `_pop`
@@ -37,6 +39,8 @@
 * Change node listing output to be more descriptive
 
 * Change `-S` option to force fallback to HTTPS modules
+
+* Fix a bug when escaping quoted variables
 
 
 ## [0.12.0 - 2017-01-26]

@@ -3232,6 +3232,8 @@ _main()
         _error "_dimensions_fill must be a number: 0 to 3."
         return 1
     fi
+    local _execcounter=0
+    local _exectotal=${#_dim1[@]}
     for _first in "${_dim1[@]}"; do
     _context()
     {
@@ -3247,6 +3249,7 @@ _main()
             #fi
         fi
         if (( ${#_dim2[@]} > 0 )); then
+            _exectotal=$((${#_dim1[@]} * ${#_dim2[@]} ))
             for _second in "${_dim2[@]}"; do
                 _context2()
                 {
@@ -3258,14 +3261,17 @@ _main()
                         (( _status > 0 )) && return $_status
                     fi
                     if (( ${#_dim3[@]} > 0 )); then
+                        _exectotal=$((${#_dim1[@]} * ${#_dim2[@]} * ${#_dim3[@]} ))
                         for _third in "${_dim3[@]}"; do
                             printf -v _nodecombo "%s:%s %s:%s %s:%s" "$_dim1ns" "$_first" "$_dim2ns" "$_second" "$_dim3ns" "$_third"
-                            _exec_dimensions "$_dim1ns" "$_first" "$_dim2ns" "$_second" "$_dim3ns" "$_third" "$_dimorder" "$@"
+                            ((_execcounter += 1 ))
+                            _exec_dimensions "$_dim1ns" "$_first" "$_dim2ns" "$_second" "$_dim3ns" "$_third" "$_dimorder" "${_execcounter}" "${_exectotal}" "$@"
                             _status=$?
                             (( _status > 0 )) && break
                         done
                     else
-                        _exec_dimensions "$_dim1ns" "$_first" "$_dim2ns" "$_second" "" "" "$_dimorder" "$@"
+                        ((_execcounter += 1 ))
+                        _exec_dimensions "$_dim1ns" "$_first" "$_dim2ns" "$_second" "" "" "$_dimorder" "${_execcounter}" "${_exectotal}" "$@"
                         _status=$?
                     fi
                 }
@@ -3273,7 +3279,8 @@ _main()
                 (( _status > 0 )) && break
             done
         else
-            _exec_dimensions "$_dim1ns" "$_first" "" "" "" "" "$_dimorder" "$@"
+            ((_execcounter += 1 ))
+            _exec_dimensions "$_dim1ns" "$_first" "" "" "" "" "$_dimorder" "${_execcounter}" "${_exectotal}" "$@"
             _status=$?
         fi
     }
@@ -3495,6 +3502,12 @@ _exec_dimensions()
     shift
 
     local _dimorder=$1
+    shift
+
+    local _currentexecuting=$1
+    shift
+
+    local _counttoexecute=$1
     shift
 
     if [ -n "${_dimorder}" ]; then
@@ -4249,6 +4262,11 @@ unset __spacegaltmp_
 # Parameters:
 #   $@: arguments given after '--' on command line.
 #
+# Expects:
+#   $_nodecombo: The printable combination of 1, 2 or 3 nodes which will be run.
+#   $_currentexecuting: Which combo is currently being executed in the list.
+#   $_counttoexecute: MNr of node combos to execute in total.
+#
 # Returns:
 #   Status code of the executed command
 #
@@ -4554,13 +4572,59 @@ _execute()
 
         _export_cmd="${_cmd_options}${_export_cmd}${_wrapped_fn_def}${_export_vars}${_fn_def}${_fn_outer_header}${_fn_call}${_fn_outer_footer}"$'\n'
 
-        _export_cmd="${_export_cmd}"'
-# Space shows error message, if non clear exit.
-_status="$?"; if [ "'${SPACE_SILENT:-0}'" -eq 0 ] && [ "${_status}" -ne "'${SPACE_EXIT:-0}'" ]; then
-[ "'${_LOG_ENABLE_COLORS}'" = "1" ] && printf "'${_COLOR_FG_RED}'" >&2; printf "%s\n" "[ERROR] Script exited with status: ${_status} (node: '${_nodecombo}')." >&2; [ "'${_LOG_ENABLE_COLORS}'" = "1" ] && printf "'${_COLOR_DEFAULT}'" >&2
-    exit "$(( ${_status} > 0 ? ${_status} : 1 ))"
+        # Run info
+        if [ "${_counttoexecute}" -gt 1 ] && [ "${_LOG_LEVEL:-1}" -gt 0 ]; then
+            local _out="# Space will print the node name to be run."
+            if [ "${_LOG_ENABLE_COLORS:-1}" = 1 ]; then
+                _out="${_out}
+printf \"${_COLOR_FG_WHITE}\" >&2;
+printf \"%s\\n\" \"[RUN]   (${_currentexecuting}/${_counttoexecute}): ${_nodecombo}. \" >&2;
+printf \"${_COLOR_DEFAULT}\" >&2;
+"
+            else
+                _out="${_out}
+printf \"%s\\n\" \"[RUN]   (${_currentexecuting}/${_counttoexecute}): ${_nodecombo}. \" >&2;
+printf \"${_COLOR_DEFAULT}\" >&2;
+"
+            fi
+            _export_cmd="${_out}
+${_export_cmd}"
+        fi
+
+        # Exit info
+        if [ "${SPACE_SILENT:-0}" = 0 ]; then
+            local _err=""
+            local _success="    :"
+            if [ "${_LOG_LEVEL:-1}" -gt 0 ]; then
+                if [ "${_LOG_ENABLE_COLORS:-1}" = 1 ]; then
+                    _err="    printf \"${_COLOR_FG_RED}\" >&2;
+    printf \"%s\\n\" \"[ERROR] Script exited with status \${_status} (expecting ${SPACE_EXIT:-0}) for node: ${_nodecombo}.\" >&2;
+    printf \"${_COLOR_DEFAULT}\" >&2;
+"
+                    if [ "${_counttoexecute}" -gt 1 ]; then
+                        _success="    printf \"${_COLOR_FG_GREEN}\" >&2;
+    printf \"%s\\n\" \"[OK]    (${_currentexecuting}/${_counttoexecute}): Script exited with success, status \${_status} for node: ${_nodecombo}.\" >&2;
+    printf \"${_COLOR_DEFAULT}\" >&2;"
+                    fi
+                else
+                    _err="    printf \"%s\\n\" \"[ERROR] Script exited with status \${_status} (expecting ${SPACE_EXIT:-0}) for node: ${_nodecombo}.\" >&2;
+"
+                    if [ "${_counttoexecute}" -gt 1 ]; then
+                        _success="    printf \"%s\\n\" \"[OK]    (${_currentexecuting}/${_counttoexecute}): Script exited with success, status \${_status} for node: ${_nodecombo}.\" >&2;"
+                    fi
+                fi
+            fi
+           local _out="# Space handles exit.
+_status=\"\$?\"
+if [ \"\${_status}\" -ne ${SPACE_EXIT:-0} ]; then
+${_err}    exit \"\$(( \${_status} > 0 ? \${_status} : 1 ))\"
+else
+${_success}
 fi
-'
+"
+            _export_cmd="${_export_cmd}
+${_out}"
+        fi
 
         (( _index += 1 ))
     done

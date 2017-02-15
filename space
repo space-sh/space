@@ -219,9 +219,6 @@ _SECURITY_CHECK_BANNED=1
 #  2=only accept full trust.
 _SECURITY_GPG_VERIFY_SIGNATURE=0
 
-# If Git is not installed try to download tarball using curl/wget.
-_SECURITY_ALLOW_HTTPS_FALLBACK=0
-
 # Stack current pointer
 _STACK_POINTER=0
 
@@ -232,6 +229,9 @@ _STACK_PREFIX="_stack_"
 # Will autoamtically be set to "1" if any module
 # loaded with a .bash file.
 _FORCE_BASH="0"
+
+# Set HTTPS tarball download using curl/wget.
+_FORCE_HTTPS_FALLBACK=0
 
 # Set to "1" to enable GUI
 _ENABLE_GUI="0"
@@ -297,7 +297,7 @@ $_USAGE
           -K  Verify module Git HEAD signature using GPG. 0 = off,
               1 = accept moderate trust, 2 = only accept full trust signatures.
               Default = 1.
-          -S  Allow HTTPS fallback for downloading modules using curl or wget when git is not available.
+          -S  Set HTTPS fallback for downloading modules using curl or wget.
           -h  help, show Space usage or help on specific node.
           node(s) Pattern of one or many nodes to run.
               If no node path is given the root node "/" is implied.
@@ -1768,7 +1768,8 @@ _module_clone()
         _module_check_banlist "${_giturl}:${_commit}"
         (( $? > 0 )) && return 1
 
-        if ! command -v git >/dev/null; then
+        if ! command -v git >/dev/null \
+           || [ "$_FORCE_HTTPS_FALLBACK" = "1" ]; then
             # Git is not installed, check if we could use fallback.
             local _d=$(_to_lower $_domain)
             local _p=$(_to_lower $_protocol)
@@ -1781,58 +1782,53 @@ _module_clone()
                 return 1
             fi
             if [[ $_d == "github.com" || $_d == "gitlab.com" || $_d == "bitbucket.org" ]]; then
-                if [[ $_SECURITY_ALLOW_HTTPS_FALLBACK != "1" ]]; then
-                    _error "Git is not installed. We could however try to download the module Git repository over HTTPS if you provide the -S switch."$'\n'"Note that this module will not then be possible to update, so only use this for special cases when you cannot install and use Git."
-                    return 1
-                else
-                    # Fetch tarball from Git host into /tmp, unpack it and move it to the right place.
-                    _info "Downloading tarball \"$_giturl\" over HTTPS using: $_HTTPBIN."
-                    # EXTERNAL: mktemp, tar, curl/wget
-                    local _tmpdir=$(mktemp -d 2>/dev/null || mktemp -d -t 'sometmpdir')
-                    (( $? > 0 )) && { _error "Could not mktemp."; return 1; }
-                    local _status_code=0
-                    local _versionurl="$_giturl/raw/master/stable.txt"
-                    if [ "$_HTTPBIN" = "curl" ]; then
-                        _status_code=$($_HTTPBIN -sL --write-out %{http_code} --silent --output "$_tmpdir/stable.txt" $_versionurl)
-                        if [ "$_status_code" -eq 200 ]; then
-                            # EXTERNAL: cat
-                            _commit=$(cat "$_tmpdir/stable.txt")
-                        else
-                            _commit="master"
-                        fi
-                        rm "$_tmpdir/stable.txt"
-                    elif [ "$_HTTPBIN" = "wget" ]; then
-                        _status_code=$($_HTTPBIN -O "$_tmpdir/stable.txt" $_versionurl)
-                        if [ "$_status_code" -eq 0 ]; then
-                            # EXTERNAL: cat
-                            _commit=$(cat "$_tmpdir/stable.txt")
-                        else
-                            _commit="master"
-                        fi
-                        rm "$_tmpdir/stable.txt"
+                # Fetch tarball from Git host into /tmp, unpack it and move it to the right place.
+                _info "Downloading tarball \"$_giturl\" over HTTPS using: $_HTTPBIN."
+                # EXTERNAL: mktemp, tar, curl/wget
+                local _tmpdir=$(mktemp -d 2>/dev/null || mktemp -d -t 'sometmpdir')
+                (( $? > 0 )) && { _error "Could not mktemp."; return 1; }
+                local _status_code=0
+                local _versionurl="$_giturl/raw/master/stable.txt"
+                if [ "$_HTTPBIN" = "curl" ]; then
+                    _status_code=$($_HTTPBIN -sL --write-out %{http_code} --silent --output "$_tmpdir/stable.txt" $_versionurl)
+                    if [ "$_status_code" -eq 200 ]; then
+                        # EXTERNAL: cat
+                        _commit=$(cat "$_tmpdir/stable.txt")
+                    else
+                        _commit="master"
                     fi
-                    if [[ $_d == "github.com" ]]; then
-                        local _durl="$_giturl/archive/${_commit}.tar.gz"
-                    elif [[ $_d == "gitlab.com" ]]; then
-                        local _durl="$_giturl/repository/archive.tar.gz?ref=${_commit}"
-                    elif [[ $_d == "bitbucket.org" ]]; then
-                        local _durl="$_giturl/get/${_commit}.tar.gz"
+                    rm "$_tmpdir/stable.txt"
+                elif [ "$_HTTPBIN" = "wget" ]; then
+                    _status_code=$($_HTTPBIN -O "$_tmpdir/stable.txt" $_versionurl)
+                    if [ "$_status_code" -eq 0 ]; then
+                        # EXTERNAL: cat
+                        _commit=$(cat "$_tmpdir/stable.txt")
+                    else
+                        _commit="master"
                     fi
-                    {
-                        if [[ $_HTTPBIN == "curl" ]]; then
-                            $_HTTPBIN -sL $_durl
-                        elif [[ $_HTTPBIN == "wget" ]]; then
-                            $_HTTPBIN -q -O- $_durl
-                        fi
-                    } | tar -xvzf - -C $_tmpdir
-                    (( $? > 0 )) && { _error "Could not fetch and unpack tarball for $_giturl."; return 1; }
-                    # EXTERNAL: find
-                    local _tmpdir2=$(find $_tmpdir -maxdepth 1 -mindepth 1)
-                    # EXTERNAL: mkdir
-                    mkdir -p ${_dir%/*}
-                    # EXTERNAL: mv
-                    mv $_tmpdir2 $_dir
+                    rm "$_tmpdir/stable.txt"
                 fi
+                if [[ $_d == "github.com" ]]; then
+                    local _durl="$_giturl/archive/${_commit}.tar.gz"
+                elif [[ $_d == "gitlab.com" ]]; then
+                    local _durl="$_giturl/repository/archive.tar.gz?ref=${_commit}"
+                elif [[ $_d == "bitbucket.org" ]]; then
+                    local _durl="$_giturl/get/${_commit}.tar.gz"
+                fi
+                {
+                    if [[ $_HTTPBIN == "curl" ]]; then
+                        $_HTTPBIN -sL $_durl
+                    elif [[ $_HTTPBIN == "wget" ]]; then
+                        $_HTTPBIN -q -O- $_durl
+                    fi
+                } | tar -xvzf - -C $_tmpdir
+                (( $? > 0 )) && { _error "Could not fetch and unpack tarball for $_giturl."; return 1; }
+                # EXTERNAL: find
+                local _tmpdir2=$(find $_tmpdir -maxdepth 1 -mindepth 1)
+                # EXTERNAL: mkdir
+                mkdir -p ${_dir%/*}
+                # EXTERNAL: mv
+                mv $_tmpdir2 $_dir
             else
                 _error "Could not clone module since Git is not installed. Only gitlab.com/github.com/bitbucket.org work with curl/wget fallback."
                 return  1
@@ -2575,7 +2571,7 @@ _main()
                     (return 1)
                     ;;
                 S)
-                    _SECURITY_ALLOW_HTTPS_FALLBACK=1
+                    _FORCE_HTTPS_FALLBACK=1
                     (return 1)
                     ;;
                 h)

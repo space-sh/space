@@ -83,7 +83,7 @@ When running **Space**, the following steps occur:
         Default mode: 1.
 
   * `-S`:
-        Allow HTTPS fallback for downloading modules using curl or wget when git is not available.  
+        Set HTTPS fallback for downloading modules using curl or wget.  
 
   * `-h`:
         Help, show **Space** usage or help on specific node.  

@@ -4231,19 +4231,21 @@ unset __spacegaltmp_
                             _value=${_value//\\\"/\"}
                         fi
 
-                        # Escape all quoted variables.
+                        # Escape all quoted variables to respect any quotes
+                        # within the variable values.
                         while :; do
-                            local _left="${_value%%\"\$\{*}"
+                            local _left="${_value%%\"\$*}"
                             local _intermed=${_value:$((${#_left} + 1))}
-                            local _middle="${_intermed%%\}\"*}"
+                            local _middle="${_intermed%%\"*}"
                             if [ "${_left}" = "${_value}" -o "${_middle}" = "${_intermed}" ]; then
                                 break
                             fi
-                            _middle="${_middle}}"
+                            _middle="${_middle}"
                             local _right=${_value:$((${#_left} + 2 + ${#_middle}))}
                             _escape "_middle"
                             _value="${_left}\$(_escape_inline \"${_middle}\")${_right}"
                         done
+                        #FILTER "_value"
                         local _s="local __spacegaltmp_=
 IFS= read -d '' -r __spacegaltmp_ << $_SPACEGAL_EOF_TAG
 ${_value}
@@ -5504,7 +5506,7 @@ _add_cmd()
 #============
 _escape_inline()
 {
-    eval "local var=${1}"
+    eval "local var=\"$*\""
     shift
 
     _escape "var" '"'
@@ -5607,6 +5609,9 @@ _split_args()
     {
         local _item=
         for _item; do
+            # Unescape escaped paranthesis.
+            _item=${_item//\\\(/\(}
+            _item=${_item//\\\)/\)}
             eval "$_output+=(\"\$_item\")"
         done
     }

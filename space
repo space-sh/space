@@ -842,6 +842,11 @@ _parse_yaml()
                 eval "$_outvarname+=(\"\$_varname\")"
                 local _line=
                 for _line in "${_readahead[@]}"; do
+                    local _line2=${_line/$_SPACEGAL_EOF_TAG}
+                    if [ "${_line}" != "${_line2}" ]; then
+                        _error "YAML line cannot contain the reserved EOF tag."
+                        return 1
+                    fi
                     eval "$_outvarname+=(\"\$_line\")"
                 done
                 eval "$_outvarname+=(\"\$_SPACEGAL_EOF_TAG\")"
@@ -3752,6 +3757,7 @@ _load_yaml()
         _debug "parse YAML ..."
         if (( ${#_yamlrows[@]} > 0 )); then
             _parse_yaml "_yamlrows" "_parsedyaml" "_parsedyamlcompletion"
+            (( $? > 0 )) && return 1
             local _quicksort_output=()
             _quicksort "${_parsedyamlcompletion[@]}"
             _parsedyamlcompletion=("${_quicksort_output[@]}")
@@ -4189,6 +4195,11 @@ _loadnode()
 
                     local _value=
                     _copy "_value" "${_nodepath}_env/$_arrindex/$_key"
+                    local _value2=${_value/$_SPACEGAL_EOF_TAG}
+                    if [ "${_value}" != "${_value2}" ]; then
+                        _error "Value cannot contain the reserved EOF tag '$_SPACEGAL_EOF_TAG'."
+                        return 1
+                    fi
 
                     if [[ $_key == "RUN" && $_strip_args == "1" ]]; then
                         # If variable is RUN, we check if to trim away the arguments

@@ -842,6 +842,11 @@ _parse_yaml()
                 eval "$_outvarname+=(\"\$_varname\")"
                 local _line=
                 for _line in "${_readahead[@]}"; do
+                    local _line2=${_line/$_SPACEGAL_EOF_TAG}
+                    if [ "${_line}" != "${_line2}" ]; then
+                        _error "YAML line cannot contain the reserved EOF tag."
+                        return 1
+                    fi
                     eval "$_outvarname+=(\"\$_line\")"
                 done
                 eval "$_outvarname+=(\"\$_SPACEGAL_EOF_TAG\")"
@@ -3748,6 +3753,7 @@ _load_yaml()
         _debug "parse YAML ..."
         if (( ${#_yamlrows[@]} > 0 )); then
             _parse_yaml "_yamlrows" "_parsedyaml" "_parsedyamlcompletion"
+            (( $? > 0 )) && return 1
             local _quicksort_output=()
             _quicksort "${_parsedyamlcompletion[@]}"
             _parsedyamlcompletion=("${_quicksort_output[@]}")
@@ -4185,6 +4191,11 @@ _loadnode()
 
                     local _value=
                     _copy "_value" "${_nodepath}_env/$_arrindex/$_key"
+                    local _value2=${_value/$_SPACEGAL_EOF_TAG}
+                    if [ "${_value}" != "${_value2}" ]; then
+                        _error "Value cannot contain the reserved EOF tag '$_SPACEGAL_EOF_TAG'."
+                        return 1
+                    fi
 
                     if [[ $_key == "RUN" && $_strip_args == "1" ]]; then
                         # If variable is RUN, we check if to trim away the arguments
@@ -4216,19 +4227,21 @@ unset __spacegaltmp_
                             _value=${_value//\\\"/\"}
                         fi
 
-                        # Escape all quoted variables.
+                        # Escape all quoted variables to respect any quotes
+                        # within the variable values.
                         while :; do
-                            local _left="${_value%%\"\$\{*}"
+                            local _left="${_value%%\"\$*}"
                             local _intermed=${_value:$((${#_left} + 1))}
-                            local _middle="${_intermed%%\}\"*}"
+                            local _middle="${_intermed%%\"*}"
                             if [ "${_left}" = "${_value}" -o "${_middle}" = "${_intermed}" ]; then
                                 break
                             fi
-                            _middle="${_middle}}"
+                            _middle="${_middle}"
                             local _right=${_value:$((${#_left} + 2 + ${#_middle}))}
                             _escape "_middle"
                             _value="${_left}\$(_escape_inline \"${_middle}\")${_right}"
                         done
+                        #FILTER "_value"
                         local _s="local __spacegaltmp_=
 IFS= read -d '' -r __spacegaltmp_ << $_SPACEGAL_EOF_TAG
 ${_value}
@@ -5489,7 +5502,7 @@ _add_cmd()
 #============
 _escape_inline()
 {
-    eval "local var=${1}"
+    eval "local var=\"$*\""
     shift
 
     _escape "var" '"'
@@ -5592,6 +5605,9 @@ _split_args()
     {
         local _item=
         for _item; do
+            # Unescape escaped paranthesis.
+            _item=${_item//\\\(/\(}
+            _item=${_item//\\\)/\)}
             eval "$_output+=(\"\$_item\")"
         done
     }

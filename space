@@ -4718,6 +4718,40 @@ YIELD()
     fi
 }
 
+#========
+# FILTER
+#
+# Filter out command substitution from input
+#
+# Parameters:
+#   $1: input
+#   $2: output (optional)
+#
+# Returns:
+#   In case output argument is missing, results are written to input i.e. in-place substitution
+#
+#========
+FILTER()
+{
+    local __input=$1
+    local __output=${2:-$__input}
+
+    # Work on internal data
+    local __subst_data=
+    eval "__subst_data=\$$__input"
+
+    # Replace all tokens with predetermined value
+    local __subst_tokens=("\\$\(\(" "\)\)" "\\\\$\(" "\\$\(" "\)" "\(" "\(\(" "\\\`")
+    local __subst_value="\\'"
+    local __token=
+    for __token in "${__subst_tokens[@]}" ; do
+        eval "__subst_data=\${__subst_data//$__token/$__subst_value};"
+    done
+
+    # Copy internal data over to output
+    eval "$__output=\"${__subst_data}\""
+}
+
 #============
 # _cmd_extract
 #

@@ -23,7 +23,7 @@ _RUN_CHECK_SUBST()
 
     # Expected output
     local _expected_output=
-    eval "_expected_output=\$${_varname}"
+    eval "_expected_output=\${_varname}"
 
     # Assert varname is different than expected output
     eval "[ \"${_expected_output}\" = \"\$${_varname}\" ] && printf '\033[31m[ERROR] ${_varname} has already been subst\033[0m\n' && exit 1"
@@ -31,8 +31,7 @@ _RUN_CHECK_SUBST()
     # Run
     FILTER "$_varname"
 
-    # Test expected output
-    eval "[ \"${_expected_output}\" = \"\$${_varname}\" ] && \
+    eval "[ \"\${_expected_output}\" = \"\${_varname}\" ] && \
         printf '\033[32m[OK] ${_varname}\033[0m\n' && return 0 || \
         printf '\033[31m[ERROR] ${_varname} does not match expected output: %s. Value: %s\033[0m\n' \"${_expected_output}\" \"\$${_varname}\" && exit 1"
 }
@@ -74,6 +73,7 @@ _TEST_FILTER()
     local _base='$_test_value'
     local _base_with_string='Hello $_test_value'
     local _base_with_command='Hello $_test_value $(ls)'
+    local _base_with_friendly_command='Hello (shhhhhh) $_test_value $(ls)'
     local _base_with_escaped_command='Hello $_test_value \$(ls)'
     local _base_all_escaped_command='Hello $_test_value \$\(ls\)'
     local _base_with_command_tick='Hello $_test_value `(ls)`'
@@ -179,6 +179,7 @@ _TEST_FILTER()
     _SUBST_SINGLE_WITH_CHECK $_name_exp_at
 
     _SUBST_SINGLE "$_base_with_command"
+    _SUBST_SINGLE "$_base_with_friendly_command"
     _SUBST_SINGLE "$_base_with_escaped_command"
     _SUBST_SINGLE "$_base_all_escaped_command"
     _SUBST_SINGLE "$_base_with_command_tick"

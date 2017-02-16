@@ -4750,15 +4750,29 @@ FILTER()
     eval "__subst_data=\$$__input"
 
     # Replace all tokens with predetermined value
-    local __subst_tokens=("\\$\(\(" "\)\)" "\\\\$\(" "\\$\(" "\)" "\(" "\(\(" "\\\`")
-    local __subst_value="\\'"
+    local __subst_tokens=
+    local __subst_value=
     local __token=
+
+    # Right side parenthesis
+    __subst_tokens=("\\\)" "\)\)" "\)\\\\\\\`" "\)\\\`")
+    __subst_value="\\)"
+    __token=
     for __token in "${__subst_tokens[@]}" ; do
         eval "__subst_data=\${__subst_data//$__token/$__subst_value};"
     done
 
+    # Left side parenthesis
+    __subst_tokens=("\\\\$\\\(" "\\$\(\(" "\\\\$\(" "\\$\(" "\(" "\(\(" "\\\\\\\`\(" "\\\`\(" "\\\`")
+    __subst_value="\\("
+    __token=
+    for __token in "${__subst_tokens[@]}" ; do
+        eval "__subst_data=\${__subst_data//$__token/$__subst_value};"
+    done
+
+    #
     # Copy internal data over to output
-    eval "$__output=\"${__subst_data}\""
+    eval "$__output=\"\${__subst_data}\""
 }
 
 #============

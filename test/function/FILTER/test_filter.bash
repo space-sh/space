@@ -73,14 +73,17 @@ _TEST_FILTER()
     local _base='$_test_value'
     local _base_with_string='Hello $_test_value'
     local _base_with_command='Hello $_test_value $(ls)'
+    local _base_with_compound_command='Hello $_test_value $(ls $(ls))'
     local _base_with_friendly_command='Hello (shhhhhh) $_test_value $(ls)'
     local _base_with_escaped_command='Hello $_test_value \$(ls)'
     local _base_all_escaped_command='Hello $_test_value \$\(ls\)'
-    local _base_with_command_tick='Hello $_test_value `(ls)`'
+    local _base_with_command_tick='Hello $_test_value `ls`'
+    local _base_with_parenthesis_command_tick='Hello $_test_value `(ls)`'
     local _base_with_escaped_command_tick='Hello $_test_value \`(ls)\`'
     local _base_with_arithmetic='Hello $_test_value $((1+2))'
     local _base_double_with_string='Hello $_test_value $_test_string'
     local _base_braces='${_test_value}'
+    local _base_combined_case='`ls` $(ls) (friendly) $(ls $(ls))'
 
     # Substring
     local _substring_hash_single='${_test_value#${_test_pattern}}'
@@ -179,12 +182,15 @@ _TEST_FILTER()
     _SUBST_SINGLE_WITH_CHECK $_name_exp_at
 
     _SUBST_SINGLE "$_base_with_command"
+    _SUBST_SINGLE "$_base_with_compound_command"
     _SUBST_SINGLE "$_base_with_friendly_command"
     _SUBST_SINGLE "$_base_with_escaped_command"
     _SUBST_SINGLE "$_base_all_escaped_command"
     _SUBST_SINGLE "$_base_with_command_tick"
+    _SUBST_SINGLE "$_base_with_parenthesis_command_tick"
     _SUBST_SINGLE "$_base_with_escaped_command_tick"
     _SUBST_SINGLE "$_base_with_arithmetic"
+    _SUBST_SINGLE "$_base_combined_case"
 
     # Test output
     local _base_out=

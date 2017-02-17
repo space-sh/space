@@ -4863,8 +4863,9 @@ _cmd_extract()
                 # to _space_cmds.
                 # Not implemented yet.
             if [[ ${SPACE_FN} != ${_space_cmd} ]]; then
+                # TODO: we would want to hinder build time function from importing "protected" underscored variables.
                 local _fns=
-                # Not using "set -e" anymore, if got too shakey (see http://mywiki.wooledge.org/BashFAQ/105).
+                # Not using "set -e" anymore, it got too shakey (see http://mywiki.wooledge.org/BashFAQ/105).
                 # printf -v _fns "set -e;\n%s\nset +e;\n" "${_fnlines[@]-:}"
                 printf -v _fns "%s\n" "${_fnlines[@]-:}"
                 if [ "${_fns//\ $'\n'}" = "" ]; then

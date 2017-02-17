@@ -4241,7 +4241,7 @@ unset __spacegaltmp_
                             _escape "_middle"
                             _value="${_left}\$(_escape_inline \"${_middle}\")${_right}"
                         done
-                        #FILTER "_value"
+                        _filter "_value"
                         local _s="local __spacegaltmp_=
 IFS= read -d '' -r __spacegaltmp_ << $_SPACEGAL_EOF_TAG
 ${_value}
@@ -4727,8 +4727,8 @@ YIELD()
     fi
 }
 
+# _filter
 #========
-# FILTER
 #
 # Filter out command substitution from input
 #
@@ -4740,7 +4740,7 @@ YIELD()
 #   In case output argument is missing, results are written to input i.e. in-place substitution
 #
 #========
-FILTER()
+_filter()
 {
     local __input=$1
     local __output=${2:-$__input}
@@ -5309,6 +5309,7 @@ _cmd_extract_space_header ()
         for _row in "${_spacelines[@]}"; do
             _fns="_set_args() {"$'\n'"${_row}"$'\n'"}"$'\n'"_set_args ${_given_args}"$'\n'
             # TODO: this eval must be replaced by variable subst.
+            _filter "_fns"
             eval "$_fns"
             if (( $? > 0 )); then
                 _error "Could not evaluate function header of ${_fn_name} to set SPACE_ variables."

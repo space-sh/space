@@ -29,7 +29,7 @@ _RUN_CHECK_SUBST()
     eval "[ \"${_expected_output}\" = \"\$${_varname}\" ] && printf '\033[31m[ERROR] ${_varname} has already been subst\033[0m\n' && exit 1"
 
     # Run
-    FILTER "$_varname"
+    _filter "$_varname"
 
     eval "[ \"\${_expected_output}\" = \"\${_varname}\" ] && \
         printf '\033[32m[OK] ${_varname}\033[0m\n' && return 0 || \
@@ -40,7 +40,7 @@ _SUBST_SINGLE()
 {
     local __var=$1
     printf "IN: %s\n" "$__var"
-    FILTER "__var"
+    _filter "__var"
     printf "OUT: %s\n\n" "$__var"
 }
 
@@ -61,7 +61,7 @@ _SUBST_SINGLE_WITH_CHECK()
 
 _TEST_FILTER()
 {
-    SPACE_DEP="_SUBST_SINGLE _SUBST_SINGLE_WITH_CHECK _RUN_CHECK_SUBST FILTER"
+    SPACE_DEP="_SUBST_SINGLE _SUBST_SINGLE_WITH_CHECK _RUN_CHECK_SUBST _filter"
 
     local _test_value="abcdefghZWVYX321"
     local _test_pattern="abcd"
@@ -188,14 +188,14 @@ _TEST_FILTER()
 
     # Test output
     local _base_out=
-    printf "[FILTER \"_base\"]\n"
+    printf "[_filter \"_base\"]\n"
     printf "before filter: in=%s out=%s\n" "$_base" "$_base_out"
-    FILTER "_base"
+    _filter "_base"
     printf "after filter: in=%s out=%s\n" "$_base" "$_base_out"
 
-    printf "[FILTER \"_base\" \"_base_out\"]\n"
+    printf "[_filter \"_base\" \"_base_out\"]\n"
     _base='$_test_value'
     printf "before filter: in=%s out=%s\n" "$_base" "$_base_out"
-    FILTER "_base" "_base_out"
+    _filter "_base" "_base_out"
     printf "after filter: in=%s out=%s\n" "$_base" "$_base_out"
 }

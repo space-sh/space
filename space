@@ -4754,8 +4754,16 @@ _filter()
     local __subst_value=
     local __token=
 
+    # Arithmetic opening
+    __subst_tokens=("\\$\(\(")
+    __subst_value="\(\("
+    __token=
+    for __token in "${__subst_tokens[@]}" ; do
+        eval "__subst_data=\${__subst_data//$__token/$__subst_value};"
+    done
+
     # Right side parenthesis
-    __subst_tokens=("\\\)" "\)\)" "\)\\\\\\\`" "\)\\\`")
+    __subst_tokens=("\\\)" "\)\\\\\\\`" "\)\\\`")
     __subst_value="\\)"
     __token=
     for __token in "${__subst_tokens[@]}" ; do
@@ -4763,8 +4771,16 @@ _filter()
     done
 
     # Left side parenthesis
-    __subst_tokens=("\\\\$\\\(" "\\$\(\(" "\\\\$\(" "\\$\(" "\(" "\(\(" "\\\\\\\`\(" "\\\`\(" "\\\`")
+    __subst_tokens=("\\\\$\\\(" "\\\\$\(" "\\$\(" "\(" "\\\\\\\`\(" "\\\`\(")
     __subst_value="\\("
+    __token=
+    for __token in "${__subst_tokens[@]}" ; do
+        eval "__subst_data=\${__subst_data//$__token/$__subst_value};"
+    done
+
+    # Back-tick
+    __subst_tokens=("\\\`")
+    __subst_value="\\'"
     __token=
     for __token in "${__subst_tokens[@]}" ; do
         eval "__subst_data=\${__subst_data//$__token/$__subst_value};"

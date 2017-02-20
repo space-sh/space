@@ -44,6 +44,19 @@ _SUBST_SINGLE()
     printf "OUT: %s\n\n" "$__var"
 }
 
+_SUBST_SINGLE_WITH_EXPECTED_OUTPUT()
+{
+    local __var=$1
+    local __expected=${2-""}
+    _filter "__var"
+    if [ "$__var" = "$__expected" ]; then
+        printf "\033[32m[OK] ${__var}\033[0m\n"
+    else
+        printf "\033[31m[ERROR] ${__var} does not match expected output: ${__expected}\033[0m\n"
+        exit 1
+    fi
+}
+
 _SUBST_SINGLE_WITH_CHECK()
 {
     local __var=$1
@@ -61,7 +74,7 @@ _SUBST_SINGLE_WITH_CHECK()
 
 _TEST_FILTER()
 {
-    SPACE_DEP="_SUBST_SINGLE _SUBST_SINGLE_WITH_CHECK _RUN_CHECK_SUBST _filter"
+    SPACE_DEP="_SUBST_SINGLE_WITH_EXPECTED_OUTPUT _SUBST_SINGLE_WITH_CHECK _RUN_CHECK_SUBST _filter"
 
     local _test_value="abcdefghZWVYX321"
     local _test_pattern="abcd"
@@ -181,16 +194,19 @@ _TEST_FILTER()
     _SUBST_SINGLE_WITH_CHECK "$_name_exp_star"
     _SUBST_SINGLE_WITH_CHECK $_name_exp_at
 
-    _SUBST_SINGLE "$_base_with_command"
-    _SUBST_SINGLE "$_base_with_compound_command"
-    _SUBST_SINGLE "$_base_with_friendly_command"
-    _SUBST_SINGLE "$_base_with_escaped_command"
-    _SUBST_SINGLE "$_base_all_escaped_command"
-    _SUBST_SINGLE "$_base_with_command_tick"
-    _SUBST_SINGLE "$_base_with_parenthesis_command_tick"
-    _SUBST_SINGLE "$_base_with_escaped_command_tick"
-    _SUBST_SINGLE "$_base_with_arithmetic"
-    _SUBST_SINGLE "$_base_combined_case"
+    printf "\n\n=============\n"
+    printf "Base assumptions:\n"
+    _SUBST_SINGLE_WITH_EXPECTED_OUTPUT "$_base_with_command" "Hello \$_test_value (ls)"
+    _SUBST_SINGLE_WITH_EXPECTED_OUTPUT "$_base_with_compound_command" "Hello \$_test_value (ls (ls))"
+    _SUBST_SINGLE_WITH_EXPECTED_OUTPUT "$_base_with_friendly_command" "Hello (shhhhhh) \$_test_value (ls)"
+    _SUBST_SINGLE_WITH_EXPECTED_OUTPUT "$_base_with_escaped_command" "Hello \$_test_value (ls)"
+    _SUBST_SINGLE_WITH_EXPECTED_OUTPUT "$_base_all_escaped_command" "Hello \$_test_value (ls)"
+    _SUBST_SINGLE_WITH_EXPECTED_OUTPUT "$_base_with_command_tick" "Hello \$_test_value 'ls'"
+    _SUBST_SINGLE_WITH_EXPECTED_OUTPUT "$_base_with_parenthesis_command_tick" "Hello \$_test_value (ls)"
+    _SUBST_SINGLE_WITH_EXPECTED_OUTPUT "$_base_with_escaped_command_tick" "Hello \$_test_value (ls)"
+    _SUBST_SINGLE_WITH_EXPECTED_OUTPUT "$_base_with_arithmetic" "Hello \$_test_value ((1+2))"
+    _SUBST_SINGLE_WITH_EXPECTED_OUTPUT "$_base_combined_case" "'ls' (ls) (friendly) (ls (ls))"
+    printf "=============\n\n"
 
     # Test output
     local _base_out=

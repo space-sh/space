@@ -1800,7 +1800,8 @@ _module_clone()
                     rm "$_tmpdir/stable.txt"
                 elif [ "$_HTTPBIN" = "wget" ]; then
                     _status_code=$($_HTTPBIN -O "$_tmpdir/stable.txt" $_versionurl)
-                    if [ "$_status_code" -eq 0 ]; then
+                    # Note: use exit code instead
+                    if [ "$?" -eq 0 ]; then
                         # EXTERNAL: cat
                         _commit=$(cat "$_tmpdir/stable.txt")
                     else
@@ -1815,14 +1816,36 @@ _module_clone()
                 elif [[ $_d == "bitbucket.org" ]]; then
                     local _durl="$_giturl/get/${_commit}.tar.gz"
                 fi
+
+                # Check if URL exists before proceeding with actual download
+                _status_code=0
+                if [ "$_HTTPBIN" = "curl" ]; then
+                    _status_code=$($_HTTPBIN -sL --write-out %{http_code} --silent --output "/dev/null" --head $_durl)
+                    if [ "$_status_code" -ne 200 ]; then
+                        _error "Failed to access: $_durl. Make sure the repository is publicly accessible"
+                        return 1
+                    fi
+                elif [ "$_HTTPBIN" = "wget" ]; then
+                    _status_code=$($_HTTPBIN -q --spider $_durl)
+                    # Note: use exit code instead
+                    if [ "$?" -ne 0 ]; then
+                        _error "Failed to access: $_durl. Make sure the repository is publicly accessible"
+                        return 1
+                    fi
+                fi
+
                 {
                     if [[ $_HTTPBIN == "curl" ]]; then
                         $_HTTPBIN -sL $_durl
                     elif [[ $_HTTPBIN == "wget" ]]; then
                         $_HTTPBIN -q -O- $_durl
                     fi
-                } | tar -xvzf - -C $_tmpdir
-                (( $? > 0 )) && { _error "Could not fetch and unpack tarball for $_giturl."; return 1; }
+                } | tar -xvzf - -C $_tmpdir > /dev/null 2>&1
+                if [ "$?" -gt 0 ]; then
+                    _error "Could not fetch and unpack tarball for $_giturl."
+                    return 1
+                fi
+
                 # EXTERNAL: find
                 local _tmpdir2=$(find $_tmpdir -maxdepth 1 -mindepth 1)
                 # EXTERNAL: mkdir

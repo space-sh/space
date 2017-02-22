@@ -244,7 +244,7 @@ _RUN_CHECK_FAIL "Test preprocessor include on include file" "Could not find file
 if command -v git >/dev/null; then
     _RUN_CHECK_FAIL "Test malformed clone import" "Could not Git clone" $_SPACE_BIN -f ./test/exit_status_cases/fail_pp_clone_malformed.yaml / -h
 else
-    _RUN_CHECK_FAIL "Test malformed clone import" "Could not fetch and unpack tarball" $_SPACE_BIN -f ./test/exit_status_cases/fail_pp_clone_malformed.yaml / -h
+    _RUN_CHECK_FAIL "Test malformed clone import" "Failed to access" $_SPACE_BIN -f ./test/exit_status_cases/fail_pp_clone_malformed.yaml / -h
 fi
 
 # Fail assert during preprocessing

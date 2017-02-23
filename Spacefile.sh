@@ -235,7 +235,9 @@ SPACE_INSTALL()
 SPACE_UNINSTALL()
 {
     # External
+    # shellcheck disable=2034
     SPACE_DEP="PRINT"
+    # shellcheck disable=2034
     SPACE_ENV="AC_PREFIX BIN_PREFIX"
 
     local _find_space=

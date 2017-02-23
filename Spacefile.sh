@@ -16,6 +16,10 @@
 # along with Space.  If not, see <http://www.gnu.org/licenses/>.
 #
 
+
+# Disable warning about indirectly checking exit code
+# shellcheck disable=2181
+
 SPACE_INSTALL_BIN()
 {
     command install -m 755 "${_bin_file_name}" "${_bindest}"
@@ -65,6 +69,10 @@ SPACE_BUILD()
 
     docker build --build-arg VERSION=$IMAGE_VERSION -t registry.gitlab.com/space-sh/space -f ./build/Dockerfile .
 }
+
+
+# Disable warning about indirectly checking exit code
+# shellcheck disable=2181
 
 SPACE_INSTALL()
 {
@@ -219,6 +227,10 @@ SPACE_INSTALL()
         fi
     fi
 }
+
+
+# Disable warning about indirectly checking exit code
+# shellcheck disable=2181
 
 SPACE_UNINSTALL()
 {

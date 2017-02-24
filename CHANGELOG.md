@@ -10,9 +10,11 @@
 
 + Add `_dimensions_fill` functionality
 
-+ Add `FILTER` function
++ Add `_filter` function
 
 + Add a check to protect against using reserved `EOF` tag
+
++ Add a check before piping HTTPS modules into `tar` command
 
 * Rename `push` to `_push`
 
@@ -41,6 +43,8 @@
 * Change `-S` option to force fallback to HTTPS modules
 
 * Fix a bug when escaping quoted variables
+
+* Fix bug that causes unparsable arguments not to exit properly
 
 
 ## [0.12.0 - 2017-01-26]

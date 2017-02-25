@@ -29,7 +29,7 @@ fi
 _bsd_image_name="FreeBSD-11.0-RELEASE-amd64.vhd"
 
 if [ ! -f "${_bsd_image_name}" ]; then
-    printf "Missing ${_bsd_image_name}. Please run \"sh 00_bsdvm_fetch.sh\" first.\n" 1>&2
+    printf "Missing %s. Please run \"sh 00_bsdvm_fetch.sh\" first.\n" "${_bsd_image_name}" 1>&2
     exit 1
 fi
 

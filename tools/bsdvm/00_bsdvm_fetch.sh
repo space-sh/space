@@ -55,12 +55,11 @@ fi
 #
 # FIXME: missing file integrity check around here
 
-
 #
 # Extract file image
 xz --verbose --decompress "${_bsd_image_name_compressed}"
 _exit_code="$?"
-if [ "$?" -ne 0 ]; then
+if [ "$_exit_code" -ne 0 ]; then
     printf "Failed to extract %s. Returned %s\n" "${_bsd_image_name_compressed}" "$_exit_code" 1>&2
     exit "$_exit_code"
 else

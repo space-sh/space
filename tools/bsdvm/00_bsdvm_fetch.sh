@@ -42,11 +42,11 @@ _bsd_image_name_compressed="${_bsd_image_name}.xz"
 #
 # Check file is available and download it if needed
 if [ ! -f "./${_bsd_image_name_compressed}" ]; then
-    printf "Image file ${_bsd_image_name_compressed} was not found. Downloading from ${_bsd_image_base_url}...\n" 1>&2
+    printf "Image file %s was not found. Downloading from %s...\n" "${_bsd_image_name_compressed}" "${_bsd_image_base_url}" 1>&2
     curl -O "${_bsd_image_base_url}${_bsd_image_name_compressed}"
     _exit_code="$?"
     if [ "$_exit_code" -ne 0 ]; then
-        printf "Failed to curl ${_bsd_image_name_compressed} from ${_bsd_image_base_url}. Returned "$_exit_code"\n" 1>&2
+        printf "Failed to curl %s from %s. Returned %s\n" "${_bsd_image_name_compressed}" "${_bsd_image_base_url}" "$_exit_code" 1>&2
         exit "$_exit_code"
     fi
 fi
@@ -61,11 +61,11 @@ fi
 xz --verbose --decompress "${_bsd_image_name_compressed}"
 _exit_code="$?"
 if [ "$?" -ne 0 ]; then
-    printf "Failed to extract ${_bsd_image_name_compressed}. Returned "$_exit_code"\n" 1>&2
+    printf "Failed to extract %s. Returned %s\n" "${_bsd_image_name_compressed}" "$_exit_code" 1>&2
     exit "$_exit_code"
 else
     if [ -f "${_bsd_image_name}" ]; then
-        printf "${_bsd_image_name}\n"
+        printf "%s\n" "${_bsd_image_name}"
         exit 0
     fi
 fi

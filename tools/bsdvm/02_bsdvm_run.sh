@@ -27,6 +27,7 @@ if ! command -v VBoxManage >/dev/null; then
 fi
 
 VBoxManage startvm SpaceBSD
+# shellcheck disable=2181
 if [ "$?" -ne 0 ]; then
     exit 1
 fi

@@ -157,11 +157,11 @@ _RUN_ALL_RECURSIVELY()
     for file in "$_output_dir"/*; do
         local _occurrences=0
         _occurrences=$(grep -c "SC[0-9]" "$file")
-        _num_shellcheck=$(($_num_shellcheck + $_occurrences))
+        _num_shellcheck=$(( _num_shellcheck + _occurrences ))
 
         _occurrences=0
         _occurrences=$(grep -c "possible bashism" "$file")
-        _num_checkbashisms=$(($_num_checkbashisms + $_occurrences))
+        _num_checkbashisms=$(( _num_checkbashisms + _occurrences ))
     done
 
     # Summary statistics

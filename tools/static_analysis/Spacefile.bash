@@ -117,6 +117,7 @@ _RUN_ALL()
 
 _RUN_ALL_RECURSIVELY()
 {
+    # shellcheck disable=2034
     SPACE_DEP="_RUN_CHECKBASHISMS _RUN_SHELLCHECK"
 
     if [ "$#" -lt 1 ]; then

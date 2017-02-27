@@ -59,6 +59,7 @@ fi
 # Verify package integrity
 printf "Verifying package integrity...\t"
 printf "%s  %s" $_package_hash $_package_name | $_SHASUMBIN -c
+# shellcheck disable=2181
 if [ "$?" -ne 0 ]; then
     printf "Package download is invalid or corrupted. Please remove it and re-run the installation process\n"
     exit 1
@@ -66,6 +67,7 @@ fi
 
 # Create temporary directory
 _tmp_dir=$(mktemp -d 2>/dev/null || mktemp -d -t ${_package_name})
+# shellcheck disable=2181
 if [ $? -ne 0 ]; then
     printf "Could not create temp directory. Exiting..."
     exit 1

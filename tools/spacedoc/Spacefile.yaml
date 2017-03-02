@@ -61,22 +61,3 @@ html:
 
     _env:
         - RUN: _EXPORT_HTML
-
-module:
-    _info:
-        title: Generate module code documentation and export as a Markdown file
-        desc:|
-            Takes a module shell script code as input, parse all its comments and generate a
-            Markdown formatted documentation file as intermediate file. This output gets appended
-            to a customized module header and it is exported to the current directory as result.
-            If GENERATE_TOC environment variable is set to 1, documentation will
-            automatically generate and include table of contents section.
-            If GENERATE_VARIABLES environment variable is set to 0, documentation will
-            not export the Variables section.
-            Parameters:
-                1: module shell script (Spacefile)
-            Example:
-                GENERATE_VARIABLES=0 GENERATE_TOC=0 space -f ../space/tools/spacedoc/Spacefile.yaml /module/ -- Spacefile.sh
-    _env:
-        - RUN: _EXPORT_MODULE
-

@@ -36,7 +36,7 @@ space -m spacechecker /run/ -- .
 
 6. Generate README file
 ```
-GENERATE_VARIABLES=0 GENERATE_TOC=0 space -f ../space/tools/spacedoc/Spacefile.yaml /module/ -- Spacefile.sh
+space -m autodoc /export/ -- Spacefile.sh
 ```
 
 7. Create test directory with testrunner-compatible tests

@@ -4250,6 +4250,7 @@ unset __spacegaltmp_
                             _value=${_value//\\\"/\"}
                         fi
 
+                        _filter "_value"
                         # Escape all quoted variables to respect any quotes
                         # within the variable values.
                         while :; do
@@ -4264,7 +4265,6 @@ unset __spacegaltmp_
                             _escape "_middle"
                             _value="${_left}\$(_escape_inline \"${_middle}\")${_right}"
                         done
-                        _filter "_value"
                         local _s="local __spacegaltmp_=
 IFS= read -d '' -r __spacegaltmp_ << $_SPACEGAL_EOF_TAG
 ${_value}
@@ -5348,7 +5348,6 @@ _cmd_extract_space_header ()
         local _fns=
         for _row in "${_spacelines[@]}"; do
             _fns="_set_args() {"$'\n'"${_row}"$'\n'"}"$'\n'"_set_args ${_given_args}"$'\n'
-            # TODO: this eval must be replaced by variable subst.
             _filter "_fns"
             eval "$_fns"
             if (( $? > 0 )); then

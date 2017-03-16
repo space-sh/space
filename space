@@ -88,7 +88,7 @@ readonly _SPACEBIN=$0
 readonly _BASEDIR=$( cd "${_SPACEBIN%/*}" 2>/dev/null && pwd )
 # Usage help string
 readonly _USAGE="Usage:
-    space [-f|m namespace [-M modules] [-ep key=value] [node] [-a]] [-vkKCBX value] [-dlShg] [-- args]
+    space [-f|m namespace [-M modules] [-ep key=value] [node] [-a]] [-vkKCBX value] [-dlShgZ] [-- args]
     space [-hV]
     space -U [module]"
 
@@ -241,6 +241,9 @@ _FORCE_HTTPS_FALLBACK=0
 # Set to "1" to enable GUI
 _ENABLE_GUI="0"
 
+# Set to "0" to disable Space checking modules version compatibility
+_MODULE_CHECK_VERSION_COMPATIBILITY="1"
+
 # Set to "1" to allow Space to use
 # external OS tools to speed things up.
 # Like awk, sore, etc.
@@ -329,6 +332,7 @@ $_USAGE
           -X  Outputs debug information.
               1 = preprocessed YAML result, 2 = YAML parsed to Bash, 3 = YAML loaded from Bash (retransformed), 4 = eval code
           -g  Enable graphical user interface. Defaults to 0, disabled.
+          -Z  Skips checking modules version compatibility against current Space version
 
 Examples:
 
@@ -1797,8 +1801,13 @@ _module_clone()
                 if [ "$_HTTPBIN" = "curl" ]; then
                     _status_code=$($_HTTPBIN -sL --write-out %{http_code} --silent --output "$_tmpdir/stable.txt" $_versionurl)
                     if [ "$_status_code" -eq 200 ]; then
-                        # EXTERNAL: cat
-                        _commit=$(cat "$_tmpdir/stable.txt")
+                        local _latest_stable_version=
+                        _get_module_latest_stable_version "$_tmpdir/stable.txt"
+                        if [ "$?" -gt 0 ]; then
+                            return "$?"
+                        fi
+
+                        _commit=${_latest_stable_version}
                     else
                         _commit="master"
                     fi
@@ -1807,8 +1816,13 @@ _module_clone()
                     _status_code=$($_HTTPBIN -O "$_tmpdir/stable.txt" $_versionurl)
                     # Note: use exit code instead
                     if [ "$?" -eq 0 ]; then
-                        # EXTERNAL: cat
-                        _commit=$(cat "$_tmpdir/stable.txt")
+                        local _latest_stable_version=
+                        _get_module_latest_stable_version "$_tmpdir/stable.txt"
+                        if [ "$?" -gt 0 ]; then
+                            return "$?"
+                        fi
+
+                        _commit=${_latest_stable_version}
                     else
                         _commit="master"
                     fi
@@ -1882,8 +1896,13 @@ _module_clone()
             fi
             if [ "$_commit" = "" ]; then
                 if [ -f "./stable.txt" ]; then
-                    # EXTERNAL: cat
-                    _commit=$(cat "./stable.txt")
+                    local _latest_stable_version=
+                    _get_module_latest_stable_version "./stable.txt"
+                    if [ "$?" -gt 0 ]; then
+                        return "$?"
+                    fi
+
+                    _commit=${_latest_stable_version}
                     _info "Set to latest stable version: $_commit"
                 else
                     _commit="master"
@@ -2331,6 +2350,105 @@ prompt()
 }
 
 #==========
+# _check_minimum_requirements
+#
+# Check current Space meets module minimum requirements
+#
+# Parameters:
+#   $1: module path
+#
+# Returns:
+#   0: meets minimum requirements
+#   1: invalid format
+#   2: failed to meet minimum requirements
+#
+#==========
+_check_minimum_requirements()
+{
+    local _base_directory="$1"
+
+    # Early exit if check is disabled
+    if [ "${_MODULE_CHECK_VERSION_COMPATIBILITY}" != "1" ]; then
+        _debug "Skipping module version compatibility tests"
+        return 0
+    fi
+
+    local _minimum_requirements_file="${_base_directory}/requirement.txt"
+    local _minimum_required_space_version=
+    local _minimum_required_space_version_major=
+    local _minimum_required_space_version_minor=
+    if [ -f "$_minimum_requirements_file" ]; then
+        _debug "Reading minimum requirements from: $_minimum_requirements_file"
+        # EXTERNAL: cat
+        _minimum_required_space_version=$(cat "$_minimum_requirements_file")
+        if [[ ! "$_minimum_required_space_version" =~ ^[0-9]+\.[0-9]+\.[0-9] ]]; then
+            _error "Unexpected minimum required version for ${_base_directory##*/}. Version \"$_minimum_required_space_version\" does not match format \"major.minor.patch\""
+            return 1
+        fi
+        _minimum_required_space_version_major=${_minimum_required_space_version%%.*}
+        _minimum_required_space_version_minor=${_minimum_required_space_version#*.}
+        _minimum_required_space_version_minor=${_minimum_required_space_version_minor%.*}
+        _check_version()
+        {
+            local _program_name=$1
+            local _required_major=$2
+            local _required_minor=$3
+            local _current_major=$4
+            local _current_minor=$5
+            if [ "$_current_major" -lt "$_required_major" ] \
+                || ( [ "$_current_major" -le "$_required_major" ] && [ "$_current_minor" -lt "$_required_minor" ]); then
+                _error "$_program_name requires Space version ${_required_major}.${_required_minor} or later. Current version: ${_current_major}.${_current_minor}"
+                return 2
+            fi
+        }
+        local _space_version_major=${_VERSION%%.*}
+        local _space_version_minor=${_VERSION#*.}
+        _space_version_minor=${_space_version_minor%.*}
+        _check_version "${_base_directory##*/}" "${_minimum_required_space_version_major}" "${_minimum_required_space_version_minor}" "${_space_version_major}" "${_space_version_minor}"
+    fi
+}
+
+#==========
+# _get_module_latest_stable_version
+#
+# Reads Module stable version specifications
+# and returns module version that matches current Space version
+#
+# Parameters:
+#   $1: stable.txt file path
+#
+# Expects:
+#   _latest_stable_version: where the results are stored
+#
+# Returns:
+#   0: Found a matching version and stored to _latest_stable_version
+#   1: Failed to find matching version
+#
+#==========
+_get_module_latest_stable_version()
+{
+    local _stable_version_file="$1"
+    _latest_stable_version=
+
+    local _version_line=
+    while read _version_line; do
+        # Check expected format:
+        # Space v0: 0.0.0
+        local _module_latest_stable_tag=${_version_line%:*}
+        local _space_version_major=${_VERSION%%.*}
+        local _expected_matching_version="Space v${_space_version_major}"
+        if [ "${_module_latest_stable_tag}" = "${_expected_matching_version}" ]; then
+            _latest_stable_version=${_version_line#*:}
+            _latest_stable_version=${_latest_stable_version## }  # Trim spaces
+            _latest_stable_version=${_latest_stable_version%% }  #
+            return 0
+        fi
+    done < "${_stable_version_file}"
+    _error "Failed to find module latest stable version for Space ${_VERSION}"
+    return 1
+}
+
+#==========
 # _main
 #
 # Space program entrypoint
@@ -2468,7 +2586,7 @@ _main()
         elif [[ ${1:0:1} == '-' ]]; then
             # A normal switch, let getopts handle it.
             OPTIND=1
-            getopts ":f:m:aM:e:dp:v:k:K:ShVlC:BU:X:13:g" "_o"
+            getopts ":f:m:aM:e:dp:v:k:K:ShVlC:BU:X:13:gZ" "_o"
             case "${_o}" in
                 f)
                     if (( ${#_namespaces[@]} == 3 )); then
@@ -2691,6 +2809,10 @@ _main()
                     _ENABLE_GUI="1"
                     (return 1)
                     ;;
+                Z)
+                    _MODULE_CHECK_VERSION_COMPATIBILITY="0"
+                    (return 1)
+                    ;;
                 \?)
                     _error "Unknown option -${OPTARG-}."
                     _print "$_USAGE"
@@ -2878,6 +3000,12 @@ _main()
             fi
             _path="$_dir/$_file"
             _yamlfile=$_path
+
+            _check_minimum_requirements "${_dir}"
+            if [ "$?" -gt 0 ]; then
+                return "$?"
+            fi
+
             # Try to load the accompanying sh/bash file
             # clone and source will always be to $_INCLUDEPATH[1],
             # so here we set that to be in $CWD.
@@ -2913,6 +3041,12 @@ _main()
                 _error "Could not find YAML file in module ${_module}."
                 return 1
             fi
+
+            _check_minimum_requirements "${_yamlfile%/*}"
+            if [ "$?" -gt 0 ]; then
+                return "$?"
+            fi
+
             # Disabling cachefile to be put in $CWD.
             #_cachefile=$CWD"/."${_yamlfile##*/}".${_repofullname//\//.}.cache"
             # Put cache file along side yaml file.
@@ -3936,8 +4070,13 @@ _update_modules()
                         local _current_version=""
                         local _new_version="master"
                         if [ -f "./stable.txt" ]; then
-                            # EXTERNAL: cat
-                            _current_version=$(cat "./stable.txt")
+                            local _latest_stable_version=
+                            _get_module_latest_stable_version "./stable.txt"
+                            if [ "$?" -gt 0 ]; then
+                                return "$?"
+                            fi
+
+                            _current_version=${_latest_stable_version}
                         fi
                         git checkout master > /dev/null 2>&1
                         if [ "$?" -gt 0 ]; then
@@ -3951,8 +4090,14 @@ _update_modules()
                             return 1
                         fi
                         if [ -f "./stable.txt" ]; then
-                            # EXTERNAL: cat
-                            _new_version=$(cat "./stable.txt")
+                            local _latest_stable_version=
+                            _get_module_latest_stable_version "./stable.txt"
+                            if [ "$?" -gt 0 ]; then
+                                return "$?"
+                            fi
+
+                            _new_version=${_latest_stable_version}
+
                             if [ "$_current_version" != "$_new_version" ]; then
                                 _info "Updating to version: $_new_version"
                             else

@@ -143,7 +143,7 @@ SPACE_INSTALL()
         _src_file_size=$(wc -c < "${_bin_file_name}" )
 
         local _src_file_version=
-        _src_file_version=$(${_bin_file_name} -V 2>&1)
+        _src_file_version=$(./${_bin_file_name} -V 2>&1)
 
         PRINT "Space is already installed on ${_bin_full_path}" "warning"
         if [ "${_dest_file_size}" -eq "${_src_file_size}" ]; then

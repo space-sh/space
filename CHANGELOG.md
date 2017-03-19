@@ -16,6 +16,10 @@
 
 + Add a check before piping HTTPS modules into `tar` command
 
++ Add notion of minimum requirements for modules
+
++ Add _Space_ option `-Z` for ignoring requirement checks
+
 * Rename `push` to `_push`
 
 * Rename `pop` to `_pop`
@@ -45,6 +49,12 @@
 * Fix a bug when escaping quoted variables
 
 * Fix bug that causes unparsable arguments not to exit properly
+
+* Change stable.txt format to consider major _Space_ version
+
+* Fix wrong warning message during _Space_ replacement installation
+
+- Remove spacedoc `/module/` node
 
 
 ## [0.12.0 - 2017-01-26]

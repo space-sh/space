@@ -39,27 +39,29 @@ bash40_base_tests:
     - bash test/test_function.sh
     - bash test/test_yaml.sh
 
-bash44_base_tests:
-  stage: test
-  image: bash:4.4
-  script:
-    - which bash
-    - bash --version
-    - bash test/test_install.sh
-    - bash test/test_core.sh
-    - bash test/test_function.sh
-    - bash test/test_yaml.sh
+# Commented out due to: `ERROR: Build failed: execution took longer than X seconds`
+#bash44_base_tests:
+#  stage: test
+#  image: bash:4.4
+#  script:
+#    - which bash
+#    - bash --version
+#    - bash test/test_install.sh
+#    - bash test/test_core.sh
+#    - bash test/test_function.sh
+#    - bash test/test_yaml.sh
 
-bashlatest_base_tests:
-  stage: test
-  image: bash:latest
-  script:
-    - which bash
-    - bash --version
-    - bash test/test_install.sh
-    - bash test/test_core.sh
-    - bash test/test_function.sh
-    - bash test/test_yaml.sh
+# Commented out due to: `ERROR: Build failed: execution took longer than X seconds`
+#bashlatest_base_tests:
+#  stage: test
+#  image: bash:latest
+#  script:
+#    - which bash
+#    - bash --version
+#   - bash test/test_install.sh
+#    - bash test/test_core.sh
+#    - bash test/test_function.sh
+#    - bash test/test_yaml.sh
 
 #=========================================
 # Full tests

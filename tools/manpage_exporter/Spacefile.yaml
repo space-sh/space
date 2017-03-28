@@ -33,7 +33,7 @@ man:
             Parameters:
                 1: input Markdown documentation
             Example:
-                ./space -f ./tools/manpage_exporter/Spacefile.yaml /man/ -- ./doc/space.md
+                ./space -f ./tools/manpage_exporter/Spacefile.yaml /man/ -- ./manuals/space.md
     _env:
         - RUN: _EXPORT_MAN
 
@@ -45,7 +45,7 @@ html:
             Parameters:
                 1: input Markdown documentation
             Example:
-                ./space -f ./tools/manpage_exporter/Spacefile.yaml /html/ -- ./doc/space.md
+                ./space -f ./tools/manpage_exporter/Spacefile.yaml /html/ -- ./manuals/space.md
     _env:
         - RUN: _EXPORT_HTML
 

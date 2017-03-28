@@ -51,7 +51,7 @@ _version_date=$(date "+%Y-%m-%d")
 # Files to change
 _changelog_file="./CHANGELOG.md"
 _readme_file="./README.md"
-_docinstall_file="./doc/install.md"
+_docinstall_file="./manuals/install.md"
 _space_file="./space"
 _installsh_file="./tools/installer/install.sh"
 

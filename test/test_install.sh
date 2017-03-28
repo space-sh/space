@@ -137,8 +137,8 @@ else
     exit 1
 fi
 
-# Also check for generated man page. Not really generated man but dummy from doc/space.md
-cp doc/space.md space.1
+# Also check for generated man page. Not really generated man but dummy from manuals/space.md
+cp manuals/space.md space.1
 _RUN_CHECK_OK "Test space install: no parameters" "\[OK\]    SPACE_INSTALL_BIN:" space /install/
 
 which space > /dev/null 2>&1

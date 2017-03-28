@@ -23,7 +23,7 @@ Some external programs related to I/O operations are not _POSIX 1003.1_ complian
 
 ## Quick start
 
-Please choose one of the methods below for installing _Space_ or read the [installation documents](doc/install.md) in the /doc directory for the complete guide.
+Please choose one of the methods below for installing _Space_ or read the [installation documents](manuals/install.md) in the /doc directory for the complete guide.
 
 
 ### Automated install
@@ -41,12 +41,12 @@ Download, extract and install the latest stable version of _Space_:
 mkdir space
 curl https://space.sh/static/download/space-0.12.0/space-0.12.0.tar.gz | tar xvfz - -C ./space && cd ./space && ./space /install/
 ```
-Note: this exact method does not check for the integrity of the downloaded .tar.gz file. It is possible to do so while still performing a manual install, please refer to the [install documentation](doc/install.md).
+Note: this exact method does not check for the integrity of the downloaded .tar.gz file. It is possible to do so while still performing a manual install, please refer to the [install documentation](manuals/install.md).
 
 
 ### First steps
 _Space_ is now installed. Run `space -h` anywhere to read the help instructions.  
-For a simple module example, please refer to EXAMPLE section in the [user manual page](doc/space.md). For more advanced modules, check out the [Spacefile.yaml](Spacefile.yaml) and [Spacefile.sh](Spacefile.sh) files and the core modules located at [https://gitlab.com/space-sh](https://gitlab.com/space-sh).  
+For a simple module example, please refer to EXAMPLE section in the [user manual page](manuals/space.md). For more advanced modules, check out the [Spacefile.yaml](Spacefile.yaml) and [Spacefile.sh](Spacefile.sh) files and the core modules located at [https://gitlab.com/space-sh](https://gitlab.com/space-sh).  
 
 For more information, please refer to the documentation files located in the `doc` directory or the man pages.  
 For the latest news and online reference, please visit [https://space.sh](https://space.sh).

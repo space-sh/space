@@ -92,7 +92,7 @@ SPACE_PACKER_MAKE()
 
     #
     # Generate man page on current directory
-    local _space_man_input_file_path="${PWD}/doc/space.md"
+    local _space_man_input_file_path="${PWD}/manuals/space.md"
     local _space_man_expected_output_file_path="${PWD}/space.1"
     _EXPORT_MAN "$_space_man_input_file_path"
 

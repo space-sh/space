@@ -4370,6 +4370,56 @@ _loadnode()
                         return 1
                     fi
 
+                    local _israw=0
+                    if [[ "${_value:0:1}" == \" ]]; then
+                        if [[ "${_value: -1}" == " " ]]; then
+                            # Cut away trailing space(s)
+                            while [[ "${_value: -1}" == " " ]]; do
+                                _value="${_value:0:$((${#_value}-1))}"
+                            done
+                        elif [[ "${_value: -2}" == " "$'\n' ]]; then
+                            # Cut away trailing space(s)
+                            _value="${_value:0:$((${#_value}-1))}"
+                            while [[ "${_value: -1}" == " " ]]; do
+                                _value="${_value:0:$((${#_value}-1))}"
+                            done
+                            _value="${_value}"$'\n'
+                        fi
+                        if [[ "${_value: -1}" == \" ]]; then
+                            _value="${_value:1:$((${#_value}-2))}"
+                        elif [[ "${_value: -2}" == \"$'\n' ]]; then
+                            _value="${_value:1:$((${#_value}-3))}"$'\n'
+                        else
+                            _error "${_nodepath}_env/$_arrindex/$_key is malformed, no closing quote?. Syntax error in YAML."
+                            return 1
+                        fi
+                        # Descape quotes
+                        _value=${_value//\\\"/\"}
+                    elif [[ "${_value:0:1}" == \' ]]; then
+                        if [[ "${_value: -1}" == " " ]]; then
+                            # Cut away trailing space(s)
+                            while [[ "${_value: -1}" == " " ]]; do
+                                _value="${_value:0:$((${#_value}-1))}"
+                            done
+                        elif [[ "${_value: -2}" == " "$'\n' ]]; then
+                            # Cut away trailing space(s)
+                            _value="${_value:0:$((${#_value}-1))}"
+                            while [[ "${_value: -1}" == " " ]]; do
+                                _value="${_value:0:$((${#_value}-1))}"
+                            done
+                            _value="${_value}"$'\n'
+                        fi
+                        if [[ "${_value: -1}" == \' ]]; then
+                            _value="${_value:1:$((${#_value}-2))}"
+                        elif [[ "${_value: -2}" == \'$'\n' ]]; then
+                            _value="${_value:1:$((${#_value}-3))}"$'\n'
+                        else
+                            _error "${_nodepath}_env/$_arrindex/$_key is malformed, no closing quote?. Syntax error in YAML."
+                            return 1
+                        fi
+                        _israw=1
+                    fi
+
                     if [[ $_key == "RUN" && $_strip_args == "1" ]]; then
                         # If variable is RUN, we check if to trim away the arguments
                         # after "--" already here, to avoid variables not being declared.
@@ -4384,22 +4434,16 @@ _loadnode()
                     if [[ "$_value" == "!unset" ]]; then
                         local _s="unset ${_key}"$'\n'
                         eval "$_output+=( \"\$_s\" )"
-                    elif [[ "${_value:0:1}" == \' && "${_value: -1}" == \' ]]; then
+                    elif [[ $_israw == "1" ]]; then
                         local _s="local __spacegaltmp_=
 IFS= read -d '' -r __spacegaltmp_ << \"$_SPACEGAL_EOF_TAG\"
-${_value:1:$((${#_value}-2))}
+${_value}
 $_SPACEGAL_EOF_TAG
 local ${_key}=\${__spacegaltmp_: 0:\$(( \${#__spacegaltmp_} > 0 ? \${#__spacegaltmp_}-1 : 0 ))}
 unset __spacegaltmp_
 "
                         eval "$_output+=( \"\$_s\" )"
                     else
-                        if [[ "${_value:0:1}" == \" && "${_value: -1}" == \" ]]; then
-                            _value="${_value:1:$((${#_value}-2))}"
-                            # Descape quotes
-                            _value=${_value//\\\"/\"}
-                        fi
-
                         _filter "_value"
                         # Escape all quoted variables to respect any quotes
                         # within the variable values.

@@ -10,7 +10,7 @@ weight: 507
 
 # Spacefile YAML reference
 
-The _YAML_ syntax supported by _Space_ is a subset of the standard. Nodes without any value are ignored.  
+The _YAML_ syntax supported by _Space_ is a subset of the standard. Node without any value are ignored, except for `_env` variables which then are treated as empty strings.  
 To set a node to an empty string:  
 
 ```yaml
@@ -30,7 +30,8 @@ To unset an `_env` variable use `!unset`:
        - varname: !unset  
 ```  
 
-This will have _Bash_ unset the `varname` variable.
+This will have _Bash_ unset the `varname` variable.  
+
 Node values which are wrapped in single quotes will not be _Bash_ evaluated at the parse stage.
 The quotes are automatically removed.
 
@@ -42,17 +43,20 @@ Using env variables in _YAML_ will be properly substituted, if not escaped. Howe
 
 #### Strings and quoting
 Unquoted and double quoted values will be parameter expanded by _Bash_ during parsing, while single quoted lines will be treated as raw strings and evaluated later, at run time.  
+
 The following node's value will be parameter expanded by _Bash_ during _YAML_ parsing:  
 
 ```yaml
-       key: "$USER"
+_env:
+     - key: "$USER"
 ```  
 
-Meaning that `key` will immediately be set with the current date given by the `date` executable.  
-In the following node the second `$(date)` will not be expanded immediately during _YAML_ parsing:  
+Meaning that `key` will immediately be set with the current username given by the environment.  
+In the following node the second `$USER` will not be expanded immediately during _YAML_ parsing:  
 
 ```yaml
-       key: "YAML was processed by: $USER, following user at run time is: \$USER."
+_env:
+     - key: "YAML was processed by: $USER, following user at run time is: \$USER."
 ```  
 
 Note the escaped dollar sign, so it does not evaluate during _YAML_ parsing step.
@@ -60,67 +64,71 @@ Note the escaped dollar sign, so it does not evaluate during _YAML_ parsing step
 This other example on the other hand will be read as a raw string, since it is single quoted:  
 
 ```yaml
-       key: '$(date)'
+_env
+     - key: '$USER'
 ```  
 
 It will be processed later at run time.  
 
 Other examples:  
 ```yaml
-key: Regular string can do ${USER}  
-key: "Escaped Regular string can do ${USER} and \"${USER}\""  
-key: 'Single escaped string will not expand ${USER}'  
+_env:
+    - key1: Regular string can do ${USER}  
+    - key2: "Escaped Regular string can do ${USER} and \"${USER}\""  
+    - key3: 'Single escaped string will not expand ${USER}'  
 ```
 
-Multiline values must start with a single `>` or `|`. Using a `>` will collapse newlines into spaces, while using a `|` will preserve newlines. If the `>` or `|` is immediately followed by a double quote, then all lines will be parameter expanded by _Bash_ at parse time, also then the last line must end with a double quote.  
+Multiline values must start with a single `>` or `|`. Using a `>` will collapse newlines into spaces, while using a `|` will preserve newlines. If the `>` or `|` is immediately followed by a `-`, then there will be no trailing newline after the last row.
+
+If the first line begins with a single quote `'`, then the last line must also end with a single quote, and then variables will not get expanded by _Bash_ while parsing.
 
 ```yaml
-       key: |  
+_env:
+     - key1: |  
              Multiline  
              string,  
              with new lines kept.  
              Also last line ends with \n  
   
-       key: |-  
+     - key2: |-  
              Multiline  
              string,  
              with new lines kept.  
              Thanks to '-' this line does not end with \n  
   
-       key: >  
+     - key3: >  
              These lines  
              will be one  
              one long line,  
              where each line will be  
              space separated. Also the single line will have \n  
   
-        key: >-  
+     - key4: >-  
              These lines  
              will be one  
              one long line,  
              where each line will be  
              space separated. But the single line will not have \n thanks to '-'  
   
-        key: !nospace >  
+     - key5: !nospace >  
              Now these lines  
              will be joined  
              but with no spaces in between!  
              But line will end with \n  
   
-        key: !nospace >-  
+     - key6: !nospace >-  
              And these lines  
              will be joined  
              also with no spaces in between!  
              But line will not end with \n thanks to the '-'.  
   
-        key: |  
+     - key7: |  
              ${another_key}Another line  
              Yet another line here.  
    
-        key: |"  
-          Right now date is: $(date).  
-But at observation date would be: \$(date)  
-          Also line breaks will be conserved"  
+     - key8: |  
+          Right now user is: $USER.  
+          But at run time user would be: \$USER  
 ```  
 
 Multilines can also do variable expansion just as regular lines.  
@@ -130,10 +138,11 @@ They can also start and end with single (or double but that is same as no) quote
 str: |  
     'Multiline  
     within single  
-    quotes'  
+    quotes does not expand $USER at parse time.'  
 ```
 
-To add empty lines within a multiline string we must have spaces as indentation (here shown with dots).  
+To add empty lines within a multiline string we must have spaces as indentation (here shown with dots), this is necessary
+due to restrictions in the _Space_ YAML parser.  
 
 ```
 str: |  
@@ -152,29 +161,38 @@ A node can have child nodes, and then it becomes an associative array.
 
 ```yaml
    node:  
-       keya:  aaa  
-       keybb: bbb  
+       keya: aaa  
+       keyb: bbb  
 ```  
 
 _Space_ YAML supports a kind of list, it is an associative array with numeric keys. When fetching all keys for a list the key names are guaranteed to come sorted so the order of the list is preserved if keys are numbers.  
 
 ```yaml
    node:  
-      00: first item  
-      01: second item  
+      0: first item  
+      1: second item  
+```  
+
+Which is the same as:
+```yaml
+   node:  
+      - first item  
+      - second item  
 ```  
 
 #### Special keys
 All nodes with names beginning with an underscore are treated as hidden nodes and cannot autocomplete from the command line. They also might have special meaning to _Space_.  
 Also when doing regular expressions on node targets, underscored target names are ignored, if the regular expression pattern does not use underscore.  
+
 This will ignore node names beginning with underscore:
 ```sh
 $ space "/.*/"
-```
+```  
+
 This will include node names beginning with underscore or no underscore:
 ```sh
 $ space "/_?.*/"
-```
+```  
 
 
 * `_info`:
@@ -189,9 +207,6 @@ $ space "/_?.*/"
                    Let's have a  
                    multiline description  
                    about it.  
-               env: |  
-                   Optional information about this  
-                   nodes _env dependencies.  
 ```
 
 * `_env`:
@@ -281,8 +296,8 @@ Anything that is indented below the @include is treated as a sub-document that w
 For each server, include all services:  
 ```yaml
 @include: servers.yaml
-   server: This is server @{PARENT}
-   @include: services.yaml
+	server: This is server @{PARENT}
+	@include: services.yaml
 ```
 
 A filter is ended with slash if the filter is for everything below that node, if the filter does not end with slash it means: **get the content of the node and below**. The most useful aspect of this is to dynamically build multiline strings. Examples:
@@ -329,7 +344,7 @@ Instead of including file names you could name a module, then _Space_ will searc
 It is also possible to set any preprocessor variables using `-pvarname=` via the command line.
 These variables are saved with the cache and if they change or are not provided, the cache will be invalidated.
 
-#### Internal env variables 
+#### Internal environment variables 
 
 * `CWD`:
 The directory from where the user invoked _Space_.
@@ -446,7 +461,7 @@ FUN_OUT()
 
 ##### Experimenting with the test nodes
 
-Now it is possible to experiment with the test Module nodes. Experiment with the `-d` switch and observe how the exported code changes on each node, in particular in cases where external parameters affect code output   
+Now it is possible to experiment with the test Module nodes. Experiment with the `-d` switch and observe how the exported code changes on each node, in particular in cases where external parameters affect code output.  
 Some tests require extra steps. Check the following subsections for extra notes on tests that require extra steps.
 
 ###### SPACE_ENV
@@ -463,7 +478,7 @@ SPACE_ENV="var1=nospaces var2=\"has spaces\" var3=\"${var3}\" var4=\"\${var4}\""
 ```  
 An unescaped variable name will be evaluated on the spot in build time. However, it is possible to defer the evaluation until run time by escaping it as shown in `$var4` above.
 
-In case automatic assignment is needed, simply list the variable names:
+In case automatic assignment is wanted, simply list the variable names:
 ```sh
 SPACE_ENV="var1 var2"
 ```

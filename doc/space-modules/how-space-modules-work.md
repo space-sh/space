@@ -20,42 +20,42 @@ The following steps occur when running a _Space_ Module:
 1.5.  Fill up to three dimensions, if applicable.  
 1.6.  Setup _node combo_ iteration, save state and hand over to the _build stage_.  
   
-2. After the _init stages_ _Space_ enters the _build stage_.  
+2. After the _init stage_ _Space_ enters the _build stage_.  
 2.1.  Load node(s) in the node combo.  
 2.2.  Assemble the script for export.  
 2.3.  Run script or print it to stdout.  
 
-#### Space Module init stage
+#### 1. Space Module init stage
 
-##### Initialize the _script context_
+##### 1.1 Initialize the _script context_
 _Space_ will first unset all the _Space_ Variables to not inherit them from the shell environment.  
 After that, all variables defined with `-e` on the command line will be set to the _Space_ Context. These could include _Space_ Variables.
 
-##### Load _YAML_ files into namespaces
+##### 1.2 Load _YAML_ files into namespaces
 All _YAML_ files and _Space_ Modules _YAML_ files that were stated on the command line (using `-f/-m` switches) will be preprocessed and loaded into their respective namespace.  
 
-##### Fill up namespaces
+##### 1.3 Fill up namespaces
 If less than three namespaces were loaded, _Space_ will look into the _YAML_ of the first namespace after the special node `/_namespaces/` and load files/modules defined there.  
 Normally, only one namespace is used. Further explanation can be found in _Namespaces_ subsection.
 
-##### Expand node dimensions
+##### 1.4 Expand node dimensions
 During this step, command line node targets are expanded for wild cards and regular expressions against their respective namespace.
 
-##### Fill up dimensions
+##### 1.5 Fill up dimensions
 If less than three dimensions were given on the command line, _Space_ will look into the _YAML_ of the first namespace after the special node `/_dimensions/` and, if matched, fill up dimensions 2 and 3 with node targets in their respective namespace.  
 Usually, only one dimension is used. Further explanation can be found in _Dimensions_ subsection.
 
-##### Setup `node combo` iteration
+##### 1.6 Setup `node combo` iteration
 Depending on how many dimensions are specified, the node combination will result in a matrix of size `X * Y * Z`. The resulting size will be the number of node combinations to run.  
 After that, the `script context`s state is saved and ready to be handed over to the build stage. 
 Normally, there is only one dimension with single target node, so there is no iteration involved. Whenever multiple iterations occur, state is reset before proceeding to the next iteration.
 
 
-#### Space Module build stage
+#### 2. Space Module build stage
 
-##### Load node combo
+##### 2.1 Load node combo
 The build process will be handed one _node combo_, which could consist of one, two or three
-node targets.  
+node targets e.g. `/mysite/ /myserver/ /deploy/`.  
 Each node target is loaded from the _YAML_ structure. If more than one node is present then they are
 loaded left to right and the resulting environment variables will override from left to right.  
 
@@ -64,7 +64,7 @@ Analyzing the following _node combo_:
 
 Before passing over execution to the _build stage_, the `init stage` has setup a `script context`. This context contains the environment variables that are inherited from the shell and those which were defined on the command line using the `-e` switch. Also some other internal variables have been defined, such as `_VERSION`.  
 
-The build process will load each node in series, starting with `/node1/`. After that, the _YAML_ document is read and all environment variables defined are extracted and applied onto the _script context_. A variable defined in the YAML document will overwrite a variable with the same name already existing in the _script context_, if not the _YAML_ respects the original value as default value, as:  
+The build process will load each node in series, starting with `/node1/`. After that, the _YAML_ document is read and all environment variables defined are extracted and applied onto the _script context_. A variable defined in the YAML document will overwrite a variable with the same name already existing in the _script context_ (i.e. set using the -e switch or set by prior node target), if not the _YAML_ respects the original value as default value, as:  
 ```yaml
 node1:  
     _env:  
@@ -72,18 +72,18 @@ node1:
 ```  
 Then `/node2/` and `/node3/` are loaded in the same way, each with the ability to override variables already defined before it.
 
-##### Assemble export
+##### 2.2 Assemble export
 Now that the _script context_ is setup particularly for the _node combo_, _Space_ will assemble the parts that will build up the final output - the exported script.  
 _Space_ looks for the `RUN` variable. If it refers to a shell function that has not been loaded from a known module, that is, it is anonymous, then `RUN` will be put inside a function named `_anonymous`.  
 A module function could have a _Space_ Header. These are the first lines that set the special `SPACE` Header variables. The `SPACE` Header variables are always evaluated during the build step and affect the export.
 
 
-#### Spacefile YAML description
+#### 2.3 Spacefile YAML description
 The _YAML_ structure sets up the environment and then execution is passed on to a shell script function that executes the actual task.  
 
 A _YAML_ file is parsed and may refer to shell script functions loaded from a shell script file. The _YAML_ structure is referred to as "nodes", and a "node" can have shell variables associated to it.  
 
-A node can be executed if it has the environment variable `RUN` set. The `RUN` variable typically refers to a shell script function, or is a shell script snippet in itself. A node could have many environment variables attached to it (using the `_env` sub node). When executing a node that has many levels such as `/a/b/c/`, all shell script variables in each level will be loaded, where the deeper levels override their parent levels.  
+A node can be executed if it has the environment variable `RUN` set. The `RUN` variable typically refers to a shell script function, or is a shell script snippet in itself. A node could have many environment variables attached to it (using the `_env` sub node). When executing a node that has many levels such as `/a/b/c/`, all shell script variables in each level will be loaded, where the deeper levels override their parent levels (except for the variables RUN, SPACE_REDIR, RUN_ALIAS, SPACE_OUTER and SPACE_ARGS which are not inherited).  
 
 #### Namespaces
 A namespace is where a _YAML_ document is loaded. Each document has its own namespace to prevent conflicts.  
@@ -187,7 +187,7 @@ tasks:
             - RUN: SERVER_STATUS
 ```
 
-Running _Space_ referring to both `a.yaml` and `b.yaml` results in two node dimensions, that is, two columns, each with one node target in it:  
+Running _Space_ referring to nodes both in `a.yaml` and `b.yaml` results in two node dimensions, that is, two columns, each with one node target in it:  
 ```sh
 $ space -f a.yaml /servers/alpha/ -f b.yaml /tasks/ping/ -l
 /servers/alpha/ /tasks/ping/

@@ -14,7 +14,7 @@ Create a new file named `Spacefile.yaml` and add the following contents to it:
 
 ```yaml
 _env:  
-    - RUN: printf "Hello World"  
+    - RUN: printf "Hello World\n"  
 ```
 
 Now run `space` and it should output `Hello World` to the console `stdout`.

@@ -30,7 +30,7 @@ Spacefile.sh:
 ```yaml
 MY_FUNCTION()  
 {  
-    printf "Hello from MY_FUNCTION"  
+    printf "Hello from MY_FUNCTION\n"  
 }
 ```
 
@@ -54,7 +54,7 @@ space -m os /info/
 
 The previous command reads as follows:  
 
->Tell Space program to run module named `os` and run node called `info`
+>Tell Space program to run module named `os` and run node named `info`
 
 Nodes are the units in which the Module hierarchy are laid out. Whenever creating a new Module function, a YAML node will be required for exposing public functionality.  
 

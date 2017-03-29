@@ -79,7 +79,7 @@ Hello, args are: Greetings World! Hello World!
 
 Oops, that doesn't look right. The reason is that the arguments were not specified as available to be overridden.
 
-In order to fix that, let's state that the second argument is overridable by adding a `--` switch in front of it:
+In order to fix that, let's state that the arguments from the second argument are overridable by adding a `--` switch in front of it:
 ```yaml
 _env:
     - RUN: FUN Greetings -- World!
@@ -112,7 +112,7 @@ $ space
 Hello, args are: Hi World!
 ```
 
-The *header* of the function is considered to be all lines that start with defining a so called
+The *header* of the function is considered to be all the top lines that start with defining a so called
 _Space_ Header variable, as such:  
 ```sh
 FUN()
@@ -130,8 +130,8 @@ FUN()
 The most powerful way to dynamically change the build configuration in build time is to use the _Space_ Header `SPACE_FN`.  
 This is a variable that points to another module function by name. What this does is that _Space_ will first evaluate the `space headers` letting the build time function manipulate them if necessary, then it will be forwarded to extract that other function (pointed to by `SPACE_FN`) as the function to export. Not only that, it also means that the function body of the function declaring `SPACE_FN` will be evaluated on the spot in a restricted subshell giving it advanced possibilities to modify variables and then `YIELD` them out again to affect the build.  
 
-In the following case, function `FUN()` will turn into a "build time" function because it has `SPACE_FN` in its header. As with all functions, the _Space_ Header is first evaluated and those variables are set. After that, the function body is evaluated giving the function a chance to modify and change the _Space_ Header and other relevant variables.  
-A build time function body must always call `YIELD varname` to export the value of an already declared variable. This is due to the fact that the code runs in a restricted subshell and cannot directly interact with the environment.  
+In the following case, function `FUN()` will turn into a "build time" function because it has `SPACE_FN` in its header. As with all functions, the _Space_ Header of the "build time" function is first evaluated and those variables are set. After that, the function body of the "build time" function is evaluated giving the function a chance to modify and change the _Space_ Header and other relevant variables.  
+A build time function body must always call `YIELD varname` to export the value of a variable, which must already have been declared in the outside environment. This is due to the fact that the code runs - for security reasons - in a restricted subshell and cannot directly interact with the environment.  
 
 If the build time function besides `SPACE_FN` also declares `SPACE_BUILDENV` or `SPACE_BUILDDEP`, then these will stand for the build time function, just like `SPACE_ENV` and `SPACE_DEP` are for the exported function. That goes for `SPACE_BUILDARGS` as well, which are the arguments for the build time function.  
 
@@ -141,21 +141,21 @@ After the body of `FUN()` have been evaluated, _Space_ will be pointed to `FUN2(
 FUN()
 {
     SPACE_FN="FUN2"
-    SPACE_BUILDENV="A B"
+    SPACE_BUILDENV="USER HOME"
     SPACE_BUILDDEP="PRINT"
-    SPACE_ARGS="A B"
     SPACE_BUILDARGS="${SPACE_ARGS}"
 
     # Above is the header, below is the body.
 
-    PRINT "FUN args are: $*"
+    PRINT "Build time args are: $*"
     # Here we alter the function arguments for the coming function: FUN2.
-    SPACE_ARGS="e r"
+    SPACE_ARGS="$* Adding some more args for $USER"
+
     YIELD "SPACE_ARGS"
 }
 
 FUN2()
 {
-    echo "Arguments: $*"
+    echo "Final arguments: $*"
 }
 ```

@@ -5913,7 +5913,7 @@ _get_fn()
         _file="${_SOURCE_FILES_TOTAL[$_i]}"
         # EXTERNAL: cat
         local _content="$(cat ${_file})"$'\n'  # We add a '\n' so that pattern matching below works properly.
-        if [[ ${_content} =~ (.?)${_cmdname}[\ ]*\(\)$'\n'\{[\ ]*$'\n'(.*$'\n') ]]; then
+        if [[ ${_content} =~ (^|$'\n')${_cmdname}[\ ]*\(\)$'\n'\{[\ ]*$'\n'(.*$'\n') ]]; then
             if [ "${#BASH_REMATCH[1]}" -eq 0 -o "${BASH_REMATCH[1]}" = $'\n' ]; then
                 _content="${BASH_REMATCH[2]}"
                 _content="${_content%%$'\n'\}$'\n'*}"

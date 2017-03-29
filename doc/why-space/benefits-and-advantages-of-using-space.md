@@ -19,8 +19,8 @@ weight: 201
 - **No dependencies**: _Bash_ is available everywhere
 - **Compatible**: follows _POSIX-like_ philosophy and standards
 - **Configurable**: ability to use the preprocessor for tweakable settings
-- **Extensible**: ability to expand the core concepts and creating derivative programs with _Space_ Modules
+- **Extensible**: ability to expand the core concepts and creating derivative programs with _Space_ modules
 - **Composable**: modules can be combined to quickly create new programs, giving great flexibility
 - **Decentralized content**: distributed user-content by design
-- **Exportable**: possibility to build standalone programs for more secure deployments by exporting _Space_ Modules where any redundant code has been removed by tree-shaking, for easy inspection
+- **Exportable**: possibility to build standalone programs for more secure deployments by exporting _Space_ modules where any redundant code has been removed by tree-shaking, for easy inspection
 - **Agentless**: no agents required for running commands on remote targets

@@ -9,7 +9,7 @@ weight: 503
 
 # Running a Space module
 
-_Space_ Modules are run following the command format:
+_Space_ modules are run following the command format:
 
 ```sh
 space -m [reponame] /[nodename]/ -- [arguments]  

@@ -10,7 +10,7 @@ weight: 504
 
 # How Space modules work
 
-The following steps occur when running a _Space_ Module:  
+The following steps occur when running a _Space_ module:  
 
 1. Bash will run the `space` shell script and then `space` will perform the _init stage_:  
 1.1.  Initialize the _script context_.  
@@ -28,11 +28,11 @@ The following steps occur when running a _Space_ Module:
 #### 1. Space Module init stage
 
 ##### 1.1 Initialize the _script context_
-_Space_ will first unset all the _Space_ Variables to not inherit them from the shell environment.  
-After that, all variables defined with `-e` on the command line will be set to the _Space_ Context. These could include _Space_ Variables.
+_Space_ will first unset all the _Space_ variables to not inherit them from the shell environment.  
+After that, all variables defined with `-e` on the command line will be set to the _Space_ context. These could include _Space_ variables.
 
 ##### 1.2 Load _YAML_ files into namespaces
-All _YAML_ files and _Space_ Modules _YAML_ files that were stated on the command line (using `-f/-m` switches) will be preprocessed and loaded into their respective namespace.  
+All _YAML_ files and _Space_ modules _YAML_ files that were stated on the command line (using `-f/-m` switches) will be preprocessed and loaded into their respective namespace.  
 
 ##### 1.3 Fill up namespaces
 If less than three namespaces were loaded, _Space_ will look into the _YAML_ of the first namespace after the special node `/_namespaces/` and load files/modules defined there.  
@@ -75,7 +75,7 @@ Then `/node2/` and `/node3/` are loaded in the same way, each with the ability t
 ##### 2.2 Assemble export
 Now that the _script context_ is setup particularly for the _node combo_, _Space_ will assemble the parts that will build up the final output - the exported script.  
 _Space_ looks for the `RUN` variable. If it refers to a shell function that has not been loaded from a known module, that is, it is anonymous, then `RUN` will be put inside a function named `_anonymous`.  
-A module function could have a _Space_ Header. These are the first lines that set the special `SPACE` Header variables. The `SPACE` Header variables are always evaluated during the build step and affect the export.
+A module function could have a _Space_ header. These are the first lines that set the special `SPACE` Header variables. The `SPACE` Header variables are always evaluated during the build step and affect the export.
 
 
 #### 2.3 Spacefile YAML description
@@ -135,7 +135,7 @@ _namespaces:
 When defining two namespaces on the command line only the third namespace will be automatically loaded, in this case the file b.yaml (not somemodule).
 
 #### Dimensions
-For more complex combinations of modules, there is also the concept of Dimensions. _Space_ can handle up to three dimensions. This is a cuboid X*Y*Z, where X, Y and Z are one or more nodes that will be run in combination.  
+For more complex combinations of modules, there is also the concept of dimensions. _Space_ can handle up to three dimensions. This is a cuboid X*Y*Z, where X, Y and Z are one or more nodes that will be run in combination.  
 
 An example of that is X could be a list of things to operate on, Y could be one or more operations to apply to each thing and Z could be one or more "hosts" where these things exist.  
 
@@ -246,7 +246,7 @@ Wildcards and regular expressions must always be contained inside double quotes.
 
 ##### Automatically adding dimensions using `friend` nodes
 
-Just as namespaces can be automatically filled by defining the special node `/_namespaces/`, the same happens with Dimensions.  
+Just as namespaces can be automatically filled by defining the special node `/_namespaces/`, the same happens with _Space_ dimensions.  
 
 If _Space_ has less than three node dimensions, it will look into the first namespace's YAML after the specific node `/_dimensions/`.  
 What the `_dimensions` node does is that it defines auto-fill for dimensions two and three, where applicable.  

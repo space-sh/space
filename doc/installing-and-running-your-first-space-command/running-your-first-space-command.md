@@ -19,4 +19,4 @@ _env:
 
 Now run `space` and it should output `Hello World` to the console `stdout`.
 
-Next section describes what _Space_ Modules are. For jumping right into more code, see _Running a Space module_ section.
+Next section describes what _Space_ modules are. For jumping right into more code, see _Running a Space module_ section.

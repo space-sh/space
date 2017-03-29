@@ -97,7 +97,7 @@ Hello, args are: Greetings Universe!
 #### Understanding dynamic configuration
 Now we will introduce a slightly more advanced notion: dynamic configuration.  
 
-_Space_ Headers are always evaluated when the function body is read. With this concept we could have the _Space_ Header change the values of special _Space_ Variables. Consider the example in this modified `Spacefile.sh`:  
+_Space_ headers are always evaluated when the function body is read. With this concept we could have the _Space_ header change the values of special _Space_ variables. Consider the example in this modified `Spacefile.sh`:  
 ```sh
 FUN()
 {
@@ -113,7 +113,7 @@ Hello, args are: Hi World!
 ```
 
 The *header* of the function is considered to be all the top lines that start with defining a so called
-_Space_ Header variable, as such:  
+_Space_ header variable, as such:  
 ```sh
 FUN()
 {
@@ -127,10 +127,10 @@ FUN()
 ```
 
 #### More on build time functions
-The most powerful way to dynamically change the build configuration in build time is to use the _Space_ Header `SPACE_FN`.  
+The most powerful way to dynamically change the build configuration in build time is to use the _Space_ header `SPACE_FN`.  
 This is a variable that points to another module function by name. What this does is that _Space_ will first evaluate the `space headers` letting the build time function manipulate them if necessary, then it will be forwarded to extract that other function (pointed to by `SPACE_FN`) as the function to export. Not only that, it also means that the function body of the function declaring `SPACE_FN` will be evaluated on the spot in a restricted subshell giving it advanced possibilities to modify variables and then `YIELD` them out again to affect the build.  
 
-In the following case, function `FUN()` will turn into a "build time" function because it has `SPACE_FN` in its header. As with all functions, the _Space_ Header of the "build time" function is first evaluated and those variables are set. After that, the function body of the "build time" function is evaluated giving the function a chance to modify and change the _Space_ Header and other relevant variables.  
+In the following case, function `FUN()` will turn into a "build time" function because it has `SPACE_FN` in its header. As with all functions, the _Space_ header of the "build time" function is first evaluated and those variables are set. After that, the function body of the "build time" function is evaluated giving the function a chance to modify and change the _Space_ header and other relevant variables.  
 A build time function body must always call `YIELD varname` to export the value of a variable, which must already have been declared in the outside environment. This is due to the fact that the code runs - for security reasons - in a restricted subshell and cannot directly interact with the environment.  
 
 If the build time function besides `SPACE_FN` also declares `SPACE_BUILDENV` or `SPACE_BUILDDEP`, then these will stand for the build time function, just like `SPACE_ENV` and `SPACE_DEP` are for the exported function. That goes for `SPACE_BUILDARGS` as well, which are the arguments for the build time function.  

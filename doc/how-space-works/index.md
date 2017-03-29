@@ -16,4 +16,4 @@ _Space_ uses some external programs for certain tasks, mostly coupled to tasks t
 Optional programs that are used when available for improving user experience include: _curl_, _git_, _shasum_, _sha1sum_, _sha256sum_ and _wget_.
 
 When performing installation, if `man` program is available, _Space_ installs the manual page file. _Bash_ tab completion is also installed if the current _Bash_ install supports such feature.  
-_Space_ revolves around Modules, covered in its own section - [Space Modules](../space-modules).
+_Space_ revolves around modules, covered in its own section - [Space modules](../space-modules).

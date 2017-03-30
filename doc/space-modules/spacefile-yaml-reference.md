@@ -454,7 +454,7 @@ FUN_OUT()
     local n="${1}"
     echo "This outer function will run the same command ${n} times:"
     for i in $(seq 1 ${n}); do
-        _RUN_
+        eval "${RUN}"
     done
 }
 ```

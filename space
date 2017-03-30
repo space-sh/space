@@ -4510,20 +4510,20 @@ _balance_wrap_headers()
         fi
 
         while [ "${#__A[@]}" -gt "${#__B[@]}" ]; do
-            SPACE_WRAPARGS="${SPACE_WRAPARGS}"$'\n'
             if [ "${#__B[@]}" -eq 0 ]; then
                 __B=("")
             else
                 __B=("${__B[@]}" "")
             fi
         done
+        printf -v SPACE_WRAPARGS "%s\n" "${__B[@]}"
     else
         SPACE_WRAPARGS=
     fi
-    if [ -n "${1-}" ]; then
+    if [ -n "${1-}" ] && [ "${#__A[@]}" -gt 0 ]; then
         eval "$1=(\"\${__A[@]}\")"
     fi
-    if [ -n "${2-}" ]; then
+    if [ -n "${2-}" ] && [ "${#__B[@]}" -gt 0 ]; then
         eval "$2=(\"\${__B[@]}\")"
     fi
 }

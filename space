@@ -4479,6 +4479,56 @@ unset __spacegaltmp_
 }
 
 #==========
+# _balance_wrap_headers
+#
+# Balance SPACE_WRAPARGS towards SPACE_WRAP count.
+#
+# Parameters:
+#   $1: name of array to add SPACE_WRAP items to (optional)
+#   $2: name of array to add SPACE_WRAPARGS lines to (optional)
+#
+#==========
+_balance_wrap_headers()
+{
+    local __A=() __B=()
+    if [ -n "${SPACE_WRAP}" ]; then
+        IFS=' ' read -r -a __A <<< "${SPACE_WRAP}"
+
+        local __wrapargs=${SPACE_WRAPARGS}
+        if [ -n "${__wrapargs}" ]; then
+            # We need to remove the last \n to not get an extra line.
+            __wrapargs="${__wrapargs:0:$((${#__wrapargs}-1))}"
+        fi
+        if [ -n "${__wrapargs}" ]; then
+            while IFS=$'\n' read _line; do
+                if [ "${#__B[@]}" -eq 0 ]; then
+                    __B=("$_line")
+                else
+                    __B=("${__B[@]}" "$_line")
+                fi
+            done <<< "${__wrapargs}"
+        fi
+
+        while [ "${#__A[@]}" -gt "${#__B[@]}" ]; do
+            SPACE_WRAPARGS="${SPACE_WRAPARGS}"$'\n'
+            if [ "${#__B[@]}" -eq 0 ]; then
+                __B=("")
+            else
+                __B=("${__B[@]}" "")
+            fi
+        done
+    else
+        SPACE_WRAPARGS=
+    fi
+    if [ -n "${1-}" ]; then
+        eval "$1=(\"\${__A[@]}\")"
+    fi
+    if [ -n "${2-}" ]; then
+        eval "$2=(\"\${__B[@]}\")"
+    fi
+}
+
+#==========
 # _execute
 #
 # Process a particular node path. Starts with root and evaluates every node.
@@ -4607,11 +4657,7 @@ _execute()
     local SPACE_DEP=${SPACE_DEP-}
 
     # Balance SPACE_WRAP and SPACE_WRAPARGS
-    if [ -n "${SPACE_WRAP}" ]; then
-        SPACE_WRAPARGS="${SPACE_WRAPARGS:-\ }"$'\n'
-    else
-        SPACE_WRAPARGS=
-    fi
+    _balance_wrap_headers
 
     _cmd_extract
     (( $? > 0 )) && return 1
@@ -4663,29 +4709,26 @@ _execute()
             _fn_cmdouterdep=
         fi
 
-        # This must be old cruft, right?
-        #if [[ -n ${CMDENV-} ]]; then
-            #_fn_env="${CMDENV} ${_fn_env}"
-        #fi
-
         local _fn_call="${_fn_name} ${_fn_args}"
         unset _fn_args
 
         local _wrapped_fn_def=""
         local _wrappers=0
         if [[ -n ${_fn_wrap} ]]; then
-            local _fn_wrap_item= _fn_wrap_items=() _i= _fn_wrap_item_args=
-            local _fn_wrap_items_args=()
-            IFS=' ' read -r -a _fn_wrap_items <<< "${_fn_wrap}"
-            IFS=$'\n' read -d'' -r -a _fn_wrap_items_args <<< "${_fn_wraps_args}"
+            local _fn_wrap_items=() _fn_wrap_items_args=()
+            _balance_wrap_headers "_fn_wrap_items" "_fn_wrap_items_args"
+
             _wrappers=${#_fn_wrap_items[@]}
             if [ "${_wrappers}" -ne "${#_fn_wrap_items_args[@]}" ]; then
-                _error "The number of SPACE_WRAP and SPACE_WRAPARGS do not match."
+                _error "The number of SPACE_WRAP (${_wrappers}) and SPACE_WRAPARGS (${#_fn_wrap_items_args[@]}) do not match."
+                _debug "Wrappers: ${_fn_wrap}"
+                _debug "Wrappers args: ${_fn_wrap_items_args}"
                 return 1
             fi
             # We evaluate all the wrappers beginning with the outermost one.
             # In this way wrappers can manipulate environment variables for
             # innermore wrappers and also for the final function.
+            local _fn_wrap_item= _i= _fn_wrap_item_args=
             for ((_i=0; _i<$((_wrappers)); _i+=1 )); do
                 _fn_wrap_item="${_fn_wrap_items[${_i}]}"
                 _fn_wrap_item_args="${_fn_wrap_items_args[${_i}]}"
@@ -5131,7 +5174,7 @@ _cmd_extract()
                 (( $? > 0 )) && { _error "Could not mktemp dir for SPACE_FN isolation."; return 1; }
                 local _tmpfile="${_tmpdir}/output"
                 local _restrictedcode=$_fns
-                exec 3<> ${_tmpfile}
+                exec 3<> ${_tmpfile}  # Open FD 3 for YIELD
                 ( cd $_tmpdir; PATH= ${_BASHBIN} -rc "${_restrictedcode}" )
                 if (( $? > 0 )); then
                     _error "Error returned from build time function: ${_space_cmd}."
@@ -5166,7 +5209,7 @@ _cmd_extract()
                                 eval "unset ${_varname}"
                             fi
                         else
-                            _error "Could not translated yielded variables out from ${_fn_name}."
+                            _error "Could not translate yielded variables out from ${_fn_name}."
                             trap - EXIT
                             rm ${_tmpfile}
                             rmdir $_tmpdir
@@ -5178,7 +5221,7 @@ _cmd_extract()
                         if [ "${_linecount}" -gt 0 ]; then
                             _value="${_value}"$'\n'
                         else
-                            eval "${_varname}=\${_value}"
+                            eval "${_varname}=\"\${_value}\""
                             _varname=
                             _value=
                         fi
@@ -5228,6 +5271,7 @@ _cmd_extract()
                 fi
                 if (( $? > 0 )); then trap - EXIT; return 1; fi
 
+                _balance_wrap_headers
                 _add_cmd "${_fn_name}" "${_fn_def}" "${SPACE_ARGS}" "${SPACE_REDIR}" "${SPACE_OUTER}" "${SPACE_WRAP}" "${SPACE_DEP}" "${_fn_env}" "${SPACE_OUTERDEP}" "${SPACE_OUTERENV}" "${SPACE_WRAPARGS}"
                 unset _fn_def
                 break
@@ -5273,7 +5317,6 @@ _cmd_extract_space_header ()
     local _line=
     local _isheader="1"
     local _addedspacewrap=0
-    local _spacewrapargs=
     local _hasfn=0
     local _hasbuildenv=0
     local _hasbuilddep=0
@@ -5475,7 +5518,7 @@ _cmd_extract_space_header ()
                             _s="${_s:0:$((${#_s}-1))}"
                         fi
                         _escape "_s" '"'
-                        _spacewrapargs=${_s}  # Save for later
+                        _spacelines+=("SPACE_WRAPARGS=\"\${SPACE_WRAPARGS}${_s}\"\$'\n'")
                         unset _s
                     elif [[ ${_spacevar} == "SPACE_FN" ]]; then
                         # Always overwritten.
@@ -5503,11 +5546,6 @@ _cmd_extract_space_header ()
             else
                 # Stop extracting header if a row is not prefixed by "SPACE_" nor "#".
                 _isheader="0"
-                # Balance SPACE_WRAPARGS
-                if [ "${_addedspacewrap}" -eq 1 ]; then
-                    _spacewrapargs="${_spacewrapargs:-\ }"
-                    _spacelines+=("SPACE_WRAPARGS=\"\${SPACE_WRAPARGS}${_spacewrapargs}\"\$'\n'")
-                fi
             fi
         fi
         if [[ $_isheader == "0" ]]; then

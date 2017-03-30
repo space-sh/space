@@ -4783,8 +4783,17 @@ _execute()
         unset _i
         unset _wrappers
 
+        local _run_='eval "${RUN}"'
         if [[ -n ${_fn_redir} ]]; then
-            _fn_call="${_fn_call} ${_fn_redir}"
+            _run_="${_run_} ${_fn_redir}"
+        fi
+        local _fn_def2="${_fn_def//_RUN_/${_run_}}"
+        if [ "${_fn_def2}" != "${_fn_def}" ]; then
+            _fn_def="${_fn_def2}"
+        else
+            if [[ -n ${_fn_redir} ]]; then
+                _fn_call="${_fn_call} ${_fn_redir}"
+            fi
         fi
 
         _export_cmd="${_cmd_options}${_export_cmd}${_wrapped_fn_def}${_export_vars}${_fn_def}${_fn_call}"$'\n'

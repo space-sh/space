@@ -4478,19 +4478,44 @@ unset __spacegaltmp_
     return 0
 }
 
-#==========
+#======================
 # _balance_wrap_headers
 #
 # Balance SPACE_WRAPARGS towards SPACE_WRAP count.
 #
-# Parameters:
-#   $1: name of array to add SPACE_WRAP items to (optional)
-#   $2: name of array to add SPACE_WRAPARGS lines to (optional)
-#
-#==========
+#======================
 _balance_wrap_headers()
 {
+    local _A=() _B=()
+    _extract_wrap_headers "${SPACE_WRAP}" "${SPACE_WRAPARGS}" "_A" "_B"
+
+    if [ "${#_B[@]}" -gt 0 ]; then
+        printf -v SPACE_WRAPARGS "%s\n" "${_B[@]}"
+    else
+        SPACE_WRAPARGS=
+    fi
+}
+
+#======================
+# _extract_wrap_headers
+#
+# Extract balanced arrays of SPACE_WRAP and SPACE_WRAPARGS
+#
+# Parameters:
+#   $1: SPACE_WRAP content
+#   $2: SPACE_WRAPARGS content
+#   $3: name of array to add SPACE_WRAP items to (optional)
+#   $4: name of array to add SPACE_WRAPARGS lines to (optional)
+#
+#======================
+_extract_wrap_headers()
+{
+    local SPACE_WRAP="$1"
+    shift
+    local SPACE_WRAPARGS="$1"
+    shift
     local __A=() __B=()
+
     if [ -n "${SPACE_WRAP}" ]; then
         IFS=' ' read -r -a __A <<< "${SPACE_WRAP}"
 
@@ -4516,14 +4541,11 @@ _balance_wrap_headers()
                 __B=("${__B[@]}" "")
             fi
         done
-        printf -v SPACE_WRAPARGS "%s\n" "${__B[@]}"
-    else
-        SPACE_WRAPARGS=
     fi
-    if [ -n "${1-}" ] && [ "${#__A[@]}" -gt 0 ]; then
+    if [ "${#__A[@]}" -gt 0 ]; then
         eval "$1=(\"\${__A[@]}\")"
     fi
-    if [ -n "${2-}" ] && [ "${#__B[@]}" -gt 0 ]; then
+    if [ "${#__B[@]}" -gt 0 ]; then
         eval "$2=(\"\${__B[@]}\")"
     fi
 }
@@ -4716,8 +4738,7 @@ _execute()
         local _wrappers=0
         if [[ -n ${_fn_wrap} ]]; then
             local _fn_wrap_items=() _fn_wrap_items_args=()
-            _balance_wrap_headers "_fn_wrap_items" "_fn_wrap_items_args"
-
+            _extract_wrap_headers "${_fn_wrap}" "${_fn_wraps_args}" "_fn_wrap_items" "_fn_wrap_items_args"
             _wrappers=${#_fn_wrap_items[@]}
             if [ "${_wrappers}" -ne "${#_fn_wrap_items_args[@]}" ]; then
                 _error "The number of SPACE_WRAP (${_wrappers}) and SPACE_WRAPARGS (${#_fn_wrap_items_args[@]}) do not match."

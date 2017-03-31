@@ -2098,10 +2098,11 @@ _module_check_banlist()
         # for some specific combination.
         _debug "Ban server check against: $_giturl"
         if [[ $_HTTPBIN == "curl" ]]; then
-            _response=$($_HTTPBIN $_SECURITY_BAN_SERVER -s -X POST --data-urlencode "git_url=${_giturl}" --data-urlencode "bash=${BASH_VERSION}" --data-urlencode "os=$(${_UNAME})")
+            _response=$($_HTTPBIN $_SECURITY_BAN_SERVER -s -X POST --data-urlencode "git_url=${_giturl}" --data-urlencode "bash=${BASH_VERSION}" --data-urlencode "space=${_VERSION}" --data-urlencode "os=$(${_UNAME})")
             _debug "Ban server response, curl: ${_response}."
         elif [[ $_HTTPBIN == "wget" ]]; then
-            _response=$($_HTTPBIN $_SECURITY_BAN_SERVER -q -O- --post-data="git_url=${_giturl}&bash=${BASH_VERSION}&os=$(${_UNAME})")
+            # TODO: wget doesn't urlencode the post data so we must do that in advance.
+            _response=$($_HTTPBIN $_SECURITY_BAN_SERVER -q -O- --post-data="git_url=${_giturl}&bash=${BASH_VERSION}&space=${_VERSION}&os=$(${_UNAME})")
             _debug "Ban server response, wget: ${_response}."
         else
             _error "No curl/wget found in OS. Cannot check module banlist."

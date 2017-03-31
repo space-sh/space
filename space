@@ -5265,9 +5265,10 @@ _cmd_extract_space_header ()
                     if [[ -n ${_cmd_args_count-} ]]; then
                         # Check so that signature matches.
                         local _signature=${BASH_REMATCH[2]}
-                        [[ ${_signature:0:1} == \" ]] && _signature=${_signature:1}
-                        [[ ${_signature: -1} == ";" ]] && _signature=${_signature:0:$((${#_signature}-1))}
-                        [[ ${_signature: -1} == \" ]] && _signature=${_signature:0:$((${#_signature}-1))}
+                        local _arr=()
+                        _split_args "_arr" "${_signature}"
+                        printf -v _signature "%s" "${_arr[@]}"
+                        [[ ${_signature:0:1} == ' ' ]] && _signature=${_signature:1}
                         local _sigcount=0
                         local _signature2="${_signature}"
                         if [ "${_signature:0:1}" = "[" ]; then
@@ -5280,7 +5281,7 @@ _cmd_extract_space_header ()
                         _signature2=${_signature2//[^\ ]}
                         (( _sigcount += ${#_signature2} ))
                         if (( _sigcount > _cmd_args_count )); then
-                            _error "Missing $((_sigcount-_cmd_args_count)) argument(s). Function ${_fn_name} has the signature: ${_signature}, but only these arguments where provided: ${_given_args}."
+                            _error "Missing $((_sigcount-_cmd_args_count)) argument(s). Function ${_fn_name} has the signature: ${_signature}, but only these (${_cmd_args_count}) arguments where provided: ${_given_args}"
                             return 1
                         fi
                     fi

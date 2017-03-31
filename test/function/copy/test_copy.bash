@@ -21,7 +21,7 @@ _TEST_COPY()
     SPACE_DEP="PRINT _copy"
     SPACE_ENV="_YAML_PREFIX _YAML_NAMESPACE"
 
-    local _sg1_0a95somespace_node1_node3_Test0a95nO0a95d3="Passed"
+    local _sg1_0x5fsomespace_node1_node3_Test0x5fnO0x5fd3="Passed"
     local _test_storage=
     _copy "_test_storage" "/_somespace/node1/node3/Test_nO_d3"
 

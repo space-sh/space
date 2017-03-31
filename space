@@ -135,7 +135,7 @@ readonly _SPACEGAL_EOF_TAG="_SPACEGAL_SAYS_END_OF_FINITY_"
 # Use caching. 0 = no, 1 = yes (default), 2 = regenerate cache.
 _CACHE_LEVEL=1
 # Internal identifier of the cache files current format.
-readonly _CACHE_FORMAT="2.2"
+readonly _CACHE_FORMAT="2.3"
 
 # Array of files that will get sourced before executing.
 # Added using _source function.
@@ -244,7 +244,7 @@ _MODULE_CHECK_VERSION_COMPATIBILITY="1"
 
 # Set to "1" to allow Space to use
 # external OS tools to speed things up.
-# Like awk, sore, etc.
+# Like awk, sort, etc.
 _ALLOW_EXTERNAL="1"
 
 #==========
@@ -529,7 +529,7 @@ _copy()
     local _path=$1
     shift
 
-    _path=${_path//_/0a95}
+    _path=${_path//_/0x5f}
     _path="${_YAML_PREFIX}${_YAML_NAMESPACE}${_path//\//_}"
     eval "$_var=\${$_path-}"
 }
@@ -812,7 +812,7 @@ _parse_yaml()
                 unset _item
                 unset _completionname
 
-                _varname=${_varname//_/0a95}
+                _varname=${_varname//_/0x5f}
                 _varname=${_varname//\//_}
                 if ((${#_readahead[@]} == 0)); then
                     # Simulate multiline value for the single line

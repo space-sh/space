@@ -1,3 +1,13 @@
+---
+prev: /shell-coding-and-style-guidelines/
+prev_title: "Shell coding and style guidelines"
+next: /glossary/
+next_title: "Glossary"
+title: Lua coding and style guidelines
+weight: 800
+icon: "<b>8. </b>"
+---
+
 # Lua coding and style guidelines
 
 ## Formatting
@@ -167,7 +177,7 @@ Use it with care.
 Always perform static analysis of code on a regular basis.
 
 ### lglob
-Detects undefined variables. Works for Lua 5.1 and 5.2.
+Detects undefined variables. Works for _Lua_ 5.1 and 5.2.
 
 #### Download
 https://github.com/stevedonovan/lglob
@@ -179,5 +189,4 @@ Checks for undeclared global variables.
 This ships with Lua source code in `etc/strict.lua`.
 
 ## Testing
-Testing is strongly encouraged and should always be provided in separate files inside a subdirectory (e.g. test/test_all.lua or test_all.sh).
-
+Testing is strongly encouraged and should always be provided in separate files inside a subdirectory (e.g. `test/test_all.lua` or `test_all.sh`).

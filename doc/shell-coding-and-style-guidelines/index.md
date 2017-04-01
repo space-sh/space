@@ -1,19 +1,29 @@
+---
+prev: /advanced-spacegal-shell-configuration/
+prev_title: "Advanced SpaceGal shell configuration"
+next: /lua-coding-and-style-guidelines/
+next_title: "Lua coding and style guidelines"
+title: Shell coding and style guidelines
+weight: 700
+icon: "<b>7. </b>"
+---
+
 # Shell coding and style guidelines
 
-Ash, dash, bash and ksh compatible guide.
+_Ash_, _dash_, _bash_ and _ksh_ compatible guide.
 
-Code is expected to be presented in the following order:
-1. Header
-2. Global state and constants
-3. Functions
-4. Main entrypoint function, when applicable
+Code is expected to be presented in the following order:  
+1. Header  
+2. Global state and constants  
+3. Functions  
+4. Main entrypoint function, when applicable  
 
 
 ## Formatting
 General rules for file and code formatting.
 
 ### File name
-File name should have the ".sh" extension for POSIX-compliant shell scripts (dash compatible code) and ".bash" for Bash-only shell scripts.
+File name should have the ".sh" extension for _POSIX-compliant_ shell scripts (_dash_ compatible code) and ".bash" for _Bash-only_ shell scripts.
 
 ### Executable permissions
 All shell script programs should have executable permissions set, except for libraries and modules, which are expected not to have a program entrypoint, main or code outside of functions.
@@ -36,7 +46,7 @@ set softtabstop=4
 ### Trailing spaces
 Avoid adding unneeded spaces at the end of line.
 
-Vim settings:
+_Vim_ settings:
 ```
 set list
 set listchars=tab:▸\ ,trail:.
@@ -55,8 +65,9 @@ A header is expected to always provide a shebang line and a presentation comment
 
 #### Shebang line
 Expected to be the first line of any given script.
-Always prefer `#!/usr/bin/env <shellname>` for cross-platform support.
-Use `#!/usr/bin/env sh` for POSIX-compliant scripts or `#!/usr/bin/env bash` for Bash-only scripts.
+Always prefer the following for cross-platform support:  
+`#!/usr/bin/env <shellname>`  
+Use `#!/usr/bin/env sh` for _POSIX-compliant_ scripts or `#!/usr/bin/env bash` for _Bash-only_ scripts.
 
 #### Copyright notice and license terms
 This section is optional and usually include a list of authors, copyright holders and general license terms.
@@ -71,7 +82,7 @@ Global variables are referred to the ones that are not declared inside a functio
 Always start with an underscore and split words with subsequent underscores. Variables should be lower case, except for global variables and constants.
 
 #### Comments
-Always add comments for global variables and constants.
+Always add comments to global variables and constants.
 Examples:
 ```sh
 # Set to "1" to allow this and that
@@ -102,8 +113,9 @@ Never starts with an underscore. Always upper case, using underscores for splitt
 Prefer reading an environment variable and storing it into another variable before modifying.
 
 #### Default values
-Whenever relevant, have default values set. Example: `_HOST_PORT=${_HOST_PORT-80}`
-In that case, if `_HOST_PORT` is set to empty `_HOST_PORT=`, the value will remain null. For setting a default value for cases where a variable might be unset or empty, use the `:-` instead.
+Whenever relevant, have default values set. Example:  
+`_HOST_PORT=${_HOST_PORT-80}`  
+In that case, if `_HOST_PORT` is set to empty `_HOST_PORT=`, the value will remain `null`. For setting a default value for cases where a variable might be unset or empty, use the `:-` instead.
 
 #### Arithmetic expressions
 Use `_count=$(( _count + 1 ))`.
@@ -199,7 +211,7 @@ Prefer single line pipelines whenever possible. Consider splitting complex one-l
 Consider setting `set -o pipefail` whenever possible.
 
 ### printf versus echo
-Prefer printf instead of echo for portability.
+Prefer `printf` instead of `echo` for portability.
 
 ### command versus which
 Use `command -v` instead of `which` for checking for a given program availability.
@@ -211,9 +223,9 @@ Use `.` instead of `source` for sourcing a file.
 Use it with care.
 
 ### set
-Useful `set -o` options:
-- errexit: exit when a pipeline or compound command fails
-- nounset: catches unset variables and parameters as errors during parameter expansion
+Useful `set -o` options:  
+- `errexit`: exit when a pipeline or compound command fails  
+- `nounset`: catches unset variables and parameters as errors during parameter expansion  
 
 ### trap
 Use with care.
@@ -223,7 +235,7 @@ Relevant traps for controlling exit: `SIGINT SIGTERM EXIT ERR`
 
 ### local
 Do not declare multiple local variables in the same line.  
-Local keyword is not defined by POSIX and its implementation is shell-specific. Some shells will only handle the first variable as local, while exposing the rest as global. Example:
+Local keyword is not defined by _POSIX_ and its implementation is shell-specific. Some shells will only handle the first variable as local, while exposing the rest as global. Example:
 ```sh
 # In the following example, var_one will always be handled as local
 # var_two might be handled as global by some shell implementations
@@ -251,7 +263,7 @@ checkbashisms myprogram.sh
 https://launchpad.net/ubuntu/+source/devscripts/
 
 ### Shellcheck
-Analysis against POSIX rules:
+Analysis against _POSIX_ rules:
 ```sh
 shellcheck --shell=sh myprogram.sh
 ```
@@ -276,4 +288,3 @@ Bashdb can be used as a gdb-like debugger.
 ```
 http://bashdb.sourceforge.net/
 ```
-

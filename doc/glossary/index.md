@@ -1,11 +1,11 @@
 ---
-prev: /advanced-spacegal-shell-configuration/
-prev_title: "Advanced SpaceGal configuration"
+prev: /lua-coding-and-style-guidelines/
+prev_title: "Lua coding and style guidelines"
 next: /references/
 next_title: "References"
 title: Glossary
-weight: 700
-icon: "<b>7. </b>"
+weight: 900
+icon: "<b>9. </b>"
 ---
 
 # Glossary

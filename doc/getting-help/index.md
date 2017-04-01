@@ -4,8 +4,8 @@ prev_title: "References"
 next: /contributing/
 next_title: "Contributing"
 title: Getting help
-weight: 900
-icon: "<b>9. </b>"
+weight: 1100
+icon: "<b>11. </b>"
 ---
 
 # Getting help

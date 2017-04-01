@@ -4,8 +4,8 @@ prev_title: "Glossary"
 next: /getting-help/
 next_title: "Getting help"
 title: References
-weight: 800
-icon: "<b>8. </b>"
+weight: 1000
+icon: "<b>10. </b>"
 ---
 
 # References

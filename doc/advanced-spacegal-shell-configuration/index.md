@@ -1,8 +1,8 @@
 ---
 prev: /space-modules/
 prev_title: "Space Modules"
-next: /glossary/
-next_title: "Glossary"
+next: /shell-coding-and-style-guidelines/
+next_title: "Shell coding and style guidelines"
 title: Advanced SpaceGal shell configuration
 weight: 600
 icon: "<b>6. </b>"

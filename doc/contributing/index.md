@@ -2,8 +2,8 @@
 prev: /getting-help/
 prev_title: "Getting help"
 title: Contributing
-weight: 1000
-icon: "<b>10. </b>"
+weight: 1200
+icon: "<b>12. </b>"
 ---
 
 # Contributing

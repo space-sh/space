@@ -3,7 +3,7 @@ space(1) -- automation using Bash
 
 ## SYNOPSIS
 
-`space` [`-f`|`m` namespace [`-M` modules] [`-ep` key=value] [node] [`-a`]] [`-vkKCBX` value] [`-dlShg`] [`--` args]  
+`space` [`-f`|`m` namespace [`-M` modules] [`-ep` key=value] [node] [`-a`]] [`-vkKCBX` value] [`-dlShgZ`] [`--` args]  
 `space` [`-hV`]  
 `space` `-U` [module]  
 
@@ -127,6 +127,9 @@ When running **Space**, the following steps occur:
   * `-g`:
         Enable graphical user interface. 
         Default mode: disabled
+
+  * `-Z`:
+        Skips checking modules version compatibility against current Space ver
 
 
 ## EXIT STATUS

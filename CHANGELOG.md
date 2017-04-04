@@ -20,6 +20,12 @@
 
 + Add _Space_ option `-Z` for ignoring requirement checks
 
++ Add `/manuals` directory for manual pages
+
++ Add new documentation to `/doc` directory
+
++ Add _Space_ version to module ban server check
+
 * Rename `push` to `_push`
 
 * Rename `pop` to `_pop`
@@ -54,7 +60,23 @@
 
 * Fix wrong warning message during _Space_ replacement installation
 
+* Fix bug about trailing spaces for quoted YAML environment variables
+
+* Fix bug about extracting functions from modules
+
+* Improve balancing of `SPACE_WRAPARGS`
+
+* Change `SPACE_OUTER` to work as `SPACE_WRAP`
+
+* Bump cache format version
+
+* Fix bug that would cause `SPACE_SIGNATURE` to not allow trailing comments
+
 - Remove spacedoc `/module/` node
+
+- Remove `SPACE_OUTERENV`
+
+- Remove `SPACE_OUTERDEP`
 
 
 ## [0.12.0 - 2017-01-26]

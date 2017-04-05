@@ -2581,6 +2581,7 @@ _main()
     local _namespaces=()
     local _dimensions=()
     local _strip_args=0
+    local _dimensioncompletion=
 
     # Parse nodes and switches in any order.
     while (( $# > 0 )); do
@@ -2593,7 +2594,7 @@ _main()
         elif [[ ${1:0:1} == '-' ]]; then
             # A normal switch, let getopts handle it.
             OPTIND=1
-            getopts ":f:m:aM:e:dp:v:k:K:ShVlC:BU:X:13:gZ" "_o"
+            getopts ":f:m:aM:e:dp:v:k:K:ShVlC:BU:X:13:4:5:6:gZ" "_o"
             case "${_o}" in
                 f)
                     if (( ${#_namespaces[@]} == 3 )); then
@@ -2627,12 +2628,15 @@ _main()
                     ;;
                 e)
                     if [[ ! $OPTARG =~ ^[a-zA-Z0-9_]+\=.*$ ]]; then
-                        _error "Malformed -e switch not on format [a-ZA-Z0-9_]+=.*: $OPTARG"
-                        return 1
+                        if [[ $_BASH_COMPLETION == "0" ]]; then
+                            _error "Malformed -e switch not on format [a-ZA-Z0-9_]+=.*: $OPTARG"
+                            return 1
+                        fi
+                    else
+                        local _s="${OPTARG}"
+                        _escape "_s" '"'
+                        _envE+=("${_s}")
                     fi
-                    local _s="${OPTARG}"
-                    _escape "_s" '"'
-                    _envE+=("${_s}")
                     (return 1)
                     ;;
                 d)
@@ -2807,9 +2811,27 @@ _main()
                     (return 1)
                     ;;
                 3)
-                    # Bash completion on installed modules
+                    # Bash completion on installed modules.
                     _bash_completion_current=${OPTARG}
                     _BASH_COMPLETION=3
+                    (return 1)
+                    ;;
+                4)
+                    # Bash completion on env variable names.
+                    _bash_completion_current=${OPTARG}
+                    _BASH_COMPLETION=4
+                    (return 1)
+                    ;;
+                5)
+                    # Bash completion on env variable values.
+                    _bash_completion_current=${OPTARG}
+                    _BASH_COMPLETION=5
+                    (return 1)
+                    ;;
+                6)
+                    # Bash completion on position arguments.
+                    _bash_completion_current=${OPTARG}
+                    _BASH_COMPLETION=6
                     (return 1)
                     ;;
                 g)
@@ -2852,7 +2874,13 @@ _main()
             # they can come here with the auto completion script.
             local _node=${_node//\"}
             local _node=${_node//\\}
-            if [[ ${_node:0:1} != "/" ]]; then
+            if [[ $_node =~ ^[123]:/ ]]; then
+                # This is a special format only used for dynamic auto completion.
+                _dimensioncompletion=$_node
+                shift
+                unset _node
+                continue
+            elif [[ ${_node:0:1} != "/" ]]; then
                 if [ "${_isshebang}" = 1 ]; then
                     _error "Cannot understand the argument '${_node}'. Did you mean: -- ${_node}?"
                 else
@@ -2880,6 +2908,16 @@ _main()
     done
     unset _o
     unset _isshebang
+
+    # Dynamic auto completion, replace a dimension.
+    if [ -n "${_dimensioncompletion}" ]; then
+        _debug "Dynamic completion: $_dimensioncompletion"
+        local _dim="${_dimensioncompletion%%:*}"
+        local _node="${_dimensioncompletion#*:}"
+        _dimensions[((_dim-1))]="$_node"
+        unset _dim _node
+    fi
+    unset _dimensioncompletion
 
     if [[ $_BASH_COMPLETION != "0" ]]; then
         # Reset some switches that will get in our way when auto completing.
@@ -3210,13 +3248,23 @@ _main()
         fi
         eval "local _ns=\$_dim${_dim}ns"
 
-        if [[ $_dim == "1" ]]; then
-            local _pattern=${_dimensions[0]}
+        # Check if we are to use friend dimension or isolated dimensions.
+        local _hasfriends=0
+        _YAML_NAMESPACE=1
+        local _l=()
+        _list "_l" "/_dimensions/" "1"
+        if (( ${#_l[@]} > 0 )); then
+            _hasfriends=1
+        fi
+        unset _l
+
+        if [[ $_dim == "1" ]] || ( [[ $_hasfriends == "0" ]] && (($_dim <= ${#_namespaces[@]})) ); then
+            local _pattern=${_dimensions[((_dim-1))]}
             local _node=$_pattern
             if [[ ${_node: -1} != "/" ]]; then
                 _node=$_node".*/"
             fi
-            _debug "Bash completion dimension 1 for pattern: $_node in namespace ${_ns}."
+            _debug "Bash completion dimension $_dim for pattern: $_node in namespace ${_ns}."
             local _nodes=()
             _match_node "_parsedyamlnodelist${_YAML_PREFIX}${_ns}" "$_node"
             if (( ${#_nodes[@]} == 1 )); then
@@ -3224,11 +3272,14 @@ _main()
                     _node=$_node".*/"
                     _nodes=()
                     _match_node "_parsedyamlnodelist${_YAML_PREFIX}${_ns}" "$_node"
-                    if (( ${#_nodes[@]} > 0 )); then
+                    if (( ${#_nodes[@]} == 1 )); then
+                        # Single match.
+                        printf "%s\n" "${_nodes[0]}"
+                    elif (( ${#_nodes[@]} > 1 )); then
                         printf "%s\n" "$_pattern"
                         printf "%s\n" "${_nodes[@]}"
                     else
-                        printf "%s\n" "$_pattern"
+                        # Single match.
                         printf "%s\n" "$_pattern"
                     fi
                 else
@@ -3748,10 +3799,23 @@ _exec_dimensions()
 
     # These will be populated by _loadnode.
     local _infotitle="" _infodesc=""
+    local _envvar=""       # When completing on a specific variable or positional argument.
+    local _envvarindex="0"  # Position argument index for SPACE_ARGS
+    local _envvalues=()
+    local _envcompletion=""
+    if [[ $_BASH_COMPLETION == "5" ]]; then
+        _envvar="${_bash_completion_current%%=*}"
+        local _envval="${_bash_completion_current#*=}"
+    elif [[ $_BASH_COMPLETION == "6" ]]; then
+        _envvar="SPACE_ARGS"
+        _envvarindex="${_bash_completion_current%%=*}"
+        local _envval="${_bash_completion_current#*=}"
+    fi
 
-
-    local _status=0 _tuple= _node= _ns=
+    local _envcompletion2= _envcompletion2dim=
+    local _status=0 _tuple= _node= _ns= _counter=0
     for _tuple in "${_nodes[@]}"; do
+        (( _counter += 1 ))
         [[ $_tuple =~ ([^\ ]+)[\ ](.+) ]]
         _ns=${BASH_REMATCH[1]}
         _node=${BASH_REMATCH[2]}
@@ -3766,7 +3830,14 @@ _exec_dimensions()
                 return 1
             fi
 
-            # TODO: this trap thing is not very effective in catching the right errors.
+            # auto completion.
+            if [ -n "${_envcompletion}" ]; then
+                _envcompletion2=$_envcompletion
+                _envcompletion2dim=$_counter
+                _envcompletion=
+            fi
+
+            # TODO: this trap thing is not very efficient in catching the right errors.
             trap '_error "Problem when evaluating syntax for node: ${_node}. Look for unbound variable or other syntax error in the YAML."; trap - EXIT; return 1; ' EXIT
             if (( ${#_res[@]} > 0 )); then
                 local _str=
@@ -3802,6 +3873,50 @@ _exec_dimensions()
         done
     done
     unset _ns
+
+    # auto completion.
+    if [ -n "${_envcompletion2}" ]; then
+        printf "%s\n" "$_envcompletion2dim:$_envcompletion2"
+        return 2
+    fi
+
+    if [[ $_BASH_COMPLETION == "4" || $_BASH_COMPLETION == "5" || $_BASH_COMPLETION == "6" ]]; then
+        local _tomatch=$_bash_completion_current
+        if [ "${_tomatch}" == "." ]; then
+            _tomatch=""
+        fi
+        local _sep="="
+        if [[ $_BASH_COMPLETION == "5" ]]; then
+            _tomatch=$_envval
+            _sep=""
+        elif [[ $_BASH_COMPLETION == "6" ]]; then
+            _tomatch=$_envval
+            _sep=""
+        fi
+        local _r= _a=()
+        for _r in "${_envvalues[@]-}"; do
+            if [[ $_r =~ ^${_tomatch}[a-zA-Z0-9_]* ]]; then
+                _a+=("${_r}")
+            fi
+        done
+        if [ "${#_a[@]}" -eq 1 ]; then
+            # Normally a single returned line would yield a trailing space
+            # but that is unwanted behavior here when completing on env var
+            # names because of x=y format. However on env var values we want to
+            # append a trailing space.
+            if [[ $_BASH_COMPLETION == "4" ]]; then
+                printf "%s$_sep\n" "${_a[0]}"
+            fi
+            printf "%s$_sep\n" "${_a[0]}"
+            return 0
+        elif [ "${#_a[@]}" -gt 1 ]; then
+            printf "%s\n" "${_tomatch}"
+            printf "%s$_sep\n" "${_a[@]}"
+            return 0
+        fi
+        unset _r _tomatch _a
+        return 1
+    fi
 
     if [[ $_DEBUG_OUTPUT_ENV == "1" ]]; then
         return 0
@@ -3990,7 +4105,10 @@ _completion_modules()
                 _items+=("${_f:2}")
             done
         done
-        if (( ${#_items[@]} > 0 )); then
+        if (( ${#_items[@]} == 1 )); then
+            printf "%s\n" "${_items[0]}"
+            break
+        elif (( ${#_items[@]} > 1 )); then
             printf "%s\n" "$_default"
             printf "%s\n" "${_items[@]}"
             break
@@ -4373,8 +4491,81 @@ _loadnode()
                         return 1
                     fi
 
+                    # Add to auto completion list of env variables.
+                    if [[ $_BASH_COMPLETION == "4" ]]; then
+                        local _item
+                        while true; do
+                            for _item in RUN RUN_ALIAS SPACE_ARGS SPACE_EXIT SPACE_SILENT SPACE_OUTER SPACE_OUTERARGS SPACE_REDIR SPACE_DEP SPACE_ENV SPACE_WRAP SPACE_WRAPARGS; do
+                                if [ "${_item}" = "${_key}" ]; then
+                                    break 2
+                                fi
+                            done
+                            for _item in "${_envvalues[@]-}"; do
+                                if [ "${_item}" = "${_key}" ]; then
+                                    break 2
+                                fi
+                            done
+                            _envvalues+=("${_key}")
+                            break
+                        done
+                        unset _item
+                    fi
+
                     local _value=
-                    _copy "_value" "${_nodepath}_env/$_arrindex/$_key"
+
+                    local _vallist=()
+                    _list "_vallist" "${_nodepath}_env/${_arrindex}/${_key}/" "1" "1"
+                    if [[ ((${#_vallist} == 0)) ]]; then
+                        _copy "_value" "${_nodepath}_env/$_arrindex/$_key"
+                    else
+                        # list
+                        local _value2=
+                        _copy "_value2" "${_nodepath}_env/$_arrindex/$_key/value"
+                        if (( $? == 0 )); then
+                            _value="${_value2}"
+                        fi
+                        # Add to auto completion list of env variable values.
+                        if [[ ($_BASH_COMPLETION == "5" || $_BASH_COMPLETION == "6") && $_envvar == $_key ]]; then
+                            local _completion=
+                            _copy "_completion" "${_nodepath}_env/$_arrindex/$_key/completion"
+                            if (( $? == 0 )); then
+                                _envcompletion="${_completion}"
+                            fi
+                            if [ "${_envvar}" = "SPACE_ARGS" ]; then
+                                local _vallistkeys=() _valkey
+                                _list "_vallistkeys" "${_nodepath}_env/${_arrindex}/${_key}/arguments/${_envvarindex}/values/" "1" "1"
+                                for _valkey in "${_vallistkeys[@]-}"; do
+                                    local _val= _item=
+                                    _copy "_val" "${_nodepath}_env/${_arrindex}/${_key}/arguments/${_envvarindex}/values/${_valkey}"
+                                    for _item in "${_envvalues[@]-}"; do
+                                        if [ "${_item}" = "${_val}" ]; then
+                                            continue 2
+                                        fi
+                                    done
+                                    _envvalues+=("${_val}")
+                                    unset _val _item
+                                done
+                                unset _vallistkeys _valkey
+                            else
+                                local _vallistkeys=() _valkey
+                                _list "_vallistkeys" "${_nodepath}_env/${_arrindex}/${_key}/values/" "1" "1"
+                                for _valkey in "${_vallistkeys[@]-}"; do
+                                    local _val= _item=
+                                    _copy "_val" "${_nodepath}_env/${_arrindex}/${_key}/values/${_valkey}"
+                                    for _item in "${_envvalues[@]-}"; do
+                                        if [ "${_item}" = "${_val}" ]; then
+                                            continue 2
+                                        fi
+                                    done
+                                    _envvalues+=("${_val}")
+                                    unset _val _item
+                                done
+                                unset _vallistkeys _valkey
+                            fi
+                        fi
+                    fi
+                    unset _vallist
+
                     local _value2=${_value/$_SPACEGAL_EOF_TAG}
                     if [ "${_value}" != "${_value2}" ]; then
                         _error "Value cannot contain the reserved EOF tag '$_SPACEGAL_EOF_TAG'."

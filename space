@@ -2570,7 +2570,7 @@ _main()
     local _loadmodules="" # -M
     local _envE=()        # -e
     local _envP=()        # -p
-    local _dry=""         # -d
+    local _dry="0"        # -d
     local _help=""        # -h
     local _listnodes=0    # -l
     local _updatemodules=  #-U
@@ -3080,7 +3080,11 @@ _main()
         fi
         unset _status
 
-        eval "local _parsedyamlnodelist${_YAML_PREFIX}${_YAML_NAMESPACE}=(\"\${_parsedyamlcompletion[@]}\")"
+        if (( ${#_parsedyamlcompletion[@]} == 0 )); then
+            _warning "There are no nodes parsed, is the cache old? Try -C0."
+        else
+            eval "local _parsedyamlnodelist${_YAML_PREFIX}${_YAML_NAMESPACE}=(\"\${_parsedyamlcompletion[@]}\")"
+        fi
 
         if (( ${#_parsedyaml[@]} > 0 )); then
             # Translate all parsed into Bash variables
@@ -3945,7 +3949,7 @@ _load_yaml()
                 printf "%s\n" "$_yamlfilelist"  >> $_cachefile
                 printf "%s\n" "$_currentsum" >> $_cachefile
                 printf "%s\n" "$_envPs" >> $_cachefile
-                local _s=$(IFS=';'; echo "${_parsedyamlcompletion[*]}")
+                local _s=$(IFS=';'; echo "${_parsedyamlcompletion[*]-}")
                 printf "%s\n" "$_s" >> $_cachefile
                 unset _s
                 if (( ${#_parsedyaml[@]} > 0 )); then
@@ -4532,7 +4536,7 @@ _extract_wrap_headers()
             __wrapargs="${__wrapargs:0:$((${#__wrapargs}-1))}"
         fi
         if [ -n "${__wrapargs}" ]; then
-            while IFS=$'\n' read _line; do
+            while IFS=$'\n' read -r _line; do
                 if [ "${#__B[@]}" -eq 0 ]; then
                     __B=("$_line")
                 else
@@ -4866,7 +4870,7 @@ ${_out}"
     unset _index
 
 
-    if [[ ! -z $_dry ]]; then
+    if [[ ${_dry-1} == "1" ]]; then
         if [[ -t 1 ]]; then
             _info "##################################################"
             _info "#######       DRY RUN - NOT EXECUTING      #######"

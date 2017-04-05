@@ -520,18 +520,26 @@ _list()
 #   _YAML_PREFIX
 #   _YAML_NAMESPACE
 #
+# Returns:
+#   1 if the variable to copy was undefined.
+#
 #==========
 _copy()
 {
-    local _var=$1
+    local __var=$1
     shift
 
-    local _path=$1
+    local __path=$1
     shift
 
-    _path=${_path//_/0x5f}
-    _path="${_YAML_PREFIX}${_YAML_NAMESPACE}${_path//\//_}"
-    eval "$_var=\${$_path-}"
+    __path=${__path//_/0x5f}
+    __path="${_YAML_PREFIX}${_YAML_NAMESPACE}${__path//\//_}"
+    local __ret=0
+    if [ "${!__path+set}" != "set" ]; then
+        __ret=1
+    fi
+    eval "$__var=\${$__path-}"
+    return "${__ret}"
 }
 
 #==========

@@ -3751,42 +3751,64 @@ _exec_dimensions()
     local _counttoexecute=$1
     shift
 
+    local _dimorder1=1
+    local _dimorder2=2
+    local _dimorder3=3
     if [ -n "${_dimorder}" ]; then
         # Arrange dimensions and their namespaces according to _dimorder.
         _debug "The dimension order specified is: ${_dimorder}."
         if [[ -n $_node3 ]]; then
+            if [ "${#_dimorder}" -ne 5 ]; then
+                _error "The dimension order must be on the format 'x y z', it is: $_dimorder."
+                return 1
+            fi
             local _i=
             for _i in ${_dimorder}; do
                 if [ "${_i}" -eq 1 ]; then
                     _push "_ns1"
                     _push "_node1"
+                    _push "_dimorder1"
                 elif [ "${_i}" -eq 2 ]; then
                     _push "_ns2"
                     _push "_node2"
+                    _push "_dimorder2"
                 elif [ "${_i}" -eq 3 ]; then
                     _push "_ns3"
                     _push "_node3"
+                    _push "_dimorder3"
                 fi
             done
+            _pop "_dimorder3"
             _pop "_node3"
             _pop "_ns3"
+            _pop "_dimorder2"
             _pop "_node2"
             _pop "_ns2"
+            _pop "_dimorder1"
             _pop "_node1"
             _pop "_ns1"
         elif [[ -n $_node2 ]]; then
-            _push "_node2"
+            if [ "${#_dimorder}" -lt 3 ]; then
+                _error "The dimension order must be on the format 'x y[ z]', it is: $_dimorder."
+                return 1
+            fi
             _push "_ns2"
-            _push "_node1"
+            _push "_node2"
+            _push "_dimorder2"
             _push "_ns1"
+            _push "_node1"
+            _push "1"
+            _push "_dimorder1"
             local _i=
             for _i in ${_dimorder}; do
                 if [ "${_i}" -eq 1 ]; then
-                    _pop "_ns1"
+                    _pop "_dimorder1"
                     _pop "_node1"
+                    _pop "_ns1"
                 elif [ "${_i}" -eq 2 ]; then
-                    _pop "_ns2"
+                    _pop "_dimorder2"
                     _pop "_node2"
+                    _pop "_ns2"
                 else
                     continue
                 fi
@@ -3849,7 +3871,8 @@ _exec_dimensions()
             # auto completion.
             if [ -n "${_envcompletion}" ]; then
                 _envcompletion2=$_envcompletion
-                _envcompletion2dim=$_counter
+                # We need to transform back to the original dimension order.
+                eval "_envcompletion2dim=\$_dimorder${_counter}"
                 _envcompletion=
             fi
 

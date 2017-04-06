@@ -1151,6 +1151,10 @@ _pp_yaml()
                 ;;
             leaf) # A regular key value row.
                 local _i=$(($_indent-$_filterindent+$_inheritedindent))
+                if [ "${value:0:1}" == "[" ]; then
+                    _error "Space does not support YAML inline list declarations: ${value}."
+                    return 1
+                fi
                 if [[ "$_prefix$_key" =~ ^$_filter$ ]]; then
                     # Filter is for leaf content.
                     if [ "${_isarrayobjectfiltered}" = "1" ]; then
@@ -1198,6 +1202,10 @@ _pp_yaml()
                 local _i2=$(($_indent-$_filterindent+$_inheritedindent))
                 local _i3=$(($_arrayextraindent-1))
                 _isarrayobjectfiltered=0
+                if [ "${value:0:1}" == "[" ] || [ "${value:0:1}" == "{" ]; then
+                    _error "Space does not support YAML inline list/object declarations: ${value}."
+                    return 1
+                fi
                 if [[ -n $_key && $_prefix$_key =~ ^$_filter$ ]] || [[ -z $_key && "$_prefix${_key}.*" =~ ^$_filter$ ]]; then
                     # Handle "/.*" filtering.
                     if [ "${value}" != "" ] && [ "${value:0:1}" != ">" ] && [ "${value:0:1}" != "|" ] && [ "${value:0:1}" != "!" ]; then

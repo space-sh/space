@@ -4532,26 +4532,6 @@ _loadnode()
                         return 1
                     fi
 
-                    # Add to auto completion list of env variables.
-                    if [[ $_BASH_COMPLETION == "4" ]]; then
-                        local _item
-                        while true; do
-                            for _item in RUN RUN_ALIAS SPACE_ARGS SPACE_EXIT SPACE_SILENT SPACE_OUTER SPACE_OUTERARGS SPACE_REDIR SPACE_DEP SPACE_ENV SPACE_WRAP SPACE_WRAPARGS; do
-                                if [ "${_item}" = "${_key}" ]; then
-                                    break 2
-                                fi
-                            done
-                            for _item in "${_envvalues[@]-}"; do
-                                if [ "${_item}" = "${_key}" ]; then
-                                    break 2
-                                fi
-                            done
-                            _envvalues+=("${_key}")
-                            break
-                        done
-                        unset _item
-                    fi
-
                     local _value=
 
                     local _vallist=()
@@ -4560,6 +4540,28 @@ _loadnode()
                         _copy "_value" "${_nodepath}_env/$_arrindex/$_key"
                     else
                         # list
+                        # Add to auto completion list of env variables.
+                        if [[ $_BASH_COMPLETION == "4" ]]; then
+                            local _item
+                            while true; do
+                                for _item in RUN RUN_ALIAS SPACE_ARGS SPACE_EXIT SPACE_SILENT SPACE_OUTER SPACE_OUTERARGS SPACE_REDIR SPACE_DEP SPACE_ENV SPACE_WRAP SPACE_WRAPARGS; do
+                                    if [ "${_item}" = "${_key}" ]; then
+                                        break 2
+                                    fi
+                                done
+                                if [ "${#_envvalues[@]}" -gt 0 ]; then
+                                    for _item in "${_envvalues[@]}"; do
+                                        if [ "${_item}" = "${_key}" ]; then
+                                            break 2
+                                        fi
+                                    done
+                                fi
+                                _envvalues+=("${_key}")
+                                break
+                            done
+                            unset _item
+                        fi
+
                         local _value2=
                         _copy "_value2" "${_nodepath}_env/$_arrindex/$_key/value"
                         if (( $? == 0 )); then
@@ -4579,11 +4581,13 @@ _loadnode()
                                     for _valkey in "${_vallistkeys[@]}"; do
                                         local _val= _item=
                                         _copy "_val" "${_nodepath}_env/${_arrindex}/${_key}/arguments/${_envvarindex}/values/${_valkey}"
-                                        for _item in "${_envvalues[@]-}"; do
-                                            if [ "${_item}" = "${_val}" ]; then
-                                                continue 2
-                                            fi
-                                        done
+                                        if [ "${#_envvalues[@]}" -gt 0 ]; then
+                                            for _item in "${_envvalues[@]}"; do
+                                                if [ "${_item}" = "${_val}" ]; then
+                                                    continue 2
+                                                fi
+                                            done
+                                        fi
                                         _envvalues+=("${_val}")
                                         unset _val _item
                                     done
@@ -4596,11 +4600,13 @@ _loadnode()
                                     for _valkey in "${_vallistkeys[@]}"; do
                                         local _val= _item=
                                         _copy "_val" "${_nodepath}_env/${_arrindex}/${_key}/values/${_valkey}"
-                                        for _item in "${_envvalues[@]-}"; do
-                                            if [ "${_item}" = "${_val}" ]; then
-                                                continue 2
-                                            fi
-                                        done
+                                        if [ "${#_envvalues[@]}" -gt 0 ]; then
+                                            for _item in "${_envvalues[@]}"; do
+                                                if [ "${_item}" = "${_val}" ]; then
+                                                    continue 2
+                                                fi
+                                            done
+                                        fi
                                         _envvalues+=("${_val}")
                                         unset _val _item
                                     done

@@ -23,9 +23,7 @@
 # completed words could be replaced and not just appended to.
 #
 # Caveats:
-#   -e var="long value"[tab]
-#   will not work because word spitting gives '="'.
-#   Instead escape spaces as, -e var=long\ value
+#   Spaces in values isn't handled properly as for now.
 #
 #==========
 [ -n "${BASH_VERSION}" ] &&
@@ -99,8 +97,7 @@ _space()
         local _counter=0
         while (( _counter < COMP_CWORD )); do
             if [ "${COMP_WORDS[$_counter]}" = "--" ]; then
-                # TODO: this must be unescaped at back end.
-                local _arg=${_current//\"/\\\"}
+                # TODO: we might want to escape this.
                 local part1=""
                 _space_join_arr "part1" "1" $(($COMP_CWORD-1))
                 local index=$((COMP_CWORD-_counter-1))
@@ -175,7 +172,7 @@ _space()
         if [ "${_current}" = "=" ]; then
             if [ "${COMP_CWORD}" -ge 1 ]; then
                 local _aprev="${COMP_WORDS[((COMP_CWORD-1))]}"
-                if [ "${#_aprev}" > 2 ] && [ "${_aprev:0:2}" = "-e" ]; then
+                if [ "${#_aprev}" -gt 2 ] && [ "${_aprev:0:2}" = "-e" ]; then
                     # Complete on empty value.
                     local part1=""
                     _space_join_arr "part1" "1"
@@ -196,7 +193,7 @@ _space()
         if [ "${_previous}" = "=" ]; then
             if [ "${COMP_CWORD}" -ge 2 ]; then
                 local _aprev="${COMP_WORDS[((COMP_CWORD-2))]}"
-                if [ "${#_aprev}" > 2 ] && [ "${_aprev:0:2}" = "-e" ]; then
+                if [ "${#_aprev}" -gt 2 ] && [ "${_aprev:0:2}" = "-e" ]; then
                     # Complete on value.
                     local part1=""
                     _space_join_arr "part1" "1"

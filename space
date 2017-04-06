@@ -2115,6 +2115,39 @@ _extract_repo_parts()
 }
 
 #=============
+# _urlencode
+#
+# Percent encode all that is not part of the
+# unreserved character list according to RFC 3986.
+#
+# Parameters:
+#   $1: data to urlencode
+#
+# Expects:
+#   _encoded_data
+#
+#=============
+_urlencode()
+{
+  local _data="$1"
+
+  local _length=${#_data}
+  local _counter=
+  _encoded_data=
+
+  for (( _counter=0; _counter<_length; _counter++ )); do
+     local _curr_char=${_data:$_counter:1}
+     if [[ "$_curr_char" =~ ^[a-zA-Z0-9\~\_\.\-]$ ]]; then
+        _encoded_data+="${_curr_char}"
+     else
+        local _tmp_char=
+        printf -v _tmp_char '%%%02X' "'$_curr_char"
+        _encoded_data+="${_tmp_char}"
+     fi
+  done
+}
+
+#=============
 # _module_check_banlist
 #
 #=============
@@ -2132,8 +2165,17 @@ _module_check_banlist()
             _response=$($_HTTPBIN $_SECURITY_BAN_SERVER -s -X POST --data-urlencode "git_url=${_giturl}" --data-urlencode "bash=${BASH_VERSION}" --data-urlencode "space=${_VERSION}" --data-urlencode "os=$(${_UNAME})")
             _debug "Ban server response, curl: ${_response}."
         elif [[ $_HTTPBIN == "wget" ]]; then
-            # TODO: wget doesn't urlencode the post data so we must do that in advance.
-            _response=$($_HTTPBIN $_SECURITY_BAN_SERVER -q -O- --post-data="git_url=${_giturl}&bash=${BASH_VERSION}&space=${_VERSION}&os=$(${_UNAME})")
+            local _post_data=
+            local _encoded_data=
+            _urlencode "${_giturl}"
+            _post_data="git_url=${_encoded_data}"
+            _urlencode "${BASH_VERSION}"
+            _post_data="${_post_data}&bash=${_encoded_data}"
+            _urlencode "${_VERSION}"
+            _post_data="${_post_data}&space=${_encoded_data}"
+            _urlencode "$(${_UNAME})"
+            _post_data="${_post_data}&os=${_encoded_data}"
+            _response=$($_HTTPBIN $_SECURITY_BAN_SERVER -q -O- --post-data="${_post_data}")
             _debug "Ban server response, wget: ${_response}."
         else
             _error "No curl/wget found in OS. Cannot check module banlist."

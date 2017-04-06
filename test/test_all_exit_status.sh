@@ -143,7 +143,7 @@ printf "\033[35mTesting Space parameter options...\033[0m\n"
 _RUN_CHECK_FAIL "Test without parameters" "" $_SPACE_BIN
 _RUN_CHECK_FAIL "Test without parameters but arguments" "" $_SPACE_BIN -- something1 otherthing2
 _RUN_CHECK_FAIL "Test unknown option: dash only" "Unknown option -" $_SPACE_BIN -
-_RUN_CHECK_FAIL "Test unknown option: dash and number" "Unknown option -6" $_SPACE_BIN -6
+_RUN_CHECK_FAIL "Test unknown option: dash and number" "Unknown option -9" $_SPACE_BIN -9
 _RUN_CHECK_FAIL "Test unknown option: dash and unknown letter" "Unknown option -Y" $_SPACE_BIN -Y
 _RUN_CHECK_FAIL "Test unknown option: dash, known letter, invalid parameter" "Unknown -X argument 6" $_SPACE_BIN -X6
 _RUN_CHECK_FAIL "Test invalid node name" "must begin and end with slash" $_SPACE_BIN badNodeName

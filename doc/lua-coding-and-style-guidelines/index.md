@@ -9,6 +9,7 @@ icon: "<b>8. </b>"
 ---
 
 # Lua coding and style guidelines
+Some of the _Space_ native modules also have a Lua script inside of them. Here are the guidelines for writing Lua code.
 
 ## Formatting
 General rules for file and code formatting.

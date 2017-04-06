@@ -11,6 +11,9 @@ weight: 507
 # Spacefile YAML reference
 
 The _YAML_ syntax supported by _Space_ is a subset of the standard. Node without any value are ignored, except for `_env` variables which then are treated as empty strings.  
+Nodes right below an `_env` node are subject to special treatment and their values are evaluated by Bash,  
+while other nodes are not evaluated with variable substitution, etc.  
+
 To set a node to an empty string:  
 
 ```yaml
@@ -32,14 +35,14 @@ To unset an `_env` variable use `!unset`:
 
 This will have _Bash_ unset the `varname` variable.  
 
-Node values which are wrapped in single quotes will not be _Bash_ evaluated at the parse stage.
+Node environment variables which are wrapped in single quotes will not be _Bash_ evaluated at the parse stage.
 The quotes are automatically removed.
 
-Node values which are wrapped in double quotes will be _Bash_ evaluated at the parse stage, just as values that are unquoted.
+Node environment variables which are wrapped in double quotes will be _Bash_ evaluated at the parse stage, just as values that are unquoted.
 The quotes are automatically removed.
 When arguments and commands are wrapped inside other commands, their escape levels of double quotes and dollar signs are automatically increased.
 
-Using env variables in _YAML_ will be properly substituted, if not escaped. However subshells `$(...)` are not allowed and will be filtered out.
+Using environment variables in _YAML_ will be properly substituted, if not escaped. However subshells `$(...)` are not allowed and will be filtered out.
 
 #### Strings and quoting
 Unquoted and double quoted values will be parameter expanded by _Bash_ during parsing, while single quoted lines will be treated as raw strings and evaluated later, at run time.  
@@ -135,28 +138,33 @@ Multilines can also do variable expansion just as regular lines.
 They can also start and end with single (or double but that is same as no) quotes.  
 
 ```yaml
-str: |  
-    'Multiline  
-    within single  
-    quotes does not expand $USER at parse time.'  
+_env:
+    str: |  
+        'Multiline  
+        within single  
+        quotes does not expand $USER at parse time.'  
 ```
 
 To add empty lines within a multiline string we must have spaces as indentation (here shown with dots), this is necessary
 due to restrictions in the _Space_ YAML parser.  
 
 ```
-str: |  
-    Multiline  
-....  
-    With some empty lines  
-    Thanks to the spaces  
-....  
-....  
-    Thanks!  
+_env:
+    str: |  
+        Multiline  
+........  
+        With some empty lines  
+        Thanks to the spaces  
+........  
+........  
+        Thanks!  
 ```
 
 
 #### Lists and associative arrays
+Note that nodes and their values that or not `environment variables`, that is, not right below an `_env` node
+are not evaluated, stripped of quotes etc.
+
 A node can have child nodes, and then it becomes an associative array.  
 
 ```yaml
@@ -179,6 +187,13 @@ Which is the same as:
       - first item  
       - second item  
 ```  
+
+_Space_ does not support inline lists or objects, such as:  
+```yaml
+    node: [1,2,3,4]
+    node: {"a":1, "b":2}
+```
+Such an entry will throw an error and _Space_ will exit.
 
 #### Special keys
 All nodes with names beginning with an underscore are treated as hidden nodes and cannot autocomplete from the command line. They also might have special meaning to _Space_.  
@@ -293,6 +308,10 @@ The filter is also optional.
 To include from within the same file leave out the file name, as: `@include |/filter/.`  
 Absolute paths are also allowed.  
 Anything that is indented below the @include is treated as a sub-document that will get injected below every direct child node from the @include. Like a for loop.  
+
+* `@dotdot: variable`:
+Perform the equivalent of `cd ..` on the variable containing a node path.  
+
 For each server, include all services:  
 ```yaml
 @include: servers.yaml
@@ -513,3 +532,61 @@ going places
 $ space /8/ -- Going Places!
 Going Places!
 ```
+
+#### Bash auto completion
+_Space_ supports the Bash auto completion implementation.  
+To allow environment variables to be auto completed use the following definition:   
+
+```yaml
+_env: 
+    - var1:
+        value: ${var1-default value}
+        values:
+            - Value1
+            - Value2
+            - Value3
+```
+
+This will make it so that `space -e[tab]` will expand to `space -e var1=` and
+`space -e var1=[tab][tab]` will list the three values provided.
+
+Also auto completion on positional arguments is supported:   
+
+```yaml
+_env: 
+    - SPACE_ARGS:
+        value: -- ${SPACE_ARGS-default value}
+        arguments:
+            -
+                values:
+                    - A
+                    - B
+                    - Aaa
+                    - AAa
+                    - Ba
+            -
+                values:
+                    - Arg2ThisIs
+                    - Arg2ItIs
+```
+
+#### Bash dynamic auto completion
+_Space_ has a very advanced auto completion system.  
+Properly configured it can fetch auto complete alternatives from a Docker Engine
+running on a machine behind a firewall that you need three SSH hops to reach. Really!
+
+```yaml
+_env: 
+    - var1:
+        value: ${var1-default value}
+        completion: /list_all/
+```
+
+_env: 
+    - SPACE_ARGS:
+        value: -- ${SPACE_ARGS-default value}
+        completion: /list_all/
+```
+
+Add the `completion` node which is the named of a node in the same namespace that
+is to fetch the list of options. See the examples section for some nice examples.

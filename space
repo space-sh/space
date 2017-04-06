@@ -3681,6 +3681,7 @@ _get_third_dimension()
                                 _match_node "_parsedyamlnodelist${_YAML_PREFIX}${_ns}" "$_third" "${_includehidden}"
                                 if (( ${#_nodes[@]} == 0 )); then
                                     _error "Friend nodes defined for third dimension but then not found in namespace ${_ns}: ${_third}."
+                                    return 1
                                 else
                                     _debug "_dimensions _dimensions/$((_i+1))/ Pattern: $_first $_second $_third matched ${#_nodes[@]} nodes for third dimension in namespace ${_ns}."
                                     _dim3+=("${_nodes[@]}")
@@ -3894,11 +3895,13 @@ _exec_dimensions()
             _sep=""
         fi
         local _r= _a=()
-        for _r in "${_envvalues[@]-}"; do
-            if [[ $_r =~ ^${_tomatch}[a-zA-Z0-9_]* ]]; then
-                _a+=("${_r}")
-            fi
-        done
+        if [ "${#_envvalues[@]}" -gt 0 ]; then
+            for _r in "${_envvalues[@]}"; do
+                if [[ $_r =~ ^${_tomatch}[a-zA-Z0-9_]* ]]; then
+                    _a+=("${_r}")
+                fi
+            done
+        fi
         if [ "${#_a[@]}" -eq 1 ]; then
             # Normally a single returned line would yield a trailing space
             # but that is unwanted behavior here when completing on env var
@@ -4515,7 +4518,7 @@ _loadnode()
 
                     local _vallist=()
                     _list "_vallist" "${_nodepath}_env/${_arrindex}/${_key}/" "1" "1"
-                    if [[ ((${#_vallist} == 0)) ]]; then
+                    if [[ ((${#_vallist[@]} == 0)) ]]; then
                         _copy "_value" "${_nodepath}_env/$_arrindex/$_key"
                     else
                         # list
@@ -4534,32 +4537,36 @@ _loadnode()
                             if [ "${_envvar}" = "SPACE_ARGS" ]; then
                                 local _vallistkeys=() _valkey
                                 _list "_vallistkeys" "${_nodepath}_env/${_arrindex}/${_key}/arguments/${_envvarindex}/values/" "1" "1"
-                                for _valkey in "${_vallistkeys[@]-}"; do
-                                    local _val= _item=
-                                    _copy "_val" "${_nodepath}_env/${_arrindex}/${_key}/arguments/${_envvarindex}/values/${_valkey}"
-                                    for _item in "${_envvalues[@]-}"; do
-                                        if [ "${_item}" = "${_val}" ]; then
-                                            continue 2
-                                        fi
+                                if [ "${#_vallistkeys[@]}" -gt 0 ]; then
+                                    for _valkey in "${_vallistkeys[@]}"; do
+                                        local _val= _item=
+                                        _copy "_val" "${_nodepath}_env/${_arrindex}/${_key}/arguments/${_envvarindex}/values/${_valkey}"
+                                        for _item in "${_envvalues[@]-}"; do
+                                            if [ "${_item}" = "${_val}" ]; then
+                                                continue 2
+                                            fi
+                                        done
+                                        _envvalues+=("${_val}")
+                                        unset _val _item
                                     done
-                                    _envvalues+=("${_val}")
-                                    unset _val _item
-                                done
+                                fi
                                 unset _vallistkeys _valkey
                             else
                                 local _vallistkeys=() _valkey
                                 _list "_vallistkeys" "${_nodepath}_env/${_arrindex}/${_key}/values/" "1" "1"
-                                for _valkey in "${_vallistkeys[@]-}"; do
-                                    local _val= _item=
-                                    _copy "_val" "${_nodepath}_env/${_arrindex}/${_key}/values/${_valkey}"
-                                    for _item in "${_envvalues[@]-}"; do
-                                        if [ "${_item}" = "${_val}" ]; then
-                                            continue 2
-                                        fi
+                                if [ "${#_vallistkeys[@]}" -gt 0 ]; then
+                                    for _valkey in "${_vallistkeys[@]}"; do
+                                        local _val= _item=
+                                        _copy "_val" "${_nodepath}_env/${_arrindex}/${_key}/values/${_valkey}"
+                                        for _item in "${_envvalues[@]-}"; do
+                                            if [ "${_item}" = "${_val}" ]; then
+                                                continue 2
+                                            fi
+                                        done
+                                        _envvalues+=("${_val}")
+                                        unset _val _item
                                     done
-                                    _envvalues+=("${_val}")
-                                    unset _val _item
-                                done
+                                fi
                                 unset _vallistkeys _valkey
                             fi
                         fi

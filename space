@@ -1032,7 +1032,7 @@ _pp_yaml()
             if [ "$_filterindent" -eq -1 ]; then
                 _filterindent=$_indent
             fi
-            if [[ $_rowtype != "assign" && $_rowtype != "assert"  && $_rowtype != "cache" && $_rowtype != "prompt" && $_rowtype != "source"  && $_rowtype != "debug" && $_rowtype != "clone" && ${_key:0:1} != "_" && "$_prefix$_key/" =~ ^${_filter}([a-zA-Z0-9_])+/$ ]]; then
+            if [[ $_rowtype != "assign" && $_rowtype != "assert"  && $_rowtype != "cache" && $_rowtype != "dotdot" && $_rowtype != "prompt" && $_rowtype != "source"  && $_rowtype != "debug" && $_rowtype != "clone" && ${_key:0:1} != "_" && "$_prefix$_key/" =~ ^${_filter}([a-zA-Z0-9_])+/$ ]]; then
                 _immediatechild=1
             fi
             if [[ $_rowtype == "include" && "$_prefix$_key/" =~ ^${_filter}/$ ]]; then
@@ -1058,7 +1058,7 @@ _pp_yaml()
         fi
 
         local _actualindent=$(($_indent-$_filterindent+$_inheritedindent))
-        # Here we need to do the postponed preprocess variable substitution of @{parent}.
+        # Here we need to do the postponed preprocess variable substitution of @{PARENT} and @{PARENTPATH}.
         local _parentpath=
         _parentpath=$_inheritedprefix${_prefix#$_filter}
         _key=${_key//_PP_PARENTPATH/$_parentpath}
@@ -1073,6 +1073,16 @@ _pp_yaml()
             assign) # Assign a preprocess variable
                 local _ppkey=_PP_$_key
                 eval "local ${_ppkey}=\$value"
+                unset _s _ppkey
+                ;;
+            dotdot) # do a "cd .." on a node path.
+                local _ppkey=_PP_$_key
+                local _s=
+                eval "_s=\$${_ppkey}"
+                if [ "${#_s}" -gt 1 ]; then
+                    _s="${_s%/*/}/"
+                fi
+                eval "$_ppkey=\$_s"
                 unset _s _ppkey
                 ;;
             prompt) # Prompt a value for a pp variable.
@@ -1441,6 +1451,11 @@ _yaml_get_next()
         _key=
         value=${BASH_REMATCH[3]}
         _rowtype="debug"
+    elif [[ $_row =~ ^([\ ]*)(\@dotdot)[\ ]*:[\ ]+(.*) ]]; then
+        _indent=${#BASH_REMATCH[1]}
+        value=
+        _key=${BASH_REMATCH[3]}
+        _rowtype="dotdot"
     elif [[ $_row =~ ^([\ ]*)(\@assert)[\ ]*:[\ ]+(.*) ]]; then
         _indent=${#BASH_REMATCH[1]}
         _key=

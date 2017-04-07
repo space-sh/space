@@ -5940,7 +5940,7 @@ _escape()
     local __s=$1
     shift
 
-    local __c=${1:-\"\$\(}
+    local __c=${1:-\"\$\()}
     shift || :
 
     if [ "${__s}" == "__s" ]; then
@@ -5960,9 +5960,32 @@ _escape()
         __s2=${__s2//\\\\\$/\\\\\\\$} # Adjust the even ones...
     fi
 
+    if [[ $__c =~ \| ]]; then
+        __s2=${__s2//\|/\\\|}
+        __s2=${__s2//\\\\\|/\\\\\\\|} # Adjust the even ones...
+    fi
+
+    if [[ $__c =~ \& ]]; then
+        __s2=${__s2//\&/\\\&}
+        __s2=${__s2//\\\\\&/\\\\\\\&} # Adjust the even ones...
+    fi
+
+    if [[ $__c =~ \> ]]; then
+        __s2=${__s2//\>/\\\>}
+        __s2=${__s2//\\\\\>/\\\\\\\>} # Adjust the even ones...
+    fi
+
+    if [[ $__c =~ \< ]]; then
+        __s2=${__s2//\</\\\<}
+        __s2=${__s2//\\\\\</\\\\\\\<} # Adjust the even ones...
+    fi
+
     if [[ $__c =~ \( ]]; then
         __s2=${__s2//\(/\\\(}
         __s2=${__s2//\\\\\(/\\\\\\\(} # Adjust the even ones...
+    fi
+
+    if [[ $__c =~ \) ]]; then
         __s2=${__s2//\)/\\\)}
         __s2=${__s2//\\\\\)/\\\\\\\)} # Adjust the even ones...
     fi
@@ -6007,6 +6030,9 @@ _to_lower()
 # Takes one string of arguments and splits them
 # respecting quotes.
 #
+# Note:
+#   This is not bullet proof when it comes to special characters that are quoted.
+#
 # Parameters:
 #   $1 the variable name of the array to add extracted arguments to.
 #   $2 The string to parse.
@@ -6014,6 +6040,9 @@ _to_lower()
 # Expects:
 #   $1: to have the variable it points to have been
 #       initialized as an empty array by the caller.
+#
+# Returns:
+#   non-zero on error
 #
 #============
 _split_args()
@@ -6025,6 +6054,11 @@ _split_args()
             # Unescape escaped paranthesis.
             _item=${_item//\\\(/\(}
             _item=${_item//\\\)/\)}
+            # Unescape escaped ampersands, pipes and redirections that might have been inside quotes.
+            _item=${_item//\\\&/\&}
+            _item=${_item//\\\|/\|}
+            _item=${_item//\\\>/\>}
+            _item=${_item//\\\</\<}
             eval "$_output+=(\"\$_item\")"
         done
     }
@@ -6038,7 +6072,7 @@ _split_args()
         trap - EXIT
         return 1
     fi
-    _escape "_s" '$('
+    _escape "_s" '$()&|<>'
     eval "_split_args_inner ${_s}"
     (( $? > 0 )) && { trap - ERR; return 1; }
     trap - ERR

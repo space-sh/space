@@ -3429,7 +3429,9 @@ _main()
         # If $_pattern begins with underscore we'll match nodes
         # for underscore, otherwise we ignore underscore nodes.
         local _includehidden=0
-        [[ ${_pattern:0:2} == "/_" ]] && _includehidden=1
+        if [[ ${_pattern} =~ ^.*/_[^/]+/.*$ ]]; then
+            _includehidden=1
+        fi
         _match_node "_parsedyamlnodelist${_YAML_PREFIX}${_ns}" "$_pattern" "$_includehidden"
         if (( ${#_nodes[@]} > 0 )); then
             eval "_dim${_dimcounter}=(\"\${_nodes[@]}\")"

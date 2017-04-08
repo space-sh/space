@@ -4930,10 +4930,23 @@ _execute()
     done
     unset _rowindex
 
+    # Check if the last token is "-|", then we won't
+    # append any cmd line arguments. But we do however
+    # remove the token.
+    local _allowappend=1
+    if [ "${#_args[@]}" -gt 0 ]; then
+        if [[ ${_args[((${#_args[@]}-1))]} == "-|" ]]; then
+            _args=("${_args[@]:0:((${#_args[@]}-1))}")
+            _allowappend=0
+        fi
+    fi
+
     # Append command line arguments to _RUN.
-    for _arg in "$@"; do
-        _args+=("$_arg")
-    done
+    if [ "${_allowappend}" -eq 1 ]; then
+        for _arg in "$@"; do
+            _args+=("$_arg")
+        done
+    fi
 
     local _cmd_args_count=${#_args[@]}
     local _rowindex= _cmd_args_str=""

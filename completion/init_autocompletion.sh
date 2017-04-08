@@ -23,7 +23,9 @@
 # completed words could be replaced and not just appended to.
 #
 # Caveats:
-#   Spaces in values isn't handled properly as for now.
+#   Spaces inside values isn't handled properly as for now.
+#   Quoted values on -e flags makes the rest of the line non completable.
+#   Can't handle -e -e var= because of the array concat.
 #
 #==========
 [ -n "${BASH_VERSION}" ] &&
@@ -43,7 +45,8 @@ _space_join_arr()
     local sep=""
     for line in "${A[@]}"
     do
-        if [ "${line}" = '=' ] || ([ "${last}" = '=' ] && [ "${line:0:1}" != "-" ] ); then
+        #if [ "${line}" = '=' ] || ([ "${last}" = '=' ] && [ "${line:0:1}" != "-" ] ); then
+        if [ "${line}" = '=' ] || [ "${last}" = '=' ]; then
             sep=""
         else
             sep=" "
@@ -248,7 +251,7 @@ _space()
         fi
         local a=()
         while IFS=$'\n' read -r _line; do
-            if [[ $_line =~ ^${_current}.* ]]; then
+            if [[ -n $_line ]] && [[ $_line =~ ^${_current}.* ]]; then
                 a+=("${_line}")
             fi
         done <<< "${result}"

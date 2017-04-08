@@ -35,6 +35,30 @@ To unset an `_env` variable use `!unset`:
 
 This will have _Bash_ unset the `varname` variable.  
 
+One can also provide meta data for the variable by doing:  
+
+```yaml
+   _env:  
+       - varname:  
+            value: Some value  
+            title: This is a special variable  
+            desc: |  
+                It has such meaning, I can't even begin  
+                to explain its importance.  
+```  
+
+Using the object definition of an environment variable gives you
+abilities to attach meta data to the variable for describing it.
+Also this is useful for auto completion, more on that later.  
+If `value:` node is left out, the variable will implicitly be
+assigned it self as default value, as:  
+
+```yaml
+   _env:  
+       - varname:  
+            value: ${varname-}  
+```
+
 Node environment variables which are wrapped in single quotes will not be _Bash_ evaluated at the parse stage.
 The quotes are automatically removed.
 
@@ -585,7 +609,11 @@ _env:
 _env: 
     - SPACE_ARGS:
         value: -- ${SPACE_ARGS-default value}
-        completion: /list_all/
+        arguments:
+            -
+                completion: /list_all/
+            -
+                completion: /list_some/
 ```
 
 Add the `completion` node which is the named of a node in the same namespace that

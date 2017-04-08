@@ -24,7 +24,7 @@ local PIPE=${__spacegaltmp_: 0:$(( ${#__spacegaltmp_} > 0 ? ${#__spacegaltmp_}-1
 unset __spacegaltmp_
 local __spacegaltmp_=
 IFS= read -d '' -r __spacegaltmp_ << _SPACEGAL_SAYS_END_OF_FINITY_
-
+${A-}
 _SPACEGAL_SAYS_END_OF_FINITY_
 local A=${__spacegaltmp_: 0:$(( ${#__spacegaltmp_} > 0 ? ${#__spacegaltmp_}-1 : 0 ))}
 unset __spacegaltmp_

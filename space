@@ -4591,6 +4591,11 @@ _loadnode()
                     if [[ ((${#_vallist[@]} == 0)) ]]; then
                         # leaf
                         _copy "_value" "${_nodepath}_env/$_arrindex/$_key"
+                        if [ "${_value// /}" = "" ]; then
+                            # Since there is an assign further down,
+                            # we make a default assign of the variable to it self.
+                            _value='${'$_key'-}'
+                        fi
                     else
                         # list
                         # Add to auto completion list of env variables.

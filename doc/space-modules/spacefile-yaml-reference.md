@@ -10,7 +10,7 @@ weight: 507
 
 # Spacefile YAML reference
 
-The _YAML_ syntax supported by _Space_ is a subset of the standard. Node without any value are ignored, except for `_env` variables which then are treated as empty strings.  
+The _YAML_ syntax supported by _Space_ is a subset of the standard. A node without any value is ignored, except for `_env` variables which then are treated as empty (re)declarations of the variable.  
 Nodes right below an `_env` node are subject to special treatment and their values are evaluated by Bash,  
 while other nodes are not evaluated with variable substitution, etc.  
 
@@ -20,11 +20,19 @@ To set a node to an empty string:
    _env:  
        - varname: ""  
 ```  
-or
+however, the following:  
 ```yaml
    _env:  
        - varname:  
 ```  
+Will implicitly result in:  
+
+```yaml
+   _env:  
+       - varname: ${varname-}  
+```  
+which is useful for making sure that the variable is declared,  
+but also not overwriting it.
 
 To unset an `_env` variable use `!unset`:  
 

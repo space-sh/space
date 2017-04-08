@@ -4589,6 +4589,7 @@ _loadnode()
                     local _vallist=()
                     _list "_vallist" "${_nodepath}_env/${_arrindex}/${_key}/" "1" "1"
                     if [[ ((${#_vallist[@]} == 0)) ]]; then
+                        # leaf
                         _copy "_value" "${_nodepath}_env/$_arrindex/$_key"
                     else
                         # list
@@ -4618,15 +4619,20 @@ _loadnode()
                         _copy "_value2" "${_nodepath}_env/$_arrindex/$_key/value"
                         if (( $? == 0 )); then
                             _value="${_value2}"
+                        else
+                            # Since there is an assign further down,
+                            # we make a default assign of the variable to it self.
+                            _value='${'$_key'-}'
                         fi
+                        unset _value2
                         # Add to auto completion list of env variable values.
                         if [[ ($_BASH_COMPLETION == "5" || $_BASH_COMPLETION == "6") && $_envvar == $_key ]]; then
-                            local _completion=
-                            _copy "_completion" "${_nodepath}_env/$_arrindex/$_key/completion"
-                            if (( $? == 0 )); then
-                                _envcompletion="${_completion}"
-                            fi
                             if [ "${_envvar}" = "SPACE_ARGS" ]; then
+                                local _completion=
+                                _copy "_completion" "${_nodepath}_env/$_arrindex/$_key/arguments/${_envvarindex}/completion"
+                                if (( $? == 0 )); then
+                                    _envcompletion="${_completion}"
+                                fi
                                 local _vallistkeys=() _valkey
                                 _list "_vallistkeys" "${_nodepath}_env/${_arrindex}/${_key}/arguments/${_envvarindex}/values/" "1" "1"
                                 if [ "${#_vallistkeys[@]}" -gt 0 ]; then
@@ -4646,6 +4652,11 @@ _loadnode()
                                 fi
                                 unset _vallistkeys _valkey
                             else
+                                local _completion=
+                                _copy "_completion" "${_nodepath}_env/$_arrindex/$_key/completion"
+                                if (( $? == 0 )); then
+                                    _envcompletion="${_completion}"
+                                fi
                                 local _vallistkeys=() _valkey
                                 _list "_vallistkeys" "${_nodepath}_env/${_arrindex}/${_key}/values/" "1" "1"
                                 if [ "${#_vallistkeys[@]}" -gt 0 ]; then

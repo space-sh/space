@@ -89,7 +89,7 @@ readonly _BASEDIR=$( cd "${_SPACEBIN%/*}" 2>/dev/null && pwd )
 # Usage help string
 readonly _USAGE="Usage:
     space [-f|m namespace [-M modules] [-ep key=value] [node] [-a]] [-vkKCBX value] [-dlShgZ] [-- args]
-    space [-hV]
+    space [-hVQu]
     space -U [module]"
 
 #
@@ -321,6 +321,8 @@ $_USAGE
           -C  caching level, 0 = off, 1 = on (default), 2 = regenerate cache.
           -B  Set to force to run modules in Bash. Normally Bash dependency depends
               on module script files ending in .bash instead of .sh.
+          -Q  Queries updates and general state of the SpaceGal services.
+          -u  Update current Space install to the latest version.
           -U  Update module(s). Performs a Git pull on matched module(s) then quit.
               Space will update repositories both in local space_modules and also in shared space_modules directories.
               -U ""    means update all modules.
@@ -2639,6 +2641,8 @@ _main()
     local _help=""        # -h
     local _listnodes=0    # -l
     local _updatemodules=  #-U
+    local _updatespace=    #-u
+    local _queryspace=     #-Q
     local _bash_completion_current= # -L
 
     local _o=
@@ -2659,7 +2663,7 @@ _main()
         elif [[ ${1:0:1} == '-' ]]; then
             # A normal switch, let getopts handle it.
             OPTIND=1
-            getopts ":f:m:aM:e:dp:v:k:K:ShVlC:BU:X:13:4:5:6:gZ" "_o"
+            getopts ":f:m:aM:e:dp:v:k:K:ShVlC:BQuU:X:13:4:5:6:gZ" "_o"
             case "${_o}" in
                 f)
                     if (( ${#_namespaces[@]} == 3 )); then
@@ -2835,6 +2839,14 @@ _main()
                     ;;
                 U)
                     _updatemodules=${OPTARG:-*}
+                    (return 1)
+                    ;;
+                u)
+                    _updatespace="1"
+                    (return 1)
+                    ;;
+                Q)
+                    _queryspace="1"
                     (return 1)
                     ;;
                 X)
@@ -3014,6 +3026,16 @@ _main()
         else
             _help="node"
         fi
+    fi
+
+    if [ "${_queryspace}" = "1" ]; then
+        _query_version_and_update "1"
+        return
+    fi
+
+    if [ "${_updatespace}" = "1" ]; then
+        _query_version_and_update
+        return
     fi
 
     if [[ -n ${_updatemodules-} ]]; then
@@ -4218,6 +4240,112 @@ _completion_modules()
         fi
     done
     unset _f
+}
+
+_query_version_and_update()
+{
+    local _only_check_version="${1-0}"
+
+    local _installer_url="https://get.space.sh"
+    if [ "$_only_check_version" -eq "1" ]; then
+        _installer_url="${_installer_url}/?checkversion"
+    fi
+    _debug "Checking version from: $_installer_url"
+
+    local _current_space_version="'${_VERSION}'"
+    local _latest_space_version=
+
+    local _tmpdir=$(mktemp -d 2>/dev/null || mktemp -d -t 'sometmpdir')
+    if [ "$?" -gt 0 ]; then
+        _error "Could not mktemp directory"
+        return 1
+    fi
+
+    local _tmpfilename="installer.txt"
+    local _tmpfile="${_tmpdir}/${_tmpfilename}"
+
+    _compare_current_version_to_latest_available()
+    {
+        local _version=
+        while IFS= read -r _version; do
+            if [[ "$_version" =~ (_version=)(\'.*\') ]]; then
+                _latest_space_version="${BASH_REMATCH[2]}"
+                break
+            fi
+        done < "$_tmpfile"
+
+        if [ "$_current_space_version" = "$_latest_space_version" ]; then
+            _print "Space is up to date"
+            return 0
+        else
+            local _current_version=${_current_space_version//\'/}
+            local _current_major=${_current_version%%.*}
+            local _current_minor=${_current_version#*.}
+            _current_minor=${_current_minor%.*}
+            local _latest_version=${_latest_space_version//\'/}
+            local _latest_major=${_latest_version%%.*}
+            local _latest_minor=${_latest_version#*.}
+            _latest_minor=${_latest_minor%.*}
+
+            if [ "$_current_major" -lt "$_latest_major" ] \
+                || ( [ "$_current_major" -le "$_latest_major" ] && [ "$_current_minor" -lt "$_latest_minor" ]); then
+                _print "A new Space version is available: ${_latest_space_version}. Update by running: \`space -u\`"
+                _print "For more information visit https://space.sh"
+                return 1
+            else
+                _print "Current Space version is newer (${_current_version}) than the latest (${_latest_version})"
+                return 2
+            fi
+        fi
+    }
+
+    _update_space()
+    {
+        _debug "Updating Space. Temporary directory: $_tmpdir"
+        cd "$_tmpdir"
+        if [ "$?" -eq 0 ]; then
+            local _sh="env sh"
+            if [ "${_FORCE_BASH}" = "1" ]; then
+                _sh="env bash"
+            fi
+            ${_sh} "${_tmpfilename}"
+        else
+            _error "Failed to change to temporary directory: $_tmpdir"
+            return 1
+        fi
+    }
+
+    if [ "$_HTTPBIN" = "curl" ]; then
+        _status_code=$($_HTTPBIN -sL --write-out %{http_code} --silent --output "$_tmpfile" $_installer_url)
+        if [ "$_status_code" -eq 200 ]; then
+            _compare_current_version_to_latest_available
+            if [ "$?" -ne 0 ] && [ "$_only_check_version" -ne 1 ]; then
+                _update_space
+            fi
+            rm "$_tmpfile"
+            return 0
+        else
+            _error "Error trying to fetch ${_installer_url} with curl. Status code: ${_status_code}"
+            return "1"
+        fi
+
+    elif [ "$_HTTPBIN" = "wget" ]; then
+        _status_code=$($_HTTPBIN -O "$_tmpfile" $_installer_url 2>/dev/null)
+        if [ "$?" -eq 0 ] && [ "$_only_check_version" -ne 1 ]; then
+            _compare_current_version_to_latest_available
+            if [ "$?" -ne 0 ]; then
+                _update_space
+            fi
+            rm "$_tmpfile"
+            return 0
+        else
+            _error "Error trying to fetch ${_installer_url} with wget. Status code: $?"
+            return "1"
+        fi
+    else
+        _error "Could not update Space: failed to find curl or wget"
+        return 1
+    fi
 }
 
 #===============

@@ -114,8 +114,8 @@ _space_join_arr()
 _space()
 {
     local switches="-f -m -a -M -e -d -p -v -h -V -C -U -X -k -K -S --"
-    local timeout1="${SPACE_COMP_TIMEOUT1:-15}"
-    local timeout2="${SPACE_COMP_TIMEOUT2:-15}"
+    local timeout1="${SPACE_COMP_TIMEOUT1:-30}"
+    local timeout2="${SPACE_COMP_TIMEOUT2:-30}"
     local args_tag=""
 
     # We might need to adjust the array to the Bash 4 format

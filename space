@@ -3356,10 +3356,15 @@ _main()
             if (( ${#_nodes[@]} == 1 )); then
                 if [[ ${_nodes[0]} == $_pattern ]]; then
                     _node=$_node".*/"
-                    _nodes=()
+                    if [[ $_pattern == "/" ]]; then
+                        _nodes=("/")
+                    else
+                        _nodes=()
+                    fi
                     _match_node "_parsedyamlnodelist${_YAML_PREFIX}${_ns}" "$_node"
                     if (( ${#_nodes[@]} > 0 )); then
                         printf "%s\n" "${_nodes[@]}"
+                        return 0
                     else
                         # No match.
                         return 1

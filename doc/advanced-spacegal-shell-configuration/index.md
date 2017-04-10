@@ -17,8 +17,10 @@ Enables colored message output.
 Default: 1
 
 #### SPACE_LOG_LEVEL
-Set level of logging in interval [0,5].
+Set level of logging in interval [0,5] for the final script.
 Default: 4
+
+#### SPACE_
 
 #### SPACE_MODULES_SHARED
 The directory for shared resources i.e. modules.  

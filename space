@@ -2982,7 +2982,6 @@ _main()
         _dimensions[((_dim-1))]="$_node"
         unset _dim _node
     fi
-    unset _dimensioncompletion
 
     if [[ $_BASH_COMPLETION != "0" ]]; then
         # Reset some switches that will get in our way when auto completing.
@@ -3337,23 +3336,15 @@ _main()
                     _node=$_node".*/"
                     _nodes=()
                     _match_node "_parsedyamlnodelist${_YAML_PREFIX}${_ns}" "$_node"
-                    if (( ${#_nodes[@]} == 1 )); then
-                        # Single match.
-                        printf "%s\n" "${_nodes[0]}"
-                    elif (( ${#_nodes[@]} > 1 )); then
-                        printf "%s\n" "$_pattern"
+                    if (( ${#_nodes[@]} > 0 )); then
                         printf "%s\n" "${_nodes[@]}"
                     else
-                        # Single match.
-                        printf "%s\n" "$_pattern"
+                        # No match.
+                        return 1
                     fi
-                else
-                    printf "%s\n" "${_nodes[0]}"
-                    printf "%s\n" "${_nodes[0]}"
                 fi
-                return 0
-            elif (( ${#_nodes[@]} > 1 )); then
-                printf "%s\n" "$_pattern"
+            fi
+            if (( ${#_nodes[@]} > 0 )); then
                 printf "%s\n" "${_nodes[@]}"
                 return 0
             fi
@@ -3398,8 +3389,7 @@ _main()
 
             if (( ${#_nodes[@]} == 0 )); then
                 return 1
-            elif (( ${#_nodes[@]} > 0 )); then
-                printf "%s\n" "$_pattern"
+            else
                 printf "%s\n" "${_nodes[@]}"
                 return 0
             fi
@@ -3444,8 +3434,7 @@ _main()
 
             if (( ${#_nodes[@]} == 0 )); then
                 return 1
-            elif (( ${#_nodes[@]} > 0 )); then
-                printf "%s\n" "$_pattern"
+            else
                 printf "%s\n" "${_nodes[@]}"
                 return 0
             fi
@@ -3526,6 +3515,11 @@ _main()
     fi
     local _execcounter=0
     local _exectotal=${#_dim1[@]}
+    local _execmax=-1  # How many combos to maximum run, -1 = run all.
+    # Check if this is a dimensin completion we then we run only one combo.
+    if [ -n "${_dimensioncompletion}" ]; then
+        _execmax=1
+    fi
     for _first in "${_dim1[@]}"; do
     _context()
     {
@@ -3557,12 +3551,20 @@ _main()
                         for _third in "${_dim3[@]}"; do
                             printf -v _nodecombo "%s:%s %s:%s %s:%s" "$_dim1ns" "$_first" "$_dim2ns" "$_second" "$_dim3ns" "$_third"
                             ((_execcounter += 1 ))
+                            if ((_execmax >= 0 && _execcounter > _execmax)); then
+                                _status=0
+                                break
+                            fi
                             _exec_dimensions "$_dim1ns" "$_first" "$_dim2ns" "$_second" "$_dim3ns" "$_third" "$_dimorder" "${_execcounter}" "${_exectotal}" "$@"
                             _status=$?
                             (( _status > 0 )) && break
                         done
                     else
                         ((_execcounter += 1 ))
+                        if ((_execmax >= 0 && _execcounter > _execmax)); then
+                            _status=0
+                            break
+                        fi
                         _exec_dimensions "$_dim1ns" "$_first" "$_dim2ns" "$_second" "" "" "$_dimorder" "${_execcounter}" "${_exectotal}" "$@"
                         _status=$?
                     fi
@@ -3572,6 +3574,10 @@ _main()
             done
         else
             ((_execcounter += 1 ))
+            if ((_execmax >= 0 && _execcounter > _execmax)); then
+                _status=0
+                break
+            fi
             _exec_dimensions "$_dim1ns" "$_first" "" "" "" "" "$_dimorder" "${_execcounter}" "${_exectotal}" "$@"
             _status=$?
         fi
@@ -3972,42 +3978,14 @@ _exec_dimensions()
     fi
 
     if [[ $_BASH_COMPLETION == "4" || $_BASH_COMPLETION == "5" || $_BASH_COMPLETION == "6" ]]; then
-        local _tomatch=$_bash_completion_current
-        if [ "${_tomatch}" == "." ]; then
-            _tomatch=""
-        fi
         local _sep="="
-        if [[ $_BASH_COMPLETION == "5" ]]; then
-            _tomatch=$_envval
-            _sep=""
-        elif [[ $_BASH_COMPLETION == "6" ]]; then
-            _tomatch=$_envval
+        if [[ $_BASH_COMPLETION == "5" ]] || [[ $_BASH_COMPLETION == "6" ]]; then
             _sep=""
         fi
-        local _r= _a=()
         if [ "${#_envvalues[@]}" -gt 0 ]; then
-            for _r in "${_envvalues[@]}"; do
-                if [[ $_r =~ ^${_tomatch}[a-zA-Z0-9_]* ]]; then
-                    _a+=("${_r}")
-                fi
-            done
-        fi
-        if [ "${#_a[@]}" -eq 1 ]; then
-            # Normally a single returned line would yield a trailing space
-            # but that is unwanted behavior here when completing on env var
-            # names because of x=y format. However on env var values we want to
-            # append a trailing space.
-            if [[ $_BASH_COMPLETION == "4" ]]; then
-                printf "%s$_sep\n" "${_a[0]}"
-            fi
-            printf "%s$_sep\n" "${_a[0]}"
-            return 0
-        elif [ "${#_a[@]}" -gt 1 ]; then
-            printf "%s\n" "${_tomatch}"
-            printf "%s$_sep\n" "${_a[@]}"
+            printf "%s$_sep\n" "${_envvalues[@]}"
             return 0
         fi
-        unset _r _tomatch _a
         return 1
     fi
 
@@ -4202,9 +4180,15 @@ _completion_modules()
             printf "%s\n" "${_items[0]}"
             break
         elif (( ${#_items[@]} > 1 )); then
-            printf "%s\n" "$_default"
-            printf "%s\n" "${_items[@]}"
-            break
+            if [[ $_default != $_bash_completion_current ]]; then
+                # Rewrite current word.
+                printf "%s\n" "$_default"
+                printf "%s\n" "${_items[@]}"
+                return 3
+            else
+                printf "%s\n" "${_items[@]}"
+                break
+            fi
         else
             if [[ ! $_f =~ \/ ]]; then
                 _default="gitlab.com/space-sh/"

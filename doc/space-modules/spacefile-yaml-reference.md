@@ -317,7 +317,13 @@ Do nonempty assertion of space preprocessor variable expression.
 This will output the text and read input from `stdin` which will be stored in preprocess variable "var1".  
 Use `@prompt:-` to only prompt if var1 is unset or empty.  
 One exception happens when using `prompt` in the preprocessor: whenever preprocess output is cached, so will the prompted value be. The next time it runs the user will not be prompted because _Space_ will be running a cached version.  
-Please refer to the caching options for controlling that behavior: `-C` option.  
+Please refer to the caching options for controlling that behavior from the command line: `-C` option.  
+A note of warning is that tab auto completion and `@prompt` shoudl generally not be used together since the prompt will get in the way of the completion process because it outputs to terminal and reads from stdin.
+
+* `@cache: {0,1,2}`:
+Force the caching behaviour of this YAML file. Could be useful to turn off caching when using `@prompt`, since prompted values are cached.  
+A note of warning dough is that you should not turn off caching when using tab auto completion because the performance and responsiveness
+will suffer greatly.
 
 * `@clone: space-sh/ssh space-sh/docker`:
 The clone directive exists for using another module.  
@@ -612,6 +618,8 @@ _env:
     - var1:
         value: ${var1-default value}
         completion: /list_all/
+    - var2:
+        completion: G
 ```
 
 _env: 
@@ -625,4 +633,5 @@ _env:
 ```
 
 Add the `completion` node which is the named of a node in the same namespace that
-is to fetch the list of options. See the examples section for some nice examples.
+is to fetch the list of options. See the examples section for some nice examples.  
+If `completion` is set to `G` then _Space_ will complete using file globbing.

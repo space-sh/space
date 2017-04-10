@@ -96,11 +96,23 @@ readonly _USAGE="Usage:
 # Output configuration
 #
 
-# Set log level in interval [0,5]
-_LOG_LEVEL=${SPACE_LOG_LEVEL:-4}
+# Set log level for final script in interval [0,5]
+# Inherited from environment and forwarded to final script.
+SPACE_LOG_LEVEL=${SPACE_LOG_LEVEL:-4}
 
 # Enable colored message output
-_LOG_ENABLE_COLORS=${SPACE_LOG_ENABLE_COLORS:-1}
+# Inherited from environment
+# Also used internally for Space.
+SPACE_LOG_ENABLE_COLORS=${SPACE_LOG_ENABLE_COLORS:-1}
+_LOG_ENABLE_COLORS=${SPACE_LOG_ENABLE_COLORS}
+
+# The expected script exit status.
+# This is exported to script, it's not a SPACE header variable.
+SPACE_ASSERT_EXIT=0
+
+# Set to 1 to ignore exit status and always return 0.
+# This is exported to script, it's not a SPACE header variable.
+SPACE_MUTE_EXIT=0
 
 # The verbosity level: 0-4 [none-everything]
 _VERBOSITY=3
@@ -161,8 +173,6 @@ _PRINT_COLUMN_POSITION="0"
 unset SPACE_ARGS
 unset RUN_ALIAS
 unset RUN
-unset SPACE_EXIT    # This is only used as a global, it's not a real SPACE header variable.
-unset SPACE_SILENT  # This is only used as a global, it's not a real SPACE header variable.
 unset SPACE_OUTER
 unset SPACE_OUTERARGS
 unset SPACE_REDIR
@@ -2307,25 +2317,25 @@ _enter_gui_mode()
 #   $3: file descriptor where the message will be redirected to. Defaults to "2"
 #
 # Expects:
-#   _LOG_ENABLE_COLORS
-#   _LOG_LEVEL
+#   SPACE_LOG_ENABLE_COLORS
+#   SPACE_LOG_LEVEL
 #   _SPACE_NAME
 #
 #=====
 PRINT()
 {
-    SPACE_ENV="_LOG_ENABLE_COLORS _LOG_LEVEL _PRINT_COLUMN_POSITION"
+    SPACE_ENV="_PRINT_COLUMN_POSITION"
     local color="\033[0m"
     local header=''
-    [ "${2-info}" = "error" ] && [ "${_LOG_LEVEL:-4}" -gt 0 ] && header="[ERROR] " && color="\033[31m"
-    [ "${2-info}" = "security" ] && [ "${_LOG_LEVEL:-4}" -gt 0 ] && header="[SEC]   " && color="\033[35m"
-    [ "${2-info}" = "warning" ] && [ "${_LOG_LEVEL:-4}" -gt 1 ] && header="[WARN]  " && color="\033[33m"
-    [ "${2-info}" = "ok" ] && [ "${_LOG_LEVEL:-4}" -gt 2 ] && header="[OK]    " && color="\033[32m"
-    [ "${2-info}" = "info" ] && [ "${_LOG_LEVEL:-4}" -gt 3 ] && header="[INFO]  " && color="\033[37m"
-    [ "${2-info}" = "debug" ] && [ "${_LOG_LEVEL:-4}" -gt 4 ] && header="[DEBUG] " && color=""
+    [ "${2-info}" = "error" ] && [ "${SPACE_LOG_LEVEL:-4}" -gt 0 ] && header="[ERROR] " && color="\033[31m"
+    [ "${2-info}" = "security" ] && [ "${SPACE_LOG_LEVEL:-4}" -gt 0 ] && header="[SEC]   " && color="\033[35m"
+    [ "${2-info}" = "warning" ] && [ "${SPACE_LOG_LEVEL:-4}" -gt 1 ] && header="[WARN]  " && color="\033[33m"
+    [ "${2-info}" = "ok" ] && [ "${SPACE_LOG_LEVEL:-4}" -gt 2 ] && header="[OK]    " && color="\033[32m"
+    [ "${2-info}" = "info" ] && [ "${SPACE_LOG_LEVEL:-4}" -gt 3 ] && header="[INFO]  " && color="\033[37m"
+    [ "${2-info}" = "debug" ] && [ "${SPACE_LOG_LEVEL:-4}" -gt 4 ] && header="[DEBUG] " && color=""
     [ -z "${header}" ] && return 0
-    [ "${_SPACE_NAME-}" != "" ] && ( [ "${_LOG_ENABLE_COLORS}" = "1" ] && printf "\033[${_PRINT_COLUMN_POSITION}G${color}%s%s: %s\033[0m\n" "${header}" "${_SPACE_NAME}" "${1}" >&${3-2}) || ( [ "${_LOG_ENABLE_COLORS}" = "1" ] && printf "\033[${_PRINT_COLUMN_POSITION}G${color}%s%s\033[0m\n" "${header}" "${1}" >&${3-2} )
-    [ "${_SPACE_NAME-}" != "" ] && ( [ "${_LOG_ENABLE_COLORS}" != "1" ] && printf "%s%s: %s\n" "${header}" "${_SPACE_NAME}" "${1}" >&${3-2}) || ( [ "${_LOG_ENABLE_COLORS}" != "1" ] && printf "%s%s\n" "${header}" "${1}" >&${3-2} )
+    [ "${_SPACE_NAME-}" != "" ] && ( [ "${SPACE_LOG_ENABLE_COLORS}" = "1" ] && printf "\033[${_PRINT_COLUMN_POSITION}G${color}%s%s: %s\033[0m\n" "${header}" "${_SPACE_NAME}" "${1}" >&${3-2}) || ( [ "${SPACE_LOG_ENABLE_COLORS}" = "1" ] && printf "\033[${_PRINT_COLUMN_POSITION}G${color}%s%s\033[0m\n" "${header}" "${1}" >&${3-2} )
+    [ "${_SPACE_NAME-}" != "" ] && ( [ "${SPACE_LOG_ENABLE_COLORS}" != "1" ] && printf "%s%s: %s\n" "${header}" "${_SPACE_NAME}" "${1}" >&${3-2}) || ( [ "${SPACE_LOG_ENABLE_COLORS}" != "1" ] && printf "%s%s\n" "${header}" "${1}" >&${3-2} )
     :
 }
 
@@ -4719,7 +4729,7 @@ _loadnode()
                         if [[ $_BASH_COMPLETION == "4" ]]; then
                             local _item
                             while true; do
-                                for _item in RUN RUN_ALIAS SPACE_ARGS SPACE_EXIT SPACE_SILENT SPACE_OUTER SPACE_OUTERARGS SPACE_REDIR SPACE_DEP SPACE_ENV SPACE_WRAP SPACE_WRAPARGS; do
+                                for _item in RUN RUN_ALIAS SPACE_ARGS SPACE_OUTER SPACE_OUTERARGS SPACE_REDIR SPACE_DEP SPACE_ENV SPACE_WRAP SPACE_WRAPARGS; do
                                     if [ "${_item}" = "${_key}" ]; then
                                         break 2
                                     fi
@@ -5209,6 +5219,10 @@ _execute()
                     # Add to _export_vars,
                     # there might be multiple variable declarations,
                     # but that's as expected.
+                    _fn_env="${_fn_env:+$_fn_env }SPACE_LOG_LEVEL=\${SPACE_LOG_LEVEL:-$SPACE_LOG_LEVEL}"
+                    _fn_env="${_fn_env} SPACE_LOG_ENABLE_COLORS=\${SPACE_LOG_ENABLE_COLORS:-$SPACE_LOG_ENABLE_COLORS}"
+                    _fn_env="${_fn_env} SPACE_ASSERT_EXIT=\${SPACE_ASSERT_EXIT:-$SPACE_ASSERT_EXIT}"
+                    _fn_env="${_fn_env} SPACE_MUTE_EXIT=\${SPACE_MUTE_EXIT:-$SPACE_MUTE_EXIT}"
                     _cmd_export_vars "${_fn_env}" "${_fn_name}"
                     (( $? > 0 )) && return 1
 
@@ -5223,6 +5237,10 @@ _execute()
         fi
 
         # _export_vars declared way above (no not in the context isolator).
+        _fn_env="${_fn_env:+$_fn_env }SPACE_LOG_LEVEL=\${SPACE_LOG_LEVEL:-$SPACE_LOG_LEVEL}"
+        _fn_env="${_fn_env} SPACE_LOG_ENABLE_COLORS=\${SPACE_LOG_ENABLE_COLORS:-$SPACE_LOG_ENABLE_COLORS}"
+        _fn_env="${_fn_env} SPACE_ASSERT_EXIT=\${SPACE_ASSERT_EXIT:-$SPACE_ASSERT_EXIT}"
+        _fn_env="${_fn_env} SPACE_MUTE_EXIT=\${SPACE_MUTE_EXIT:-$SPACE_MUTE_EXIT}"
         _cmd_export_vars "${_fn_env}" "${_fn_name}"
         (( $? > 0 )) && return 1
 
@@ -5249,62 +5267,51 @@ _execute()
             fi
         fi
 
-        _export_cmd="${_cmd_options}${_export_cmd}${_wrapped_fn_def}${_export_vars}${_fn_def}${_fn_call}"$'\n'
-
+        local _runinfo_head=""
         # Run info
-        if [ "${_counttoexecute}" -gt 1 ] && [ "${_LOG_LEVEL:-1}" -gt 0 ]; then
-            local _out="# Space will print the node name to be run."
-            if [ "${_LOG_ENABLE_COLORS:-1}" = 1 ]; then
-                _out="${_out}
-printf \"${_COLOR_FG_WHITE}\" >&2;
-printf \"%s\\n\" \"[RUN]   (${_currentexecuting}/${_counttoexecute}): ${_nodecombo}. \" >&2;
-printf \"${_COLOR_DEFAULT}\" >&2;
-"
-            else
-                _out="${_out}
-printf \"%s\\n\" \"[RUN]   (${_currentexecuting}/${_counttoexecute}): ${_nodecombo}. \" >&2;
-printf \"${_COLOR_DEFAULT}\" >&2;
-"
-            fi
-            _export_cmd="${_out}
-${_export_cmd}"
-        fi
-
-        # Exit info
-        if [ "${SPACE_SILENT:-0}" = 0 ]; then
-            local _err=""
-            local _success="    :"
-            if [ "${_LOG_LEVEL:-1}" -gt 0 ]; then
-                if [ "${_LOG_ENABLE_COLORS:-1}" = 1 ]; then
-                    _err="    printf \"${_COLOR_FG_RED}\" >&2;
-    printf \"%s\\n\" \"[ERROR] Script exited with status \${_status} (expecting ${SPACE_EXIT:-0}) for node: ${_nodecombo}.\" >&2;
-    printf \"${_COLOR_DEFAULT}\" >&2;
-"
-                    if [ "${_counttoexecute}" -gt 1 ]; then
-                        _success="    printf \"${_COLOR_FG_GREEN}\" >&2;
-    printf \"%s\\n\" \"[OK]    (${_currentexecuting}/${_counttoexecute}): Script exited with success, status \${_status} for node: ${_nodecombo}.\" >&2;
-    printf \"${_COLOR_DEFAULT}\" >&2;"
-                    fi
-                else
-                    _err="    printf \"%s\\n\" \"[ERROR] Script exited with status \${_status} (expecting ${SPACE_EXIT:-0}) for node: ${_nodecombo}.\" >&2;
-"
-                    if [ "${_counttoexecute}" -gt 1 ]; then
-                        _success="    printf \"%s\\n\" \"[OK]    (${_currentexecuting}/${_counttoexecute}): Script exited with success, status \${_status} for node: ${_nodecombo}.\" >&2;"
-                    fi
-                fi
-            fi
-           local _out="# Space handles exit.
-_status=\"\$?\"
-if [ \"\${_status}\" -ne ${SPACE_EXIT:-0} ]; then
-${_err}    exit \"\$(( \${_status} > 0 ? \${_status} : 1 ))\"
-else
-${_success}
+        if [ "${_counttoexecute}" -gt 1 ]; then
+            _runinfo_head='# Space will print the node name to be run.
+if [ "${SPACE_LOG_LEVEL}" -ge 2 ]; then
+    [ "${SPACE_LOG_ENABLE_COLORS:-1}" = 1 ] && printf "'${_COLOR_FG_WHITE}'" >&2
+    printf "%s\n" "[RUN]   '"(${_currentexecuting}/${_counttoexecute}): ${_nodecombo}"'" >&2
+    [ "${SPACE_LOG_ENABLE_COLORS:-1}" = 1 ] && printf "'${_COLOR_DEFAULT}'" >&2
 fi
-"
-            _export_cmd="${_export_cmd}
-${_out}"
+
+'
+        fi
+        local _runinfo_tail=""
+        # Exit info
+        local _runinfo_fail=""
+        if [ "${_counttoexecute}" -gt 1 ]; then
+            _runinfo_fail='printf "%s\n" "[ERROR] '"(${_currentexecuting}/${_counttoexecute})"': Script exited with status $_status for node '${_nodecombo}'" >&2'
+            _runinfo_success='printf "%s\n" "[OK]    '"(${_currentexecuting}/${_counttoexecute})"': Script exited with success (status $_status) for node '${_nodecombo}'" >&2'
+        else
+            _runinfo_fail='printf "%s\n" "[ERROR] Script exited with status $_status for node '${_nodecombo}'" >&2'
+            _runinfo_success='printf "%s\n" "[OK]    Script exited with success (status $_status) for node '${_nodecombo}'" >&2'
         fi
 
+        _runinfo_tail='# Space will print exit status.
+_status=$?
+if [ "${_status}" -ne "${SPACE_ASSERT_EXIT}" ]; then
+    if [ "${SPACE_LOG_LEVEL}" -ge 1 ]; then
+        [ "${SPACE_LOG_ENABLE_COLORS:-1}" = 1 ] && printf "'${_COLOR_FG_RED}'" >&2
+        '$_runinfo_fail'
+        [ "${SPACE_LOG_ENABLE_COLORS:-1}" = 1 ] && printf "'${_COLOR_DEFAULT}'" >&2
+    fi
+    if [ "${SPACE_MUTE_EXIT}" != 1 ]; then
+        exit $((SPACE_ASSERT_EXIT = 0 ? _status : 1))
+    fi
+else
+    if [ "${SPACE_LOG_LEVEL}" -ge 2 ]; then
+        [ "${SPACE_LOG_ENABLE_COLORS:-1}" = 1 ] && printf "'${_COLOR_FG_GREEN}'" >&2
+        '$_runinfo_success'
+        [ "${SPACE_LOG_ENABLE_COLORS:-1}" = 1 ] && printf "'${_COLOR_DEFAULT}'" >&2
+    fi
+fi
+: # Reset status
+'
+
+        _export_cmd="${_cmd_options}${_export_cmd}${_wrapped_fn_def}${_export_vars}${_fn_def}${_runinfo_head}${_fn_call}"$'\n'$'\n'"${_runinfo_tail}"
         (( _index += 1 ))
     done
     unset _index

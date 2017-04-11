@@ -20,7 +20,7 @@ _TEST_PRINT()
 {
     SPACE_DEP="PRINT"
 
-    _LOG_LEVEL=5
+    SPACE_LOG_LEVEL=5
 
     local _tmp_file_name="./tmp_test_PRINT"
 
@@ -88,7 +88,7 @@ _TEST_PRINT()
             rm "$_tmp_file_name"
             return 0
         else
-            PRINT "PRINT failed!" "error"
+            PRINT "PRINT failed! Extracted tag: $_extracted_tag" "error"
             # remove tmp file
             rm "$_tmp_file_name"
             return 2

@@ -635,3 +635,36 @@ _env:
 Add the `completion` node which is the named of a node in the same namespace that
 is to fetch the list of options. See the examples section for some nice examples.  
 If `completion` is set to `G` then _Space_ will complete using file globbing.
+
+#### Limitations of the Space YAML parser
+_Space's_ YAML parser is written in Bash and it supports a subset of the complete
+YAML definition.  
+
+There are some known limitation to the parser.  
+
+This will not work:  
+
+```yaml
+a:
+    - b:
+        - s1: hello
+        - s2: world
+      c:
+        - s1: greetings
+        - s2: from jupiter
+
+```
+
+This however will work:  
+
+```yaml
+a:
+    -
+      b:
+        - s1: hello
+        - s2: world
+      c:
+        - s1: greetings
+        - s2: from jupiter
+
+```

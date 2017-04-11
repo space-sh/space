@@ -3523,10 +3523,22 @@ _main()
     local _first= _second= _third=
 
     if [[ $_help == "node" ]]; then
-        _YAML_NAMESPACE=1
+        _YAML_NAMESPACE=$_dim1ns
         for _first in "${_dim1[@]}"; do
             _helpnode "$_first"
         done
+        if [ "${#_dim2[@]}" -gt 0 ]; then
+            _YAML_NAMESPACE=$_dim2ns
+            for _second in "${_dim2[@]}"; do
+                _helpnode "$_second"
+            done
+        fi
+        if [ "${#_dim3[@]}" -gt 0 ]; then
+            _YAML_NAMESPACE=$_dim3ns
+            for _third in "${_dim3[@]}"; do
+                _helpnode "$_third"
+            done
+        fi
         return 0
     fi
 

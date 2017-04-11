@@ -26,6 +26,22 @@
 
 + Add _Space_ version to module ban server check
 
++ Add `@dotdot` preprocessor directive
+
++ Add condition to disallow inline list and object declaration in _YAML_ files
+
++ Add `urlencode` pass for `wget` _POST_ data in banlist function
+
++ Add escaping for special characters in `split_args` function
+
++ Add `-|` token for `SPACE_ARGS` to mute command line arguments
+
++ Add `-u` option for updating
+
++ Add `-Q` option for querying _SpaceGal_ service status
+
++ Add `-h` info for dimensions two and three
+
 * Rename `push` to `_push`
 
 * Rename `pop` to `_pop`
@@ -71,6 +87,18 @@
 * Bump cache format version
 
 * Fix bug that would cause `SPACE_SIGNATURE` to not allow trailing comments
+
+* Improve auto completion
+
+* Fix bug when referencing hidden sub nodes from command line
+
+* Change empty environment node variables to be implicitly set to itself
+
+* Change `-M` loading to happen after `-m`
+
+* Change `SPACE_EXIT` to `SPACE_ASSERT_EXIT`
+
+* Change `SPACE_SILENT` to `SPACE_MUTE_EXIT`
 
 - Remove spacedoc `/module/` node
 

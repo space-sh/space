@@ -427,12 +427,12 @@ For `Spacefile.yaml`:
 
 3:
     _env:
-        - SPACE_SILENT: 1
+        - SPACE_MUTE_EXIT: 1
         - RUN: return 1
 
 4:
     _env:
-        - SPACE_EXIT: 1
+        - SPACE_ASSERT_EXIT: 1
         - RUN: return 1
 
 5:

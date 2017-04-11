@@ -78,6 +78,7 @@ _space_dyn_comp()
     local status=$?
     if [ "${status}" -ne 1 ] && [ -n "${tag}" ] && [ "${timeout}" -gt 0 ]; then
         # Cache result.
+        ts=$(date +"%s")  # Grab a fresh timestamp.
         printf "%s\n%s\n%s\n" "${ts}" "${status}" "${result}" > "${filename}"
         if [ "$?" -gt 0 ]; then
             rm -f "${filename}"

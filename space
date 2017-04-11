@@ -5574,7 +5574,7 @@ _cmd_extract()
                     # Empty body
                     continue
                 fi
-                local _fn_env=""
+                local _fn_env="SPACE_LOG_LEVEL SPACE_LOG_ENABLE_COLORS"
                 local _fn_def=""
                 _cmd_add_fn_dep "${SPACE_BUILDDEP:+${SPACE_BUILDDEP} }YIELD" "${_space_cmd}"
                 (( $? > 0 )) && { trap - EXIT; return 1; }
@@ -5584,7 +5584,6 @@ _cmd_extract()
                 fi
                 local _export_vars=""
                 if [ -n "${_fn_env}" ]; then
-                    # We will provide this in case SPACE_ARGS uses any of them.
                     _debug "Export vars for build time function ${_fn_name}: ${_fn_env}."
                     _cmd_export_vars "${_fn_env}" "${_fn_name}"
                     (( $? > 0 )) && { trap - EXIT; return 1; }

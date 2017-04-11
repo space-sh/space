@@ -97,7 +97,7 @@ _TEST_PP_YAML_CHECK_STATUS_FAIL_2()
     local _INCLUDEPATH=("")
     local _parsedyaml=()
 
-    _pp_yaml "_yamlrows" $_yamlfile #2> /dev/null
+    _pp_yaml "_yamlrows" $_yamlfile 2> /dev/null
 
     # Expecting failure here
     if [ "$?" -eq 1 ]; then

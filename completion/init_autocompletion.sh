@@ -74,7 +74,7 @@ _space_dyn_comp()
         fi
     fi
 
-    result="$($args)"
+    result=$(bash -c "$args")
     local status=$?
     if [ "${status}" -ne 1 ] && [ -n "${tag}" ] && [ "${timeout}" -gt 0 ]; then
         # Cache result.

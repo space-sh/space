@@ -1,6 +1,8 @@
 ---
 prev: /getting-help/
 prev_title: "Getting help"
+next: /troubleshooting/
+next_title: "Troubleshooting"
 title: Contributing
 weight: 1200
 icon: "<b>12. </b>"

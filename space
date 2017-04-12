@@ -253,10 +253,10 @@ _ENABLE_GUI="0"
 _MODULE_CHECK_VERSION_COMPATIBILITY="1"
 
 # Minimum requirements file
-readonly _MODULE_REQUIREMENT_FILE_NAME="requirement.txt"
+readonly _MODULE_REQUIREMENT_FILE_NAME="space-requirement.txt"
 
 # Stable version description file
-readonly _MODULE_STABLE_FILE_NAME="stable.txt"
+readonly _MODULE_STABLE_FILE_NAME="space-module.txt"
 
 # Set to "1" to allow Space to use
 # external OS tools to speed things up.

@@ -12,7 +12,7 @@ weight: 508
 #### Stable version
 All released versions are expected to be marked as _Git tags_ in the repository. Those are referred to as _stable_ versions.  
 
-The last known stable version name is marked in the `stable.txt` file, expected to be in the module root directory.  
+The last known stable version name is marked in the `space-module.txt` file, expected to be in the module root directory.  
 Stable version modules can be fetched either implicitly with `space -m <module-name>` or, preferably, by including the tag version name with `space -m <module-name>:<version>`.  
 
 It is strongly advised to explicitly state the module version, in particular when using it as a dependency of some other module or program.

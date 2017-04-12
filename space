@@ -252,6 +252,12 @@ _ENABLE_GUI="0"
 # Set to "0" to disable Space checking modules version compatibility
 _MODULE_CHECK_VERSION_COMPATIBILITY="1"
 
+# Minimum requirements file
+readonly _MODULE_REQUIREMENT_FILE_NAME="requirement.txt"
+
+# Stable version description file
+readonly _MODULE_STABLE_FILE_NAME="stable.txt"
+
 # Set to "1" to allow Space to use
 # external OS tools to speed things up.
 # Like awk, sort, etc.
@@ -1838,12 +1844,12 @@ _module_clone()
                 local _tmpdir=$(mktemp -d 2>/dev/null || mktemp -d -t 'sometmpdir')
                 (( $? > 0 )) && { _error "Could not mktemp."; return 1; }
                 local _status_code=0
-                local _versionurl="$_giturl/raw/master/stable.txt"
+                local _versionurl="$_giturl/raw/master/${_MODULE_STABLE_FILE_NAME}"
                 if [ "$_HTTPBIN" = "curl" ]; then
-                    _status_code=$($_HTTPBIN -sL --write-out %{http_code} --silent --output "$_tmpdir/stable.txt" $_versionurl)
+                    _status_code=$($_HTTPBIN -sL --write-out %{http_code} --silent --output "$_tmpdir/${_MODULE_STABLE_FILE_NAME}" $_versionurl)
                     if [ "$_status_code" -eq 200 ]; then
                         local _latest_stable_version=
-                        _get_module_latest_stable_version "$_tmpdir/stable.txt"
+                        _get_module_latest_stable_version "$_tmpdir/${_MODULE_STABLE_FILE_NAME}"
                         if [ "$?" -gt 0 ]; then
                             return "$?"
                         fi
@@ -1852,13 +1858,13 @@ _module_clone()
                     else
                         _commit="master"
                     fi
-                    rm "$_tmpdir/stable.txt"
+                    rm "$_tmpdir/${_MODULE_STABLE_FILE_NAME}"
                 elif [ "$_HTTPBIN" = "wget" ]; then
-                    _status_code=$($_HTTPBIN -O "$_tmpdir/stable.txt" $_versionurl)
+                    _status_code=$($_HTTPBIN -O "$_tmpdir/${_MODULE_STABLE_FILE_NAME}" $_versionurl)
                     # Note: use exit code instead
                     if [ "$?" -eq 0 ]; then
                         local _latest_stable_version=
-                        _get_module_latest_stable_version "$_tmpdir/stable.txt"
+                        _get_module_latest_stable_version "$_tmpdir/${_MODULE_STABLE_FILE_NAME}"
                         if [ "$?" -gt 0 ]; then
                             return "$?"
                         fi
@@ -1867,7 +1873,7 @@ _module_clone()
                     else
                         _commit="master"
                     fi
-                    rm "$_tmpdir/stable.txt"
+                    rm "$_tmpdir/${_MODULE_STABLE_FILE_NAME}"
                 fi
                 if [[ $_d == "github.com" ]]; then
                     local _durl="$_giturl/archive/${_commit}.tar.gz"
@@ -1936,9 +1942,9 @@ _module_clone()
                 return 1
             fi
             if [ "$_commit" = "" ]; then
-                if [ -f "./stable.txt" ]; then
+                if [ -f "./${_MODULE_STABLE_FILE_NAME}" ]; then
                     local _latest_stable_version=
-                    _get_module_latest_stable_version "./stable.txt"
+                    _get_module_latest_stable_version "./${_MODULE_STABLE_FILE_NAME}"
                     if [ "$?" -gt 0 ]; then
                         return "$?"
                     fi
@@ -2457,7 +2463,7 @@ _check_minimum_requirements()
         return 0
     fi
 
-    local _minimum_requirements_file="${_base_directory}/requirement.txt"
+    local _minimum_requirements_file="${_base_directory}/${_MODULE_REQUIREMENT_FILE_NAME}"
     local _minimum_required_space_version=
     local _minimum_required_space_version_major=
     local _minimum_required_space_version_minor=
@@ -2499,7 +2505,7 @@ _check_minimum_requirements()
 # and returns module version that matches current Space version
 #
 # Parameters:
-#   $1: stable.txt file path
+#   $1: ${_MODULE_STABLE_FILE_NAME} file path
 #
 # Expects:
 #   _latest_stable_version: where the results are stored
@@ -4430,9 +4436,9 @@ _update_modules()
                         fi
                         local _current_version=""
                         local _new_version="master"
-                        if [ -f "./stable.txt" ]; then
+                        if [ -f "./${_MODULE_STABLE_FILE_NAME}" ]; then
                             local _latest_stable_version=
-                            _get_module_latest_stable_version "./stable.txt"
+                            _get_module_latest_stable_version "./${_MODULE_STABLE_FILE_NAME}"
                             if [ "$?" -gt 0 ]; then
                                 return "$?"
                             fi
@@ -4450,9 +4456,9 @@ _update_modules()
                             _error "Failed to pull master branch"
                             return 1
                         fi
-                        if [ -f "./stable.txt" ]; then
+                        if [ -f "./${_MODULE_STABLE_FILE_NAME}" ]; then
                             local _latest_stable_version=
-                            _get_module_latest_stable_version "./stable.txt"
+                            _get_module_latest_stable_version "./${_MODULE_STABLE_FILE_NAME}"
                             if [ "$?" -gt 0 ]; then
                                 return "$?"
                             fi

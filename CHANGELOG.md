@@ -1,6 +1,6 @@
 # Space - Change log
 
-## [current]
+## [0.13.0 - 2017-04-13]
 
 + Add node dimensions order
 

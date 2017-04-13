@@ -1,5 +1,5 @@
 
-# Space | [![build status](https://gitlab.com/space-sh/space/badges/master/build.svg)](https://gitlab.com/space-sh/space/commits/master) [![latest stable version](https://img.shields.io/badge/latest%20stable-0.12.0-blue.svg?style=flat)](https://gitlab.com/space-sh/space/tags/0.12.0)
+# Space | [![build status](https://gitlab.com/space-sh/space/badges/master/build.svg)](https://gitlab.com/space-sh/space/commits/master) [![latest stable version](https://img.shields.io/badge/latest%20stable-0.13.0-blue.svg?style=flat)](https://gitlab.com/space-sh/space/tags/0.13.0)
 
 ![SpaceGal](https://space.sh/static/img/logo.png)
 
@@ -39,7 +39,7 @@ Download, extract and install the latest stable version of _Space_:
 
 ```
 mkdir space
-curl https://space.sh/static/download/space-0.12.0/space-0.12.0.tar.gz | tar xvfz - -C ./space && cd ./space && ./space /install/
+curl https://space.sh/static/download/space-0.13.0/space-0.13.0.tar.gz | tar xvfz - -C ./space && cd ./space && ./space /install/
 ```
 Note: this exact method does not check for the integrity of the downloaded .tar.gz file. It is possible to do so while still performing a manual install, please refer to the [install documentation](manuals/install.md).
 

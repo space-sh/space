@@ -51,14 +51,12 @@ _version_date=$(date "+%Y-%m-%d")
 # Files to change
 _changelog_file="./CHANGELOG.md"
 _readme_file="./README.md"
-_docinstall_file="./manuals/install.md"
 _space_file="./space"
 _installsh_file="./tools/installer/install.sh"
 
 # Update files
 sed -i.bak "s/\[current\]/\[${_version_name} - ${_version_date}\]/" "$_changelog_file"
 sed -i.bak "s/${_current_version_name}/${_version_name}/g" "$_readme_file"
-sed -i.bak "s/${_current_version_name}/${_version_name}/g" "$_docinstall_file"
 sed -i.bak "s/readonly \_VERSION\=\"${_current_version_name}\"/readonly \_VERSION\=\"${_version_name}\"/g" "$_space_file"
 sed -i.bak "s/\_version\=\"${_current_version_name}\"/\_version\=\"${_version_name}\"/g" "$_installsh_file"
 
@@ -70,10 +68,6 @@ fi
 
 if [ -f "$_readme_file" ]; then
     rm "${_readme_file}.bak"
-fi
-
-if [ -f "$_docinstall_file" ]; then
-    rm "${_docinstall_file}.bak"
 fi
 
 if [ -f "$_space_file" ]; then

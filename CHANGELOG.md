@@ -42,6 +42,8 @@
 
 + Add `-h` info for dimensions two and three
 
++ Add MODULE_REQUIREMENT and MODULE_STABLE file name definitions
+
 * Rename `push` to `_push`
 
 * Rename `pop` to `_pop`
@@ -99,6 +101,14 @@
 * Change `SPACE_EXIT` to `SPACE_ASSERT_EXIT`
 
 * Change `SPACE_SILENT` to `SPACE_MUTE_EXIT`
+
+* Change `requirement.txt` to `space-requirement.txt`
+
+* Change `stable.txt` to `space-module.txt`
+
+* Fix `SPACE_WRAP` to handle correctly when defined in YAML multiple times
+
+* Update `-U` switch to continue to the next module on error
 
 - Remove spacedoc `/module/` node
 

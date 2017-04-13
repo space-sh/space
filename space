@@ -4455,7 +4455,7 @@ _update_modules()
                         _git_pull_output=$(git pull 2>&1)
                         if [ "$?" -gt 0 ]; then
                             _error "Failed to pull master branch"
-                            return 1
+                            continue
                         fi
                         if [ -f "./${_MODULE_STABLE_FILE_NAME}" ]; then
                             local _latest_stable_version=

@@ -18,8 +18,8 @@
 
 _env:
     - MAN_NAME: "SpaceGal shell Manual"
-    - ORGANIZATION_NAME: "$(space -V 2>&1)"
-    - DATE_NOW: "$(date +%Y-%m-%d)"
+    - ORGANIZATION_NAME: ${ORGANIZATION_NAME-}
+    - DATE_NOW: ${DATE_NOW-}
 
 _info:
     title: Man page exporter

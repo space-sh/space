@@ -1858,7 +1858,7 @@ _module_clone()
                         local _latest_stable_version=
                         _get_module_latest_stable_version "$_tmpdir/${_MODULE_STABLE_FILE_NAME}"
                         if [ "$?" -gt 0 ]; then
-                            return "$?"
+                            return 1
                         fi
 
                         _commit=${_latest_stable_version}
@@ -1873,7 +1873,7 @@ _module_clone()
                         local _latest_stable_version=
                         _get_module_latest_stable_version "$_tmpdir/${_MODULE_STABLE_FILE_NAME}"
                         if [ "$?" -gt 0 ]; then
-                            return "$?"
+                            return 1
                         fi
 
                         _commit=${_latest_stable_version}
@@ -1953,7 +1953,7 @@ _module_clone()
                     local _latest_stable_version=
                     _get_module_latest_stable_version "./${_MODULE_STABLE_FILE_NAME}"
                     if [ "$?" -gt 0 ]; then
-                        return "$?"
+                        return 1
                     fi
 
                     _commit=${_latest_stable_version}
@@ -3165,8 +3165,9 @@ _main()
             _yamlfile=$_path
 
             _check_minimum_requirements "${_dir}"
-            if [ "$?" -gt 0 ]; then
-                return "$?"
+            local _check_status="$?"
+            if [ "$_check_status" -gt 0 ]; then
+                return "$_check_status"
             fi
 
             # Try to load the accompanying sh/bash file
@@ -3206,8 +3207,9 @@ _main()
             fi
 
             _check_minimum_requirements "${_yamlfile%/*}"
-            if [ "$?" -gt 0 ]; then
-                return "$?"
+            local _check_status="$?"
+            if [ "$_check_status" -gt 0 ]; then
+                return "$_check_status"
             fi
 
             # Disabling cachefile to be put in $CWD.
@@ -4490,7 +4492,7 @@ _update_modules()
                             local _latest_stable_version=
                             _get_module_latest_stable_version "./${_MODULE_STABLE_FILE_NAME}"
                             if [ "$?" -gt 0 ]; then
-                                return "$?"
+                                return 1
                             fi
 
                             _current_version=${_latest_stable_version}
@@ -4510,7 +4512,7 @@ _update_modules()
                             local _latest_stable_version=
                             _get_module_latest_stable_version "./${_MODULE_STABLE_FILE_NAME}"
                             if [ "$?" -gt 0 ]; then
-                                return "$?"
+                                return 1
                             fi
 
                             _new_version=${_latest_stable_version}

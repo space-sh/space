@@ -588,6 +588,10 @@ _env:
 This will make it so that `space -e[tab]` will expand to `space -e var1=` and
 `space -e var1=[tab][tab]` will list the three values provided.
 
+If no `value:` is defined then the implicit default `value: ${var1-}` is used, to have the variable be defined and assigned to it self.
+
+The values below the `values:` node are never automatically used as default values, they are only used for tab completion.
+
 Also auto completion on positional arguments is supported:   
 
 ```yaml
@@ -607,6 +611,10 @@ _env:
                     - Arg2ThisIs
                     - Arg2ItIs
 ```
+
+If no `value:` is defined then the implicit default `value: ${SPACE_ARGS-}` is used, to have the variable be defined and assigned to it self.
+
+The values below the `values:` node are never automatically used as default values, they are only used for tab completion.
 
 #### Bash dynamic auto completion
 _Space_ has a very advanced auto completion system.  
@@ -640,7 +648,7 @@ If `completion` is set to `G` then _Space_ will complete using file globbing.
 _Space's_ YAML parser is written in Bash and it supports a subset of the complete
 YAML definition.  
 
-There are some known limitation to the parser.  
+There are some known limitations to the parser.  
 
 This will not work:  
 
@@ -668,3 +676,23 @@ a:
         - s2: from jupiter
 
 ```
+
+This will not work:  
+
+```yaml
+a:
+- item1
+- item2
+
+```
+
+This however will work:  
+
+```yaml
+a:
+ - item1
+ - item2
+
+```
+
+The _Space_ YAML parsers needs a indentation for list items.

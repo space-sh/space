@@ -117,7 +117,7 @@ _space_join_arr()
 } &&
 _space()
 {
-    local switches="-f -m -a -M -e -d -p -v -h -V -C -U -X -k -K -S --"
+    local switches="-f -m -a -M -e -d -p -v -h -V -C -U -X -k -K -S -E --"
     local timeout1="${SPACE_COMP_TIMEOUT1:-30}"
     local timeout2="${SPACE_COMP_TIMEOUT2:-30}"
     local args_tag=""
@@ -202,11 +202,6 @@ _space()
             fi
         done
 
-        #if [ "${current}" == "-f" ]; then
-            #COMPREPLY=("$current")
-            #return 0
-        #fi
-
         # We want to separate switch from argument,
         # so that further completion works in a normalized manner.
         if [[ ((${#current} > 2)) && ${current:0:1} == "-" && $switches =~ "${current:0:2}" ]]; then
@@ -215,7 +210,7 @@ _space()
             return 0
         fi
 
-        if [[ ${previous} == "-f" ]]; then
+        if [[ ${previous} == "-f" ]] || [[ ${previous} == "-E" ]]; then
             command -v compopt >/dev/null && compopt -o filenames
             COMPREPLY=($(compgen -G "$current*" -- $current))
             return 0

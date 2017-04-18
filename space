@@ -307,6 +307,12 @@ $_USAGE
               -e var1="value1".
               Use one -e for each variable.
               To unset a variable use -evar1='!unset'
+          -E  file with variable definitions to apply after -e variables, on the format of a shell file:
+                Example:
+                    var1=value
+                    # Comments on single lines are ignored.
+                    export var2=value
+              Use one -E for each file to load.
           -p  preprocess variable to set before preprocessing.
               -p inventory=staging.
               Use one -p for each variable.
@@ -2661,6 +2667,7 @@ _main()
     local _updatespace=    #-u
     local _queryspace=     #-Q
     local _bash_completion_current= # -L
+    local _envFiles=""
 
     local _o=
 
@@ -2680,7 +2687,7 @@ _main()
         elif [[ ${1:0:1} == '-' ]]; then
             # A normal switch, let getopts handle it.
             OPTIND=1
-            getopts ":f:m:aM:e:dp:v:k:K:ShVlC:BQuU:X:13:4:5:6:gZ" "_o"
+            getopts ":f:m:aM:e:dp:v:k:K:ShVlC:BQuU:X:13:4:5:6:gZE:" "_o"
             case "${_o}" in
                 f)
                     if (( ${#_namespaces[@]} == 3 )); then
@@ -2723,6 +2730,10 @@ _main()
                         _escape "_s" '"'
                         _envE+=("${_s}")
                     fi
+                    (return 1)
+                    ;;
+                E)
+                    _envFiles="$_envFiles ${OPTARG}"
                     (return 1)
                     ;;
                 d)
@@ -3073,6 +3084,16 @@ _main()
     # Check so that at least one dimension exists.
     if (( ${#_dimensions[@]} == 0 )); then
         _dimensions+=("/")
+    fi
+
+    # If -E environment variable file was provided then load those and
+    # append variables to _envE array.
+    if [ -n "${_envFiles}" ]; then
+        _load_env_files
+        if [ "$?" != "0" ]; then
+            _error "Problem when evaluating -E environment file."
+            return 1
+        fi
     fi
 
     # Set command line -e envs, if provided.
@@ -3647,6 +3668,34 @@ _main()
 
 
     return 0
+}
+
+#======================
+# _load_env_files
+#
+# Load variables from sh file.
+#   var=value
+#   export var=value
+#
+# Append these variables to environemnt -e variables.
+#
+# Expects:
+# _envE
+# _envFiles
+#
+#======================
+_load_env_files()
+{
+    local _s= _line=
+    for _s in ${_envFiles}; do
+        while read -r _line || [ -n "$_line" ]; do
+            if [ "${_line:0:1}" == "#" ]; then
+                continue
+            fi
+            _line="${_line#export }"
+            _envE+=("${_line}")
+        done < ${_s}
+    done
 }
 
 #======================

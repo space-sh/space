@@ -5556,11 +5556,10 @@ _cmd_extract()
                 return 1
             fi
 
-            local _args=()
-            _split_args "_args" "${SPACE_ARGS}"
-            (( $? > 0 )) && { trap - EXIT; return 1; }
-            local _cmd_args_count=${#_args[@]};
-            unset _args
+            #local _args=()
+            #_split_args "_args" "${SPACE_ARGS}"
+            #(( $? > 0 )) && { trap - EXIT; return 1; }
+            #unset _args
 
             # Declare these variables here since they are local only.
             local SPACE_BUILDDEP= SPACE_BUILDENV= SPACE_BUILDARGS=
@@ -5568,7 +5567,7 @@ _cmd_extract()
             # Separate the SPACE_ variables header and the function body.
             local _space_cmd=$SPACE_FN
             local _fnlines=()
-            _cmd_extract_space_header "${_fn_body}" "${_fn_name}" "${_cmd_args_count}" "${_headertype}" "${SPACE_ARGS}"
+            _cmd_extract_space_header "${_fn_body}" "${_fn_name}" "${_headertype}" "${SPACE_ARGS}"
             (( $? > 0 )) && { trap - EXIT; return 1; }
 
             # Check if this function is a build time wrapper for another function,
@@ -5708,9 +5707,6 @@ _cmd_extract_space_header ()
     local _fn_name="$1"
     shift
 
-    local _cmd_args_count="${1-}"
-    shift || :
-
     local _headertype="${1-}"
     shift || :
 
@@ -5745,28 +5741,42 @@ _cmd_extract_space_header ()
                 fi
 
                 if [[ ${_spacevar} == "SPACE_SIGNATURE" ]]; then
-                    if [[ -n ${_cmd_args_count-} ]]; then
-                        # Check so that signature matches.
+                    if [[ -n ${_given_args-} ]]; then
+                        # Check so that the signature matches.
                         local _signature=${BASH_REMATCH[2]}
+                        local _signature2="${_signature:1:$((${#_signature}-2))}"
+                        _signature2="${_signature2%%\[*\]}"
                         local _arr=()
-                        _split_args "_arr" "${_signature}"
-                        printf -v _signature "%s" "${_arr[@]}"
-                        [[ ${_signature:0:1} == ' ' ]] && _signature=${_signature:1}
-                        local _sigcount=0
-                        local _signature2="${_signature}"
-                        if [ "${_signature:0:1}" = "[" ]; then
-                            _signature2=${_signature##*\]}
-                        elif [ "${_signature: -1}" = "]" ]; then
-                            _signature2=${_signature%%\[*}
-                        else
-                            _sigcount=$(( ${#_signature} > 0 ? 1 : 0 ))
-                        fi
-                        _signature2=${_signature2//[^\ ]}
-                        (( _sigcount += ${#_signature2} ))
-                        if (( _sigcount > _cmd_args_count )); then
-                            _error "Missing $((_sigcount-_cmd_args_count)) argument(s). Function ${_fn_name} has the signature: ${_signature}, but only these (${_cmd_args_count}) arguments where provided: ${_given_args}"
-                            return 1
-                        fi
+                        _split_args "_arr" "${_signature2}"
+                        (( $? > 0 )) && { return 1; }
+                        local _sigcount=${#_arr[@]}
+                        local _arr2=()
+                        _split_args "_arr2" "${_given_args}"
+                        (( $? > 0 )) && { return 1; }
+                        local _cmd_args_count=${#_arr2[@]}
+                        local _c=0 _s=
+                        for _s in ${_signature2}; do
+                            if [ "$_c" -ge "${#_arr2[@]}" ]; then
+                                _error "Missing $((_sigcount-_cmd_args_count)) argument(s). Function ${_fn_name} has the signature: ${_signature}, but only these (${_cmd_args_count}) arguments where provided: ${_given_args}"
+                                return 1
+                            fi
+                            local _minlength=0 _maxlength=
+                            if [[ $_s =~ ^[^:]+:([^:]+):?(.*) ]]; then
+                                _minlength=${BASH_REMATCH[1]}
+                                _maxlength=${BASH_REMATCH[2]}
+                            fi
+                            local _arg=${_arr2[$_c]}
+                            local _l=${#_arg}
+                            if (( _l < _minlength )); then
+                                _error "Argument $((_c+1)) is too short for function ${_fn_name}: \"$_arg\" is out of bounds of $_s."
+                                return 1
+                            fi
+                            if [ -n "$_maxlength" ] && (( _l > _maxlength )); then
+                                _error "Argument $((_c+1)) is too long for function ${_fn_name}: \"$_arg\" is out of bounds of $_s."
+                                return 1
+                            fi
+                            ((_c+=1))
+                        done
                     fi
                 elif [ "${_headertype}" = "2" ]; then
                     # Wrap command
@@ -6056,7 +6066,7 @@ _cmd_add_fn_dep()
         local SPACE_DEP= SPACE_ENV= SPACE_REDIR=
         local SPACE_WRAP= SPACE_FN= SPACE_OUTER=
         local SPACE_ARGS= SPACE_OUTERARGS= SPACE_WRAPARGS=
-        _cmd_extract_space_header "${_fn_dep_body}" "${_fn_dep_name}" "" "3"
+        _cmd_extract_space_header "${_fn_dep_body}" "${_fn_dep_name}" "3"
         (( $? > 0 )) && return 1
         local _fns=
         printf -v _fns "%s\n" "${_fnlines[@]-:}"

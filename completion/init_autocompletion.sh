@@ -216,11 +216,8 @@ _space()
         fi
 
         if [[ ${previous} == "-f" ]]; then
-            if [ -f "${current}" ]; then
-                COMPREPLY=("$current ")
-            else
-                COMPREPLY=($(compgen -G "$current*"))
-            fi
+            command -v compopt >/dev/null && compopt -o filenames
+            COMPREPLY=($(compgen -G "$current*" -- $current))
             return 0
         fi
 
@@ -284,6 +281,11 @@ _space()
                     break
                 fi
             fi
+        fi
+
+        if [[ ${current:0:1} == "-" ]]; then
+            # Unknown switch
+            return 1
         fi
 
         # Assume node completion.

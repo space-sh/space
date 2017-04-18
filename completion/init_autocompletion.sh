@@ -79,7 +79,10 @@ _space_dyn_comp()
     if [ "${status}" -ne 1 ] && [ -n "${tag}" ] && [ "${timeout}" -gt 0 ]; then
         # Cache result.
         ts=$(date +"%s")  # Grab a fresh timestamp.
+        local _umask=$(umask)
+        umask 0077
         printf "%s\n%s\n%s\n" "${ts}" "${status}" "${result}" > "${filename}"
+        umask "$_umask"
         if [ "$?" -gt 0 ]; then
             rm -f "${filename}"
         fi

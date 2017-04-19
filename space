@@ -4884,7 +4884,9 @@ _loadnode()
 
                     # Here we must handle the special case of always appending to the SPACE_WRAP variable.
                     if [ "${_key}" == "SPACE_WRAP" ]; then
-                        _value='${SPACE_WRAP:+$SPACE_WRAP }'"${_value}"
+                        if [ "${_value}" != "!unset" ]; then
+                            _value='${SPACE_WRAP:+$SPACE_WRAP }'"${_value}"
+                        fi
                         # TODO: possibly handle and balance SPACE_WRAPARGS here also
                     fi
 

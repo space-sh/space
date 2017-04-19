@@ -4006,6 +4006,7 @@ _exec_dimensions()
     local _envvarindex="0"  # Position argument index for SPACE_ARGS
     local _envvalues=()
     local _envcompletion=""
+    local _envcompletioncache=""
     if [[ $_BASH_COMPLETION == "5" ]]; then
         _envvar="${_bash_completion_current%%=*}"
         local _envval="${_bash_completion_current#*=}"
@@ -4015,7 +4016,7 @@ _exec_dimensions()
         local _envval="${_bash_completion_current#*=}"
     fi
 
-    local _envcompletion2= _envcompletion2dim=
+    local _envcompletion2= _envcompletion2dim= _envcompletioncache2=
     local _status=0 _tuple= _node= _ns= _counter=0
     for _tuple in "${_nodes[@]}"; do
         (( _counter += 1 ))
@@ -4036,9 +4037,11 @@ _exec_dimensions()
             # auto completion.
             if [ -n "${_envcompletion}" ]; then
                 _envcompletion2=$_envcompletion
+                _envcompletioncache2=$_envcompletioncache
                 # We need to transform back to the original dimension order.
                 eval "_envcompletion2dim=\$_dimorder${_counter}"
                 _envcompletion=
+                _envcompletioncache=
             fi
 
             # TODO: this trap thing is not very efficient in catching the right errors.
@@ -4080,7 +4083,7 @@ _exec_dimensions()
 
     # auto completion.
     if [ -n "${_envcompletion2}" ]; then
-        printf "%s\n" "$_envcompletion2dim:$_envcompletion2"
+        printf "%s\n" "$_envcompletion2dim:$_envcompletion2 ${_envcompletioncache2:-2}"
         return 2
     fi
 
@@ -4830,10 +4833,12 @@ _loadnode()
                         # Add to auto completion list of env variable values.
                         if [[ ($_BASH_COMPLETION == "5" || $_BASH_COMPLETION == "6") && $_envvar == $_key ]]; then
                             if [ "${_envvar}" = "SPACE_ARGS" ]; then
-                                local _completion=
+                                local _completion= _completioncache=
+                                _copy "_completioncache" "${_nodepath}_env/$_arrindex/$_key/arguments/${_envvarindex}/completion_cache"
                                 _copy "_completion" "${_nodepath}_env/$_arrindex/$_key/arguments/${_envvarindex}/completion"
                                 if (( $? == 0 )); then
                                     _envcompletion="${_completion}"
+                                    _envcompletioncache="${_completioncache}"
                                 fi
                                 local _vallistkeys=() _valkey
                                 _list "_vallistkeys" "${_nodepath}_env/${_arrindex}/${_key}/arguments/${_envvarindex}/values/" "1" "1"
@@ -4854,10 +4859,12 @@ _loadnode()
                                 fi
                                 unset _vallistkeys _valkey
                             else
-                                local _completion=
+                                local _completion= _completioncache=
+                                _copy "_completioncache" "${_nodepath}_env/$_arrindex/$_key/completion_cache"
                                 _copy "_completion" "${_nodepath}_env/$_arrindex/$_key/completion"
                                 if (( $? == 0 )); then
                                     _envcompletion="${_completion}"
+                                    _envcompletioncache="${_completioncache}"
                                 fi
                                 local _vallistkeys=() _valkey
                                 _list "_vallistkeys" "${_nodepath}_env/${_arrindex}/${_key}/values/" "1" "1"

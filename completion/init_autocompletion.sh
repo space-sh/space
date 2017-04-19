@@ -36,6 +36,8 @@ _space_dyn_comp()
     shift
     local prefix=$1
     shift
+    local args_tag=$1
+    shift
 
     local shasbin=
     local tag=
@@ -121,6 +123,7 @@ _space()
     local timeout1="${SPACE_COMP_TIMEOUT1:-30}"
     local timeout2="${SPACE_COMP_TIMEOUT2:-30}"
     local args_tag=""
+    local args_tag_full=""
 
     # We might need to adjust the array to the Bash 4 format
     # where it splits on equal signs according to COMP_WORDBREAKS.
@@ -171,6 +174,7 @@ _space()
                 local index=$((COMP_CWORD-counter-1))
                 args="${COMP_WORDS[0]} -v0 -6 $index=${current} $part1"
                 _space_join_arr "args_tag" "1" "$((COMP_CWORD-1))"
+                _space_join_arr "args_tag_full" "1" "$((COMP_CWORD))"
                 break 2
             fi
             ((counter+=1))
@@ -239,6 +243,7 @@ _space()
                     _space_join_arr "part1" "1"
                     args="${COMP_WORDS[0]} -v0 -5 ${_aprev:2}= ${part1}"
                     _space_join_arr "args_tag" "1" "$((COMP_CWORD))"
+                    _space_join_arr "args_tag_full" "1" "$((COMP_CWORD))"
                     break
                 fi
             fi
@@ -249,6 +254,7 @@ _space()
                     _space_join_arr "part1" "1"
                     args="${COMP_WORDS[0]} -v0 -5 ${previous}= ${part1}"
                     _space_join_arr "args_tag" "1" "$((COMP_CWORD))"
+                    _space_join_arr "args_tag_full" "1" "$((COMP_CWORD))"
                     break
                 fi
             fi
@@ -262,6 +268,7 @@ _space()
                     _space_join_arr "part1" "1"
                     args="${COMP_WORDS[0]} -v0 -5 ${_aprev:2}=${current} ${part1}"
                     _space_join_arr "args_tag" "1" "$((COMP_CWORD-1))"
+                    _space_join_arr "args_tag_full" "1" "$((COMP_CWORD))"
                     break
                 fi
             fi
@@ -273,6 +280,7 @@ _space()
                     _space_join_arr "part1" "1"
                     args="${COMP_WORDS[0]} -v0 -5 ${_prevprev}=${current} ${part1}"
                     _space_join_arr "args_tag" "1" "$((COMP_CWORD-1))"
+                    _space_join_arr "args_tag_full" "1" "$((COMP_CWORD))"
                     break
                 fi
             fi
@@ -304,20 +312,34 @@ _space()
 
     # Run space completion in subshell.
     local result=
-    _space_dyn_comp $timeout1 "first"
+    _space_dyn_comp $timeout1 "first" "$args_tag"
     local status=$?
     if (( status == 2 )); then
         # Dynamic completion.
+        local cachelevel=
+        if [[ $result =~ (.*)[\ ](.*) ]]; then
+            result=${BASH_REMATCH[1]}
+            cachelevel=${BASH_REMATCH[2]}
+        fi
         if [[ $result =~ ^[123]:G$ ]]; then
-            COMPREPLY=($(compgen -G "$current*"))
+            command -v compopt >/dev/null && compopt -o filenames
+            COMPREPLY=($(compgen -G "$current*" -- $current))
             return 0
         fi
         local part1=
         _space_join_arr "part1" "1"
         args="${COMP_WORDS[0]} -v0 $result ${part1}"
         local result=
-        local result=
-        _space_dyn_comp $timeout2 "second"
+        if [ "${cachelevel}" = 1 ]; then
+            # Fine grained cache
+            _space_dyn_comp $timeout2 "second" "$args_tag_full"
+        elif [ "${cachelevel}" = 2 ]; then
+            # Course cache
+            _space_dyn_comp $timeout2 "second" "$args_tag"
+        else
+            # No cache
+            _space_dyn_comp 0 "second" ""
+        fi
         local status=$?
         local a=()
         while IFS=$'\n' read -r _line; do
@@ -325,6 +347,12 @@ _space()
                 a+=("${_line}")
             fi
         done <<< "${result}"
+        if [ "${#a[@]}" -eq 1 ]; then
+            # Check if single line is a directory, then don't space it.
+            if [ "${a[0]: -1}" = "/" ]; then
+                command -v compopt >/dev/null && compopt -o nospace
+            fi
+        fi
         if [ "${#a[@]}" -gt 0 ]; then
             local _options=
             printf -v _options "%s " "${a[@]}"

@@ -4528,7 +4528,7 @@ _update_modules()
                             git checkout "$_new_version" > /dev/null 2>&1
                             if [ "$?" != "0" ]; then
                                 _error "Could not Git checkout $_new_version of $d"
-                                return 1
+                                continue
                             fi
                         else
                             if [ "$_git_pull_output" = "Already up-to-date." ]; then

@@ -5805,8 +5805,9 @@ _cmd_extract_space_header ()
                 fi
 
                 if [[ ${_spacevar} == "SPACE_SIGNATURE" ]]; then
-                    if [[ -n ${_given_args-} ]]; then
-                        # Check so that the signature matches.
+                    if [ "${_headertype}" != "3" ]; then
+                        # Check so that the signature matches, but not for
+                        # dependency functions included.
                         local _signature=${BASH_REMATCH[2]}
                         local _signature2="${_signature:1:$((${#_signature}-2))}"
                         _signature2="${_signature2%%\[*\]}"

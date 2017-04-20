@@ -4441,7 +4441,7 @@ _update_modules()
     if [[ $_updatemodules != "*" ]]; then
         local _domainname="gitlab.com"
         local _username="space-sh"
-        local _reponame=$_updatemodules 
+        local _reponame=$_updatemodules
         if [[ $_updatemodules  =~ (.+)/(.+)/(.+) ]]; then
             _domainname=${BASH_REMATCH[1]}
             _username=${BASH_REMATCH[2]}
@@ -4527,7 +4527,7 @@ _update_modules()
                             fi
                             git checkout "$_new_version" > /dev/null 2>&1
                             if [ "$?" != "0" ]; then
-                                _error "Could not Git checkout $_new_version of $_reponame."
+                                _error "Could not Git checkout $_new_version of $d"
                                 return 1
                             fi
                         else

@@ -5825,7 +5825,7 @@ _cmd_extract_space_header ()
                                 _error "Missing $((_sigcount-_cmd_args_count)) argument(s). Function ${_fn_name} has the signature: ${_signature}, but only these (${_cmd_args_count}) arguments where provided: ${_given_args}"
                                 return 1
                             fi
-                            local _minlength=0 _maxlength=
+                            local _minlength=1 _maxlength=
                             if [[ $_s =~ ^[^:]+:([^:]+):?(.*) ]]; then
                                 _minlength=${BASH_REMATCH[1]}
                                 _maxlength=${BASH_REMATCH[2]}

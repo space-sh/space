@@ -2606,7 +2606,7 @@ _main()
         elif [ "$#" -gt 1 ] && [ -f "${2}" ]; then
             # Second argument is a file, now check if first argument is more than
             # a -f switch, and if so, we have things to figure out.
-            if [ "${1}" != "-f" ]; then
+            if [ "${1}" != "-f" ] && [ "${1}" != "-E" ]; then
                 _isshebang=1
                 # Break $1 into parts.
                 local _args_shebang=()
@@ -3089,6 +3089,7 @@ _main()
     # If -E environment variable file was provided then load those and
     # append variables to _envE array.
     if [ -n "${_envFiles}" ]; then
+        _debug "Load environment files: ${_envFiles}."
         _load_env_files
         if [ "$?" != "0" ]; then
             _error "Problem when evaluating -E environment file."
@@ -3695,6 +3696,9 @@ _load_env_files()
                 continue
             fi
             _line="${_line#export }"
+            if [[ $_line =~ ^(.+=)[\"'](.*)[\"']$ ]]; then
+                _line="${BASH_REMATCH[1]}${BASH_REMATCH[2]}"
+            fi
             _envE+=("${_line}")
         done < ${_s}
     done

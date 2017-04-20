@@ -23,7 +23,7 @@ _env:
 
 _info:
     title: SpaceGal shell installer
-    desc:|
+    desc: |
         Provides system wide installation and Bash auto-completion setup.
         Provides an uninstall utility for listing files originally installed by Space.
 
@@ -42,7 +42,7 @@ _build:
 install:
     _info:
         title: Install SpaceGal shell
-        desc:|
+        desc: |
             Perform SpaceGal shell install.
             Parameters (both optional):
                 1: BIN_PREFIX which is where the program and man page will be installed.
@@ -55,7 +55,7 @@ install:
 uninstall:
     _info:
         title: Uninstall SpaceGal shell
-        desc:|
+        desc: |
             Auto detects and lists all the files originally installed by SpaceGal shell.
     _env:
         - RUN: SPACE_UNINSTALL

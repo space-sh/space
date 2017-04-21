@@ -3407,8 +3407,9 @@ _main()
                         printf "%s\n" "${_nodes[@]}"
                         return 0
                     else
-                        # No match.
-                        return 1
+                        # No child nodes, space this node by returning 4.
+                        printf "%s\n" "$_pattern"
+                        return 4
                     fi
                 fi
             fi

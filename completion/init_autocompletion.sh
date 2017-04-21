@@ -364,6 +364,9 @@ _space()
         # This is a special case of rewriting the current word.
         # Fall through.
         :
+    elif (( status == 4 )); then
+        # This is a special case of adding trailing space to final word.
+        command -v compopt >/dev/null && compopt +o nospace
     elif (( status > 0 )); then
         return 1
     fi
@@ -378,11 +381,8 @@ _space()
             return 1
         fi
         if [ "${#_items[@]}" -eq 1 ]; then
-            #command -v compopt >/dev/null && compopt +o nospace
             current="${_items[0]}"
             local _options="${_items[@]}"
-            #COMPREPLY=("${current} ")
-            #return 0
         elif (( status == 3 )); then
             current="${_items[0]}"
             local _options="${_items[@]:1}"

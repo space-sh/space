@@ -5132,12 +5132,18 @@ _execute()
     fi
 
     # Split string into array of arguments.
+    if [[ "${_defaultargs//\\\"/}" != "${_defaultargs}" ]]; then
+            _error "RUN: $_RUN $_defaultargs, is containing nested quotes. To use nested quotes please set a variable instead and export it using SPACE_ENV, then refer to that variable. This is due to a limitation in the Space parser when parsing complex arguments provided using RUN and/or SPACE_ARGS variables. Complex arguments could be passed using positional arguments."
+            return 1
+    fi
     local _args=()
+    # Note: If we remove _split_args to something better we can allow nested quotes.
     _split_args "_args" "$_defaultargs"
     (( $? > 0 )) && return 1
 
-    # Any arguments in _RUN after -- (including) have already been cut away by now.
-    # If it was not we now remove the -- token.
+    # Any arguments in the RUN variable after the '--' token (including)
+    # would already have been cut away by now if there were cmd line arguments.
+    # If it was not we now remove the '--' token.
     local _rowindex=
     for ((_rowindex=0; _rowindex<${#_args[@]}; _rowindex+=1 )); do
         if [[ ${_args[$_rowindex]} == "--" ]]; then
@@ -5173,8 +5179,8 @@ _execute()
     local _rowindex= _cmd_args_str=""
     for ((_rowindex=0; _rowindex<_cmd_args_count; _rowindex+=1 )); do
         _arg="${_args[$_rowindex]}"
-        _escape "_arg" '"'
         # Always quote arg for eval statement to avoid evaluating &&, >, etc
+        _escape "_arg" '"'
         _cmd_args_str="${_cmd_args_str:+${_cmd_args_str} }\""$_arg$'"'
     done
     unset _rowindex _arg _args _cmd_args_count
@@ -6433,7 +6439,7 @@ _apply_cmd_env()
                 printf "%s\n" "local $_varname=\"\$${_varname}\""
             else
                 local _s=${BASH_REMATCH[2]}
-                _escape "_s"
+                _escape "_s" '$"'
                 printf "%s\n" "local $_varname=\"${_s}\""
             fi
         fi

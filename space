@@ -6231,6 +6231,9 @@ _escape_inline()
 #
 # Escape a variable which name is given by $1.
 #
+# $1: name of variable to escape
+# $2: '"$()&|<>'
+#
 #============
 _escape()
 {
@@ -6253,6 +6256,26 @@ _escape()
     case "${2-\"\$\(\)}" in
         *\)*)
             __cs="${__cs} )"
+            ;;
+    esac
+    case "${2-\"\$\(\)}" in
+        *\&*)
+            __cs="${__cs} &"
+            ;;
+    esac
+    case "${2-\"\$\(\)}" in
+        *\|*)
+            __cs="${__cs} |"
+            ;;
+    esac
+    case "${2-\"\$\(\)}" in
+        *\<*)
+            __cs="${__cs} <"
+            ;;
+    esac
+    case "${2-\"\$\(\)}" in
+        *\>*)
+            __cs="${__cs} >"
             ;;
     esac
 

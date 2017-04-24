@@ -2727,7 +2727,6 @@ _main()
                         fi
                     else
                         local _s="${OPTARG}"
-                        _escape "_s" '"'
                         _envE+=("${_s}")
                     fi
                     (return 1)
@@ -6225,68 +6224,51 @@ _escape_inline()
 # _escape
 #
 # Escape a variable which name is given by $1.
-# Double quotes are escaped one up.
-# Dollar signs are escaped one up.
-# Paranthesis are escaped one up.
 #
 #============
 _escape()
 {
-    local __s=$1
-    shift
+    local __cs=""
+    case "${2-\"\$\(\)}" in
+        *\"*)
+            __cs="${__cs} \""
+            ;;
+    esac
+    case "${2-\"\$\(\)}" in
+        *\$*)
+            __cs="${__cs} \$"
+            ;;
+    esac
+    case "${2-\"\$\(\)}" in
+        *\(*)
+            __cs="${__cs} ("
+            ;;
+    esac
+    case "${2-\"\$\(\)}" in
+        *\)*)
+            __cs="${__cs} )"
+            ;;
+    esac
 
-    local __c=${1:-\"\$\()}
-    shift || :
-
-    if [ "${__s}" == "__s" ]; then
-        _error "Variable name collision in _escape, choose other variable name than ${__s}."
-        return 1
-    fi
-
-    local __s2=${!__s}
-
-    if [[ $__c =~ \" ]]; then
-        __s2=${__s2//\"/\\\"}
-        __s2=${__s2//\\\\\"/\\\\\\\"} # Adjust the even ones...
-    fi
-
-    if [[ $__c =~ \$ ]]; then
-        __s2=${__s2//\$/\\\$}
-        __s2=${__s2//\\\\\$/\\\\\\\$} # Adjust the even ones...
-    fi
-
-    if [[ $__c =~ \| ]]; then
-        __s2=${__s2//\|/\\\|}
-        __s2=${__s2//\\\\\|/\\\\\\\|} # Adjust the even ones...
-    fi
-
-    if [[ $__c =~ \& ]]; then
-        __s2=${__s2//\&/\\\&}
-        __s2=${__s2//\\\\\&/\\\\\\\&} # Adjust the even ones...
-    fi
-
-    if [[ $__c =~ \> ]]; then
-        __s2=${__s2//\>/\\\>}
-        __s2=${__s2//\\\\\>/\\\\\\\>} # Adjust the even ones...
-    fi
-
-    if [[ $__c =~ \< ]]; then
-        __s2=${__s2//\</\\\<}
-        __s2=${__s2//\\\\\</\\\\\\\<} # Adjust the even ones...
-    fi
-
-    if [[ $__c =~ \( ]]; then
-        __s2=${__s2//\(/\\\(}
-        __s2=${__s2//\\\\\(/\\\\\\\(} # Adjust the even ones...
-    fi
-
-    if [[ $__c =~ \) ]]; then
-        __s2=${__s2//\)/\\\)}
-        __s2=${__s2//\\\\\)/\\\\\\\)} # Adjust the even ones...
-    fi
-
-    eval "$__s=\$__s2"
-    return 0
+    local __count=
+    local __e=('\\\\\\\\\\' '\\\\\\\\' '\\\\\\' '\\\\' '\\' '')
+    local __c=''
+    for __c in ${__cs}; do
+        __count=0
+        for __a in "${__e[@]}"; do
+            ((__count+=1))
+            __a=$__a$'\\'${__c}
+            local __tag="_SPACEGAL_SUBST_TAG333_${__count}"
+            eval ${1}'=${'${1}'//$__a/$__tag}'
+        done
+        __count=0
+        for __a in "${__e[@]}"; do
+            ((__count+=1))
+            __a=$__a$'\\'${__c}
+            local __tag="_SPACEGAL_SUBST_TAG333_${__count}"
+            eval ${1}'=${'${1}'//$__tag/$__a}'
+        done
+    done
 }
 
 #===========
@@ -6450,7 +6432,9 @@ _apply_cmd_env()
             elif [ "${_type}" = "isolate" ]; then
                 printf "%s\n" "local $_varname=\"\$${_varname}\""
             else
-                printf "%s\n" "local $_varname=\"${BASH_REMATCH[2]}\""
+                local _s=${BASH_REMATCH[2]}
+                _escape "_s"
+                printf "%s\n" "local $_varname=\"${_s}\""
             fi
         fi
     done

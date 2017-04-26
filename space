@@ -307,10 +307,11 @@ $_USAGE
               -e var1="value1".
               Use one -e for each variable.
               To unset a variable use -evar1='!unset'
-          -E  file with variable definitions to apply after -e variables, on the format of a shell file:
+          -E  file with variable definitions to apply before -e variables on command line are applied, on the format of a shell file:
                 Example:
                     var1=value
                     # Comments on single lines are ignored.
+                    # export keyword is ignored.
                     export var2=value
               Use one -E for each file to load.
           -p  preprocess variable to set before preprocessing.
@@ -2732,7 +2733,9 @@ _main()
                     (return 1)
                     ;;
                 E)
-                    _envFiles="$_envFiles ${OPTARG}"
+                    # This order makes so the first file defined using -E
+                    # will be the first one whow variables are applied.
+                    _envFiles="${OPTARG} ${_envFiles}"
                     (return 1)
                     ;;
                 d)
@@ -3086,7 +3089,7 @@ _main()
     fi
 
     # If -E environment variable file was provided then load those and
-    # append variables to _envE array.
+    # prepend variables to _envE array.
     if [ -n "${_envFiles}" ]; then
         _debug "Load environment files: ${_envFiles}."
         _load_env_files
@@ -3680,7 +3683,7 @@ _main()
 #   var=value
 #   export var=value
 #
-# Append these variables to environemnt -e variables.
+# Prepend these variables to environemnt -e variables.
 #
 # Expects:
 # _envE
@@ -3699,7 +3702,7 @@ _load_env_files()
             if [[ $_line =~ ^(.+=)[\"'](.*)[\"']$ ]]; then
                 _line="${BASH_REMATCH[1]}${BASH_REMATCH[2]}"
             fi
-            _envE+=("${_line}")
+            _envE=("${_line}" "${_envE[@]}")
         done < ${_s}
     done
 }

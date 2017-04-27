@@ -5136,7 +5136,7 @@ _execute()
 
     # Split string into array of arguments.
     if [[ "${_defaultargs//\\\"/}" != "${_defaultargs}" ]]; then
-            _error "RUN: $_RUN $_defaultargs, is containing nested quotes. To use nested quotes please set a variable instead and export it using SPACE_ENV, then refer to that variable. This is due to a limitation in the Space parser when parsing complex arguments provided using RUN and/or SPACE_ARGS variables. Complex arguments could be passed using positional arguments."
+            _error "RUN: $_RUN $_defaultargs, has a value containing nested quotes. Passing such a variable by value using the YAML RUN variable or by setting the SPACE_ARGS variable is a problem due to a known limitation in the Space parser. Passing nested quotes on cmd line using positional arguments will work dough. Recommended is to export the variable using SPACE_ENV and then referencing it by name in the shell function."
             return 1
     fi
     local _args=()

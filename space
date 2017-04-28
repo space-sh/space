@@ -4996,7 +4996,7 @@ unset __spacegaltmp_
                             fi
                             _middle="${_middle}"
                             local _right=${_value:$((${#_left} + 2 + ${#_middle}))}
-                            _escape "_middle"
+                            _escape "_middle" '"$'
                             _value="${_left}\$(_escape_inline \"${_middle}\")${_right}"
                         done
                         local _s="local __spacegaltmp_=

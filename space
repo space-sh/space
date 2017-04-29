@@ -6232,42 +6232,60 @@ _escape_inline()
 #==========
 # _escape
 #
-# Escape a variable which name is given by $1.
+# Escape in place a variable which name is given by $1.
 #
-# $1: name of variable to escape
-# $2: Characters to escape of '"$()&|<>', defaults to '"$'
+# Parameters:
+#   $1: name of variable to escape
+#   $2: Characters to escape of '"$()&|<>', defaults to '"$'
 #
 #============
 _escape()
 {
     local __cs=""
-    local ___char=
-    for ___char in \" \$ \( \) \< \> \| \&; do
+    local __char=
+    for __char in \" \$ \( \) \< \> \| \&; do
         case "${2-\"\$}" in
-            *$___char*)
-                __cs="${__cs} ${___char}"
+            *$__char*)
+                __cs="${__cs} ${__char}"
                 ;;
         esac
     done
 
-    local __count=
-    local __e=('\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\' '\\\\\\\\\\\\\\\\\\\\\\\\\\\\' '\\\\\\\\\\\\\\\\\\\\\\\\\\' '\\\\\\\\\\\\\\\\\\\\\\\\' '\\\\\\\\\\\\\\\\\\\\\\' '\\\\\\\\\\\\\\\\\\\\' '\\\\\\\\\\\\\\\\\\' '\\\\\\\\\\\\\\\\' '\\\\\\\\\\\\\\' '\\\\\\\\\\\\' '\\\\\\\\\\' '\\\\\\\\' '\\\\\\' '\\\\' '\\' '')
-    local __c=''
+    local __c=
     for __c in ${__cs}; do
-        __count=0
-        for __a in "${__e[@]}"; do
-            ((__count+=1))
-            __a=$__a$'\\'${__c}
-            local __tag="_SPACEGAL_SUBST_TAG333_${__count}_"
-            eval ${1}'=${'${1}'//$__a/$__tag}'
+        # POSIX style, might be a quicker Bash way of doing this.
+        local __right=
+        local __result=""
+        eval "__right=\$${1}"
+        local __left=
+        while true; do
+            # Cut from right up until last occurrence of char.
+            __left="${__right%%${__c}*}"
+            if [ "${__left}" = "${__right}" ]; then
+                # Done
+                __result="${__result}${__left}"
+                break
+            fi
+            __right="${__right#$__left}"
+            # This seems to be necessary the remove the escapes properly.
+            __right="${__right#*${__c}}"
+            # Now cut away from right all escapes, one by one..
+            local __escapes=""
+            local __left2=
+            while true; do
+                __left2="${__left%[\\]}"
+                if [ "${__left2}" = "${__left}" ]; then
+                    # No more escapes
+                    break
+                fi
+                # Escape encountered
+                __escapes="${__escapes}\\"
+                __left="${__left2}"
+            done
+            # Double the number of escapes and add one.
+            __result="${__result}${__left}${__escapes}${__escapes}\\${__c}"
         done
-        __count=0
-        for __a in "${__e[@]}"; do
-            ((__count+=1))
-            __a=$__a$'\\'${__c}
-            local __tag="_SPACEGAL_SUBST_TAG333_${__count}_"
-            eval ${1}'=${'${1}'//$__tag/$__a}'
-        done
+        eval "${1}=\${__result}"
     done
 }
 

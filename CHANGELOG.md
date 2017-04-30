@@ -1,5 +1,36 @@
 # Space - Change log
 
+## [current]
+
++ Add support for arguments constraints in `SPACE_SIGNATURE`
+
++ Add `-E` flag for loading environment files
+
++ Add `completion_cache` level to dynamic completion
+
+* Update packer module man page exporter to use environment variables for customization instead of command substitution
+
+* Fix auto completion cache file to have owner only permissions
+
+* Fix miscellaneous bugs in completion script
+
+* Fix erroneous return value in `get_module_latest_stable_version`
+
+* Fix erroneous return value in `check_minimum_requirements`
+
+* Fix bug appending `SPACE_WRAP` == `!unset`
+
+* Fix miscellaneous access to unbound variable data
+
+* Change `update_module` function to continue after version checkout failure
+
+* Fix bug about `SPACE_SIGNATURE` missing validation for wrapper functions
+
+* Make `SPACE_SIGNATURE` mandatory arguments defaultto `:min=1`
+
+* Rewrite `_escape` function to support infinite levels of escaping
+
+
 ## [0.13.0 - 2017-04-13]
 
 + Add node dimensions order

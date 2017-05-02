@@ -5423,9 +5423,9 @@ fi
             _info "##################################################"
         fi
 
-        local _sh="/bin/env sh"
+        local _sh="/usr/bin/env sh"
         if [ "${_FORCE_BASH}" = "1" ]; then
-            _sh="/bin/env bash"
+            _sh="/usr/bin/env bash"
         fi
 
         local _exportinfo="#!${_sh}

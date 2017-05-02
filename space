@@ -5842,11 +5842,11 @@ _cmd_extract_space_header ()
                             local _arg=${_arr2[$_c]}
                             local _l=${#_arg}
                             if (( _l < _minlength )); then
-                                _error "Argument $((_c+1)) is too short for function ${_fn_name}: \"$_arg\" is out of bounds of $_s."
+                                _error "Argument $((_c+1)) ($_s) is shorter than $_minlength (\"$_arg\") in function ${_fn_name}."
                                 return 1
                             fi
                             if [ -n "$_maxlength" ] && (( _l > _maxlength )); then
-                                _error "Argument $((_c+1)) is too long for function ${_fn_name}: \"$_arg\" is out of bounds of $_s."
+                                _error "Argument $((_c+1)) ($_s) is longer than $_maxlength (\"$_arg\") in function ${_fn_name}."
                                 return 1
                             fi
                             ((_c+=1))

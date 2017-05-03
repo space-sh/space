@@ -199,10 +199,10 @@ _RUN_CHECK_OK "Test -l switch" "/install/" $_SPACE_BIN /install/ -l
 
 # -d: Dry run
 _RUN_CHECK_OK "Test -d switch" "# Script exported by:" $_SPACE_BIN /install/ -d
-_RUN_CHECK_OK "Test -d switch: shell mode" "#!/bin/env sh" $_SPACE_BIN /install/ -d
+_RUN_CHECK_OK "Test -d switch: shell mode" "#!/usr/bin/env sh" $_SPACE_BIN /install/ -d
 
 # -B: Bash mode
-_RUN_CHECK_OK "Test -d switch: bash mode" "#!/bin/env bash" $_SPACE_BIN /install/ -d -B
+_RUN_CHECK_OK "Test -d switch: bash mode" "#!/usr/bin/env bash" $_SPACE_BIN /install/ -d -B
 
 # Bash Completion expected to return 1
 _RUN_CHECK_FAIL "Test -1 switch: tab completion" "" $_SPACE_BIN -1

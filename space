@@ -5416,18 +5416,18 @@ fi
 _status=$?
 if [ "${_status}" -ne "${SPACE_ASSERT_EXIT}" ]; then
     if [ "${SPACE_LOG_LEVEL}" -ge 1 ]; then
-        [ "${SPACE_LOG_ENABLE_COLORS:-1}" = 1 ] && printf "'${_COLOR_FG_RED}'" >&2
+        [ "${SPACE_LOG_ENABLE_COLORS:-1}" = "1" ] && [ -t 2 ] && printf "'${_COLOR_FG_RED}'" >&2
         '$_runinfo_fail'
-        [ "${SPACE_LOG_ENABLE_COLORS:-1}" = 1 ] && printf "'${_COLOR_DEFAULT}'" >&2
+        [ "${SPACE_LOG_ENABLE_COLORS:-1}" = "1" ] && [ -t 2 ] && printf "'${_COLOR_DEFAULT}'" >&2
     fi
     if [ "${SPACE_MUTE_EXIT}" != 1 ]; then
         exit $((SPACE_ASSERT_EXIT = 0 ? _status : 1))
     fi
 else
     if [ "${SPACE_LOG_LEVEL}" -ge 2 ]; then
-        [ "${SPACE_LOG_ENABLE_COLORS:-1}" = 1 ] && printf "'${_COLOR_FG_GREEN}'" >&2
+        [ "${SPACE_LOG_ENABLE_COLORS:-1}" = "1" ] && [ -t 2 ] && printf "'${_COLOR_FG_GREEN}'" >&2
         '$_runinfo_success'
-        [ "${SPACE_LOG_ENABLE_COLORS:-1}" = 1 ] && printf "'${_COLOR_DEFAULT}'" >&2
+        [ "${SPACE_LOG_ENABLE_COLORS:-1}" = "1" ] && [ -t 2 ] && printf "'${_COLOR_DEFAULT}'" >&2
     fi
 fi
 : # Reset status

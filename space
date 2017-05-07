@@ -2321,17 +2321,16 @@ _enter_gui_mode()
 #=====
 # PRINT
 #
-# Redirects a message to a file descriptor.
-# In the occasion _SPACE_NAME is set, its value gets prefixed to the final message output.
+# Redirects a message to stderr.
+# When _SPACE_NAME is set, its value gets prefixed to the message output.
 # This function is meant to be exported.
 #
 # Parameters:
 #   $1: output message
 #   $2: level type (error, warning, debug, ...). Defaults to "info"
-#   $3: file descriptor where the message will be redirected to. Defaults to "2"
 #
 # Expects:
-#   SPACE_LOG_ENABLE_COLORS
+#   SPACE_LOG_ENABLE_COLORS: use colors if stderr is connected to a terminal.
 #   SPACE_LOG_LEVEL
 #   _SPACE_NAME
 #
@@ -2339,18 +2338,43 @@ _enter_gui_mode()
 PRINT()
 {
     SPACE_ENV="_PRINT_COLUMN_POSITION"
-    local color="\033[0m"
+    local color=''
     local header=''
-    [ "${2-info}" = "error" ] && [ "${SPACE_LOG_LEVEL:-4}" -gt 0 ] && header="[ERROR] " && color="\033[31m"
-    [ "${2-info}" = "security" ] && [ "${SPACE_LOG_LEVEL:-4}" -gt 0 ] && header="[SEC]   " && color="\033[35m"
-    [ "${2-info}" = "warning" ] && [ "${SPACE_LOG_LEVEL:-4}" -gt 1 ] && header="[WARN]  " && color="\033[33m"
-    [ "${2-info}" = "ok" ] && [ "${SPACE_LOG_LEVEL:-4}" -gt 2 ] && header="[OK]    " && color="\033[32m"
-    [ "${2-info}" = "info" ] && [ "${SPACE_LOG_LEVEL:-4}" -gt 3 ] && header="[INFO]  " && color="\033[37m"
-    [ "${2-info}" = "debug" ] && [ "${SPACE_LOG_LEVEL:-4}" -gt 4 ] && header="[DEBUG] " && color=""
-    [ -z "${header}" ] && return 0
-    [ "${_SPACE_NAME-}" != "" ] && ( [ "${SPACE_LOG_ENABLE_COLORS}" = "1" ] && printf "\033[${_PRINT_COLUMN_POSITION}G${color}%s%s: %s\033[0m\n" "${header}" "${_SPACE_NAME}" "${1}" >&${3-2}) || ( [ "${SPACE_LOG_ENABLE_COLORS}" = "1" ] && printf "\033[${_PRINT_COLUMN_POSITION}G${color}%s%s\033[0m\n" "${header}" "${1}" >&${3-2} )
-    [ "${_SPACE_NAME-}" != "" ] && ( [ "${SPACE_LOG_ENABLE_COLORS}" != "1" ] && printf "%s%s: %s\n" "${header}" "${_SPACE_NAME}" "${1}" >&${3-2}) || ( [ "${SPACE_LOG_ENABLE_COLORS}" != "1" ] && printf "%s%s\n" "${header}" "${1}" >&${3-2} )
-    :
+    local SPACE_NAME="${SPACE_NAME:-anonymous}"
+    case "${2-info}" in
+        error)
+            if [ "${SPACE_LOG_LEVEL:-4}" -lt 1 ]; then return; fi
+            header="[ERROR] "; color="\033[31m"
+            ;;
+        security)
+            if [ "${SPACE_LOG_LEVEL:-4}" -lt 1 ]; then return; fi
+            header="[SEC]   "; color="\033[35m"
+            ;;
+        warning)
+            if [ "${SPACE_LOG_LEVEL:-4}" -lt 2 ]; then return; fi
+            header="[WARN]  "; color="\033[33m"
+            ;;
+        ok)
+            if [ "${SPACE_LOG_LEVEL:-4}" -lt 3 ]; then return; fi
+            header="[OK]    "; color="\033[32m"
+            ;;
+        info)
+            if [ "${SPACE_LOG_LEVEL:-4}" -lt 4 ]; then return; fi
+            header="[INFO]  "; color="\033[37m"
+            ;;
+        debug)
+            if [ "${SPACE_LOG_LEVEL:-4}" -lt 5 ]; then return; fi
+            header="[DEBUG] "; color=""
+            ;;
+        *)
+            return
+            ;;
+    esac
+    if [ "${SPACE_LOG_ENABLE_COLORS}" = "1" ] && [ -t 2 ]; then
+        printf "\033[${_PRINT_COLUMN_POSITION}G${color}%s%s: %s\033[0m\n" "${header}" "${_SPACE_NAME}" "${1}" >&2
+    else
+        printf "%s%s: %s\n" "${header}" "${_SPACE_NAME}" "${1}" >&2
+    fi
 }
 
 _print()

@@ -2426,19 +2426,6 @@ _info()
     fi
 }
 
-_runinfo()
-{
-    if (( $_VERBOSITY >= 3 )); then
-        local _msg=$1
-        shift
-        local _color=${1-$_COLOR_DEFAULT}
-        shift || :
-        [ "$_LOG_ENABLE_COLORS" = "1" ] && printf "${_color}" >&2
-        _print "[RUN]   $_msg"
-        [ "$_LOG_ENABLE_COLORS" = "1" ] && printf "${_COLOR_DEFAULT}" >&2
-    fi
-}
-
 _debug()
 {
     if (( $_VERBOSITY >= 4 )); then
@@ -5810,7 +5797,7 @@ _cmd_extract_space_header ()
     local _given_args="${1-}"
     shift || :
 
-    # NOTE: This is a special case for now.
+    # NOTE: This is a special case.
     # We do not want this line in the PRINT function.
     # But we do want it in all the other functions exported, for PRINT to use.
     [[ $_fn_name != "PRINT" ]] && _fnlines+=("    local _SPACE_NAME=\"${_fn_name}\"")

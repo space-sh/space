@@ -5376,16 +5376,27 @@ _execute()
             fi
         fi
 
-        local _runinfo_head=""
+        local _run_mainfn="main"
+        if [ "${_counttoexecute}" -gt 1 ]; then
+            _run_mainfn="main${_currentexecuting}"
+        fi
+
+        local _runinfo_head=${_run_mainfn}'()
+{
+    '${_fn_call}'
+'
         # Run info
         if [ "${_counttoexecute}" -gt 1 ]; then
-            _runinfo_head='# Space will print the node name to be run.
-if [ "${SPACE_LOG_LEVEL}" -ge 2 ]; then
-    [ "${SPACE_LOG_ENABLE_COLORS:-1}" = 1 ] && printf "'${_COLOR_FG_WHITE}'" >&2
-    printf "%s\n" "[RUN]   '"(${_currentexecuting}/${_counttoexecute}): ${_nodecombo}"'" >&2
-    [ "${SPACE_LOG_ENABLE_COLORS:-1}" = 1 ] && printf "'${_COLOR_DEFAULT}'" >&2
-fi
+            _runinfo_head=${_run_mainfn}'()
+{
+    # Space will print the node name to be run.
+    if [ "${SPACE_LOG_LEVEL}" -ge 2 ]; then
+        [ "${SPACE_LOG_ENABLE_COLORS:-1}" = 1 ] && printf "'${_COLOR_FG_WHITE}'" >&2
+        printf "%s\n" "[RUN]   '"(${_currentexecuting}/${_counttoexecute}): ${_nodecombo}"'" >&2
+        [ "${SPACE_LOG_ENABLE_COLORS:-1}" = 1 ] && printf "'${_COLOR_DEFAULT}'" >&2
+    fi
 
+    '${_fn_call}'
 '
         fi
         local _runinfo_tail=""
@@ -5399,28 +5410,32 @@ fi
             _runinfo_success='printf "%s\n" "[OK]    Script exited with success (status $_status) for node '${_nodecombo}'" >&2'
         fi
 
-        _runinfo_tail='# Space will print exit status.
-_status=$?
-if [ "${_status}" -ne "${SPACE_ASSERT_EXIT}" ]; then
-    if [ "${SPACE_LOG_LEVEL}" -ge 1 ]; then
-        [ "${SPACE_LOG_ENABLE_COLORS:-1}" = "1" ] && [ -t 2 ] && printf "'${_COLOR_FG_RED}'" >&2
-        '$_runinfo_fail'
-        [ "${SPACE_LOG_ENABLE_COLORS:-1}" = "1" ] && [ -t 2 ] && printf "'${_COLOR_DEFAULT}'" >&2
+        _runinfo_tail='
+    # Space will print exit status.
+    _status=$?
+    if [ "${_status}" -ne "${SPACE_ASSERT_EXIT}" ]; then
+        if [ "${SPACE_LOG_LEVEL}" -ge 1 ]; then
+            [ "${SPACE_LOG_ENABLE_COLORS:-1}" = "1" ] && [ -t 2 ] && printf "'${_COLOR_FG_RED}'" >&2
+            '$_runinfo_fail'
+            [ "${SPACE_LOG_ENABLE_COLORS:-1}" = "1" ] && [ -t 2 ] && printf "'${_COLOR_DEFAULT}'" >&2
+        fi
+        if [ "${SPACE_MUTE_EXIT}" != 1 ]; then
+            exit $((SPACE_ASSERT_EXIT = 0 ? _status : 1))
+        fi
+    else
+        if [ "${SPACE_LOG_LEVEL}" -ge 2 ]; then
+            [ "${SPACE_LOG_ENABLE_COLORS:-1}" = "1" ] && [ -t 2 ] && printf "'${_COLOR_FG_GREEN}'" >&2
+            '$_runinfo_success'
+            [ "${SPACE_LOG_ENABLE_COLORS:-1}" = "1" ] && [ -t 2 ] && printf "'${_COLOR_DEFAULT}'" >&2
+        fi
     fi
-    if [ "${SPACE_MUTE_EXIT}" != 1 ]; then
-        exit $((SPACE_ASSERT_EXIT = 0 ? _status : 1))
-    fi
-else
-    if [ "${SPACE_LOG_LEVEL}" -ge 2 ]; then
-        [ "${SPACE_LOG_ENABLE_COLORS:-1}" = "1" ] && [ -t 2 ] && printf "'${_COLOR_FG_GREEN}'" >&2
-        '$_runinfo_success'
-        [ "${SPACE_LOG_ENABLE_COLORS:-1}" = "1" ] && [ -t 2 ] && printf "'${_COLOR_DEFAULT}'" >&2
-    fi
-fi
-: # Reset status
+}
+
+'${_run_mainfn}'
 '
 
-        _export_cmd="${_cmd_options}${_export_cmd}${_wrapped_fn_def}${_export_vars}${_fn_def}${_runinfo_head}${_fn_call}"$'\n'$'\n'"${_runinfo_tail}"
+        local _run_main="${_runinfo_head}${_runinfo_tail}"
+        _export_cmd="${_cmd_options}${_export_cmd}${_wrapped_fn_def}${_export_vars}${_fn_def}${_run_main}"
         (( _index += 1 ))
     done
     unset _index
@@ -5440,7 +5455,7 @@ fi
         fi
 
         local _exportinfo="#!${_sh}
-# Script exported by:
+# Script assembled and exported by:
 #   ____  ____   __    ___  ____  ___   __   __
 #  / ___)(  _ \ / _\  / __)(  __)/ __) / _\ (  )
 #  \___ \ ) __//    \( (__  ) _)( (_ \/    \/ (_/\\

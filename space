@@ -4122,7 +4122,7 @@ _exec_dimensions()
     fi
 
     if [[ -z ${RUN-} ]]; then
-        _error "No RUN environment variable specified in YAML nodes nor on command line. Use -h to get help or -a -l to list all child nodes."
+        _error "This node has no RUN defined. Use -h to get help or -a -l to list all child nodes."
         return 1
     fi
 

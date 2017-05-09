@@ -28,6 +28,12 @@
 #   Can't handle -e -e var= because of the array concat.
 #   compopt -o nospace is not available in bash3, workaround?
 #
+# TODO:
+#   The parsing of COMP_WORDS has become horrendous.
+#   It will need a rewrite and a solid way of rearranging the 
+#   words to our preferred format. Bash3 and Bash4 seem to behave
+#   differently on word splitting even dough their COMP_WORDBREAKS are the same.
+#
 #==========
 [ -n "${BASH_VERSION}" ] &&
 _space_dyn_comp()
@@ -125,8 +131,18 @@ _space()
     local args_tag=""
     local args_tag_full=""
 
-    # We might need to adjust the array to the Bash 4 format
-    # where it splits on equal signs according to COMP_WORDBREAKS.
+    # If bash completion is installed we use it to "unbreak" some words for us,
+    # this increases the user experience because with out it words containing any
+    # breaking character can break the completion.
+    if declare -F _get_comp_words_by_ref >/dev/null; then
+        local words=() cword=
+        _get_comp_words_by_ref -n ":" -w words cword
+        COMP_WORDS=("${words[@]}")
+        COMP_CWORD="${cword}"
+    fi
+
+    # Note: This is an attempt to make bash3 behave more like bash4,
+    # but all in all this is somewhat of a hack and should be reconsidered.
     local i=
     while true; do
         for ((i=0; i<${#COMP_WORDS[@]}; i++)); do
@@ -159,6 +175,22 @@ _space()
         done
         break
     done
+
+    # Remove any redirection.
+    if [ "${#COMP_WORDS[@]}" -gt 0 ]; then
+        while true; do
+            local last=${COMP_WORDS[((${#COMP_WORDS[@]}-1))]}
+            if [[ $last =~ ([0-9]?[\ ]?[\<\>].*$) ]]; then
+                last="${last%${BASH_REMATCH[1]}}"
+                last="${last% }"
+                COMP_WORDS[((${#COMP_WORDS[@]}-1))]="${last}"
+                continue
+            fi
+            unset last
+            break
+        done
+    fi
+
     local current=${COMP_WORDS[COMP_CWORD]}
     local previous=${COMP_WORDS[((COMP_CWORD-1))]}
 
@@ -311,6 +343,15 @@ _space()
     #
 
     # Run space completion in subshell.
+
+    # If we detect any redirection, we quit.
+    if [ "${args%>*}" != "${args}" ]; then
+        return 1
+    fi
+    if [ "${args%<*}" != "${args}" ]; then
+        return 1
+    fi
+
     local result=
     _space_dyn_comp $timeout1 "first" "$args_tag"
     local status=$?

@@ -43,6 +43,7 @@ Columns explained:
 |                    | SPACE_BUILDENV  |     -                 | For a function declaring SPACE_FN, it could also declare which environment variables its function body (if any) will be needing. |
 |                    | SPACE_BUILDDEP  |     -                 | For a function declaring SPACE_FN, it could also declare which function dependencies its function body (if any) has. |
 |                    | SPACE_BUILDARGS |     -                 | For a function declaring SPACE_FN, it could also declare which function arguments its function body (if any) will adopt. |
+| SPACE_SUDO         | -               |     -                 | To wrap functions in 'sudo' and/or 'su'. The rightmost item is for the actual command being run which is the innermost wrapped (if any wrappers). Second from right is the next from inner, etc. The leftmost will always be the outer function wrapper (if any). The format is SPACE_SUDO="sudo:user,:user,sudo,,sudo". Blanks are permitted to not sudo/su a particular wrapper. To have blanks at the end you will need an extra comma. |
 
 >⁰ This variable changes name when entering the `build stage`, because it could be a function *or* a shell snippet when defined in YAML or with `-eRUN=`. Also, `RUN` is much shorter to type than `SPACE_FN`...
 

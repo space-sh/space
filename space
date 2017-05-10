@@ -232,9 +232,6 @@ _SECURITY_CHECK_BANNED=1
 #  2=only accept full trust.
 _SECURITY_GPG_VERIFY_SIGNATURE=0
 
-# Stack current pointer
-_STACK_POINTER=0
-
 # Stack name prefix
 _STACK_PREFIX="_stack_"
 
@@ -6492,14 +6489,17 @@ _apply_cmd_env()
 #
 # Parameters:
 #   $1: variable name
+#   $2: optional namespace
 #
 #=============
 _push()
 {
+    local _spname="${_STACK_PREFIX}p_${2-}"
+    local _STACK_POINTER=${!_spname--1}
     ((_STACK_POINTER+=1))
-
-    local _stname="${_STACK_PREFIX}${_STACK_POINTER}"
+    local _stname="${_STACK_PREFIX}s_${2-}_${_STACK_POINTER}"
     eval "${_stname}=\$${1}"
+    eval "${_spname}=\${_STACK_POINTER}"
 }
 
 #=============
@@ -6509,18 +6509,21 @@ _push()
 #
 # Parameters:
 #   $1: variable name to pop into.
+#   $2: optional namespace
 #
 #=============
 _pop()
 {
-    if ((_STACK_POINTER == 0)); then
-        return 1;
+    local _spname="${_STACK_PREFIX}p_${2-}"
+    local _STACK_POINTER=${!_spname--1}
+    if [ "${_STACK_POINTER}" -eq -1 ]; then
+        eval "${1}="
+        return
     fi
-
-    local _stname="${_STACK_PREFIX}${_STACK_POINTER}"
+    local _stname="${_STACK_PREFIX}s_${2-}_${_STACK_POINTER}"
     eval "${1}=\$${_stname}"
-
     ((_STACK_POINTER-=1))
+    eval "${_spname}=\${_STACK_POINTER}"
 }
 
 _main "$@"

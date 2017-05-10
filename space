@@ -180,6 +180,7 @@ unset SPACE_DEP
 unset SPACE_ENV
 unset SPACE_WRAP
 unset SPACE_WRAPARGS
+unset SPACE_SUDO  # This variable could be set by using -e or in build time functions.
 
 # Figure out if there's a shasum executable in the OS.
 # We use this for caching purposes, so not required.
@@ -5247,6 +5248,30 @@ _execute()
     (( $? > 0 )) && return 1
     unset _cmd_args_str
 
+    # Push SUDO and SUUSER from left to right,
+    # meaning that the innermost wrapped will pop
+    # the rightmost value.
+    if [ -n "${SPACE_SUDO-}" ]; then
+        local _items=()
+        IFS=',' read -r -a _items <<< "${SPACE_SUDO-}"
+        local _item=
+        for _item in "${_items[@]}"; do
+            if [[ $_item =~ ^([^:]*)[:]?(.*)$ ]]; then
+                local _SUDO="${BASH_REMATCH[1]}"
+                local _SUUSER="${BASH_REMATCH[2]}"
+                _SUDO="${_SUDO// }"
+                _SUUSER="${_SUUSER// }"
+                if [ -n "${_SUDO}" ] && [ "${_SUDO}" != "sudo" ]; then
+                    _error "SPACE_SUDO contains unknown value: ${_SUDO}."
+                    return 1
+                fi
+                _push "_SUUSER" "su"
+                _push "_SUDO" "su"
+            fi
+        done
+        unset _item _items _SUDO _SUUSER
+    fi
+
     # Iterate over all cmds and their data to build up the export
     local _numcmds=${#_cmd_names[@]}
     if (( _numcmds == 0 )); then
@@ -5255,9 +5280,18 @@ _execute()
     fi
 
     local _export_cmd=""
-    local _cmd_options="set -u  # Will not allow for unset variables being used.
+    local _cmd_options="set -u  # Will not allow for unset variables being used."$'\n'
+    local _export_cmd_shell='
+shell=""
+if [ -n "${BASH_VERSION-}" ]; then
+    shell=$(command -v bash 2>/dev/null)
+fi
+if [ -z "${shell}" ]; then
+    if ! shell=$(command -v sh 2>/dev/null); then
+        shell="/bin/sh"
+    fi
+fi'
 
-"
     local _index=0
     while (( _index < _numcmds )); do
         local _fn_name=${_cmd_names[$_index]}
@@ -5323,8 +5357,8 @@ _execute()
 
                     local _export_vars=""
                     # Add to _export_vars,
-                    # there might be multiple variable declarations,
-                    # but that's as expected.
+                    # there might be multiple variable declarations of the same variable,
+                    # but that is as expected, later ones might depend on earlier ones being set.
                     _fn_env="${_fn_env:+$_fn_env }SPACE_LOG_LEVEL=\${SPACE_LOG_LEVEL:-$SPACE_LOG_LEVEL}"
                     _fn_env="${_fn_env} SPACE_LOG_ENABLE_COLORS=\${SPACE_LOG_ENABLE_COLORS:-$SPACE_LOG_ENABLE_COLORS}"
                     _fn_env="${_fn_env} SPACE_ASSERT_EXIT=\${SPACE_ASSERT_EXIT:-$SPACE_ASSERT_EXIT}"
@@ -5352,7 +5386,46 @@ _execute()
 
         local _i=
         for ((_i=1; _i<$((_wrappers+1)); _i+=1)); do
-            _wrapped_fn_def="# BEGIN WRAP ${_i}"$'\n'"RUN=\$(cat <<\"${_i}${_SPACEGAL_EOF_TAG}\""$'\n'"set -u"$'\n'$'\n'"${_wrapped_fn_def}${_export_vars}${_fn_def}${_fn_call}"$'\n\n'"${_i}${_SPACEGAL_EOF_TAG}"$'\n'")"$'\n'"# END WRAP ${_i}"$'\n\n'
+            local _SUDO=
+            local _SUUSER=
+            _pop "_SUDO" "su"
+            _pop "_SUUSER" "su"
+            if [ -z "${_SUDO}" ] && [ -z "${_SUUSER}" ]; then
+                _wrapped_fn_def="# BEGIN WRAP ${_i}
+RUN=\$(cat <<\"${_i}${_SPACEGAL_EOF_TAG}\"
+${_cmd_options}
+${_wrapped_fn_def}${_export_vars}${_fn_def}${_fn_call}
+${_i}${_SPACEGAL_EOF_TAG}
+)
+# END WRAP ${_i}
+
+"
+            else
+                local _export_cmd_su=
+                if [ -n "${_SUUSER}" ] && [ -n "${_SUDO}" ]; then
+                    _export_cmd_su='sudo su '${_SUUSER}' -s "${shell}" -c "${RUN_SU}"'
+
+                elif [ -n "${_SUUSER}" ]; then
+                    _export_cmd_su='su '${_SUUSER}' -s "${shell}" -c "${RUN_SU}"'
+                else
+                    _export_cmd_su='sudo "${shell}" -c "${RUN_SU}"'
+                fi
+                _wrapped_fn_def="# BEGIN WRAP ${_i}
+RUN=\$(cat <<\"${_i}${_SPACEGAL_EOF_TAG}\"
+RUN_SU=\$(cat <<\"SU_${_i}${_SPACEGAL_EOF_TAG}\"
+${_cmd_options}
+${_wrapped_fn_def}${_export_vars}${_fn_def}${_fn_call}
+SU_${_i}${_SPACEGAL_EOF_TAG}
+)
+${_export_cmd_shell}
+
+${_export_cmd_su}
+${_i}${_SPACEGAL_EOF_TAG}
+)
+# END WRAP ${_i}
+
+"
+            fi
             _pop "_export_vars"
             _pop "_fn_call"
             _pop "_fn_def"
@@ -5428,11 +5501,34 @@ _execute()
     fi
 }
 
-'${_run_mainfn}'
-'
+'${_run_mainfn}
 
         local _run_main="${_runinfo_head}${_runinfo_tail}"
-        _export_cmd="${_cmd_options}${_export_cmd}${_wrapped_fn_def}${_export_vars}${_fn_def}${_run_main}"
+        local _SUDO=
+        local _SUUSER=
+        _pop "_SUDO" "su"
+        _pop "_SUUSER" "su"
+        if [ -z "${_SUDO}" ] && [ -z "${_SUUSER}" ]; then
+            _export_cmd="${_cmd_options}"$'\n'"${_export_cmd}${_wrapped_fn_def}${_export_vars}${_fn_def}${_run_main}"
+        else
+            local _export_cmd_su=
+            if [ -n "${_SUUSER}" ] && [ -n "${_SUDO}" ]; then
+                _export_cmd_su='sudo su '${_SUUSER}' -s "${shell}" -c "${RUN_SU}"'
+            elif [ -n "${_SUUSER}" ]; then
+                _export_cmd_su='su '${_SUUSER}' -s "${shell}" -c "${RUN_SU}"'
+            else
+                _export_cmd_su='sudo "${shell}" -c "${RUN_SU}"'
+            fi
+            _export_cmd="
+RUN_SU=\$(cat <<\"0_SU${_SPACEGAL_EOF_TAG}\"
+${_cmd_options}"$'\n'"${_export_cmd}${_wrapped_fn_def}${_export_vars}${_fn_def}${_run_main}
+0_SU${_SPACEGAL_EOF_TAG}
+)
+${_export_cmd_shell}
+
+${_export_cmd_su}"
+
+        fi
         (( _index += 1 ))
     done
     unset _index

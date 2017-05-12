@@ -180,7 +180,8 @@ unset SPACE_DEP
 unset SPACE_ENV
 unset SPACE_WRAP
 unset SPACE_WRAPARGS
-unset SPACE_SUDO  # This variable could be set by using -e or in build time functions.
+
+SPACE_SUDO=     # This variable could be set by using -s, -e or using build time functions.
 
 # Figure out if there's a shasum executable in the OS.
 # We use this for caching purposes, so not required.
@@ -315,6 +316,14 @@ $_USAGE
           -p  preprocess variable to set before preprocessing.
               -p inventory=staging.
               Use one -p for each variable.
+          -s  Set SUDO and/or su to run the command as.
+                -s sudo will wrap the command in sudo.
+                -s sudo:root will run the command as root issuing su with sudo: sudo su root 
+                -s :root will issue: su root
+              When working with wrapped commands and/or outer commands you could apply levels
+              of sudo to run each wrapper as a specific user or sudo, as:
+                 -s sudo:admin,sudo:root,sudo:sysadmin
+              The rightmost sudo is for the innermost wrapped command (the actual command).
           -v  verbosity level, 0 = off, 1 = error, 2 = warning, 3 = info, 4 = debug.
               Default is 2. Outputs to stderr.
           -d  dry run. Will echo the Bash command line computed instead of running it.
@@ -2697,7 +2706,7 @@ _main()
         elif [[ ${1:0:1} == '-' ]]; then
             # A normal switch, let getopts handle it.
             OPTIND=1
-            getopts ":f:m:aM:e:dp:v:k:K:ShVlC:BQuU:X:13:4:5:6:gZE:" "_o"
+            getopts ":f:m:aM:e:dp:v:k:K:ShVlC:BQuU:X:13:4:5:6:gZE:s:" "_o"
             case "${_o}" in
                 f)
                     if (( ${#_namespaces[@]} == 3 )); then
@@ -2762,6 +2771,10 @@ _main()
                     else
                         _envP+=("${OPTARG}")
                     fi
+                    (return 1)
+                    ;;
+                s)
+                    SPACE_SUDO="${OPTARG}"
                     (return 1)
                     ;;
                 v)

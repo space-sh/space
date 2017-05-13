@@ -355,7 +355,7 @@ $_USAGE
           -Q  Queries updates and general state of the SpaceGal services.
           -u  Update current Space install to the latest version.
           -U  Update module(s). Performs a Git pull on matched module(s) then quit.
-              Space will update repositories both in local space_modules and also in shared space_modules directories.
+              Space will update repositories in the shared space_modules directory.
               -U ""    means update all modules.
               -U "ssh" means update gitlab.com/space-sh/ssh.
               -U "gitlab.com/blockie-org/ssh" means update gitlab.com/blockie-org/ssh repository.
@@ -768,10 +768,6 @@ _source_file()
             fi
         done
         unset _i
-        if [ ! -e "${_filepath}" ]; then
-            _error "Could not find and source file: ${_filepath}."
-            return 1
-        fi
         _SOURCE_FILES_TOTAL+=("${_filepath}")
     done
 }
@@ -1001,7 +997,7 @@ _pp_yaml()
                 _filepath=$_PP_DIR/$_filepath
                 break
             fi
-            for _dir in ${_INCLUDEPATH[@]}; do
+            for _dir in "${_INCLUDEPATH[@]}"; do
                 if [ -f "$_dir/$_filepath" ]; then
                     _filepath=$_dir/$_filepath
                     break
@@ -1753,9 +1749,9 @@ _clone()
     local _modules="$@"
     shift
 
-    # Cloning will always be to $_INCLUDEPATH[1],
+    # Cloning will always be to $_INCLUDEPATH[0],
     # so here we set that to be in the shared area.
-    local _INCLUDEPATH=($CWD/space_modules $_MODULES_SHARED $CWD)
+    local _INCLUDEPATH=("$_MODULES_SHARED")
     local _loadmod=
     for _loadmod in ${_modules}; do
         local _sourcefile= _rf=
@@ -1812,7 +1808,7 @@ _module_clone()
 
     # Check to see of the repo is already existing.
     local _dir=
-    for _dir in ${_INCLUDEPATH[@]}; do
+    for _dir in "${_INCLUDEPATH[@]}"; do
         if [[ -d $_dir/$_repodir ]]; then
             break
         fi
@@ -1827,7 +1823,7 @@ _module_clone()
             return 1
         fi
 
-        _dir=${_INCLUDEPATH[1]}/$_repodir
+        _dir="${_INCLUDEPATH[0]}/$_repodir"
         if [[ ! -z $_domainuser ]]; then
             _domainuser="$_domainuser@"
         elif [[ $(_to_lower $_protocol) == "ssh" ]]; then
@@ -2300,7 +2296,7 @@ _module_find_yaml()
     fi
 
     local _dir= _f=
-    for _dir in ${_INCLUDEPATH[@]}; do
+    for _dir in "${_INCLUDEPATH[@]}"; do
         for _f in "$_dir/$_domainname/$_username/$_reponame/Spacefile.yaml"; do
             if [[ -f $_f ]]; then
                 _debug "Found module $_f"
@@ -3196,10 +3192,6 @@ _main()
             fi
 
             # Try to load the accompanying sh/bash file
-            # clone and source will always be to $_INCLUDEPATH[1],
-            # so here we set that to be in $CWD.
-            _INCLUDEPATH=($CWD $CWD/space_modules $_MODULES_SHARED)
-            _debug "Includepath: ${_INCLUDEPATH[@]}"
             local _sourcefile="${_path%.*}"
             if [[ -f "${_sourcefile}.sh" ]]; then
                 _source "${_sourcefile}.sh"
@@ -3207,6 +3199,10 @@ _main()
                 _source "${_sourcefile}.bash"
             fi
             unset _sourcefile _dir _file
+            # clone and source will always be to $_INCLUDEPATH[0],
+            # so here we set that to be in $_MODULES_SHARED.
+            _INCLUDEPATH=("$_MODULES_SHARED" "$CWD")
+            _debug "Includepath: ${_INCLUDEPATH[@]}"
             # Disabling cachefile to be put in $CWD.
             #_cachefile=$CWD"/."${_yamlfile##*/}".cache"
             # Put cache file along side yaml file.
@@ -3223,7 +3219,7 @@ _main()
             _extract_repo_parts "${_module}"
             (( $? > 0 )) && return 1
 
-            _INCLUDEPATH=($CWD/space_modules $_MODULES_SHARED $CWD)
+            _INCLUDEPATH=("$_MODULES_SHARED")
             _debug "Includepath: ${_INCLUDEPATH[@]}"
             _module_find_yaml "$_domain/$_repofullname" "_yamlfile"
             if [[ -z $_yamlfile ]]; then
@@ -4297,7 +4293,7 @@ _completion_modules()
     local _bash_completion_current=$1
     shift
 
-    local _places=( "$CWD/space_modules" "$_MODULES_SHARED" )
+    local _places=( "$_MODULES_SHARED" )
     local _dir=
     local _f=$_bash_completion_current
     local _default=${_bash_completion_current}
@@ -4488,7 +4484,7 @@ _update_modules()
         _pattern="./$_domainname/$_username/$_reponame"
     fi
     _info "Updating space modules to pattern: $_pattern"
-    local _places=( "$CWD/space_modules" "$_MODULES_SHARED" )
+    local _places=( "$_MODULES_SHARED" )
     local _dir=
     for _dir in "${_places[@]}"; do
         # EXTERNAL: find

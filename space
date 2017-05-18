@@ -5446,7 +5446,7 @@ ${_i}${_SPACEGAL_EOF_TAG}
         if [[ -n ${_fn_redir} ]]; then
             _run_="${_run_} ${_fn_redir}"
         fi
-        local _fn_def2="${_fn_def// _RUN_$'\n'/ ${_run_}$'\n'}"
+        local _fn_def2="${_fn_def// _RUN_/ ${_run_}}"
         if [ "${_fn_def2}" != "${_fn_def}" ]; then
             _fn_def="${_fn_def2}"
         else

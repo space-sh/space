@@ -5581,7 +5581,15 @@ ${_export_cmd_su}"
         if [ "${_FORCE_BASH}" = "1" ]; then
             _sh="env bash"
         fi
-        ${_sh} -c "$_export_cmd"
+
+        # Save the sub process PID so that we can TERM it if
+        # space is subshelled to bg then killed, otherwise
+        # there will be zombies.
+        local _SUBPID=
+        trap 'trap - TERM INT HUP PIPE; kill ${_SUBPID}; exit;' TERM INT HUP PIPE
+        ${_sh} -c "$_export_cmd" &
+        _SUBPID="$!"
+        wait $!
     fi
 }
 

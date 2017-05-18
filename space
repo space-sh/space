@@ -4793,7 +4793,7 @@ _loadnode()
                     # allowed to be set on the last part of the node.
                     if (( _i < _nrparts )); then
                         case "${_key}" in
-                            RUN|SPACE_REDIR|RUN_ALIAS|SPACE_ARGS)
+                            RUN_ALIAS)
                                 continue
                                 ;;
                         esac

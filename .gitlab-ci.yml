@@ -85,7 +85,7 @@ alpine_test_all:
 
 arch_test_all:
   stage: test
-  image: finalduty/archlinux:latest
+  image: finalduty/archlinux:monthly
   script:
     - pacman -Sy --noconfirm curl git
     - mkdir ~/.ssh

@@ -1,5 +1,5 @@
 
-# Space | [![build status](https://gitlab.com/space-sh/space/badges/master/build.svg)](https://gitlab.com/space-sh/space/commits/master) [![latest stable version](https://img.shields.io/badge/latest%20stable-0.13.0-blue.svg?style=flat)](https://gitlab.com/space-sh/space/tags/0.13.0)
+# Space | [![build status](https://gitlab.com/space-sh/space/badges/master/build.svg)](https://gitlab.com/space-sh/space/commits/master) [![latest stable version](https://img.shields.io/badge/latest%20stable-0.13.0-blue.svg?style=flat)](https://gitlab.com/space-sh/space/tags/0.13.0) [![Gitter](https://img.shields.io/gitter/room/nwjs/nw.js.svg)](https://gitter.im/blockie-org/spacegal)
 
 ![SpaceGal](https://space.sh/static/img/logo.png)
 
@@ -52,6 +52,12 @@ For more information, please refer to the documentation files located in the `do
 For the latest news and online reference, please visit [https://space.sh](https://space.sh).
 
 Further questions can be asked via the [GitLab Issues](https://gitlab.com/space-sh/space/issues) page.
+
+
+## Community
+
+* Chat on _Gitter_: https://gitter.im/blockie-org/spacegal
+
 
 ## Contributing
 

@@ -28,7 +28,7 @@ FUN()
 
 With the `Spacefiles` ready, use the `-d` switch to dump the script to output instead of running it.
 ```sh
-$ space -d
+space -d
 #!/bin/env sh
 # Script exported by:
 #   ____  ____   __    ___  ____  ___   __   __
@@ -67,13 +67,13 @@ _env:
 
 Running it again:  
 ```sh
-$ space
+space
 Hello, args are: Greetings World!
 ```
 
 Now, overriding the default arguments from the command line:  
 ```sh
-$ space -- Hello World!
+space -- Hello World!
 Hello, args are: Greetings World! Hello World!
 ```
 
@@ -87,10 +87,10 @@ _env:
 
 Running it one more time:
 ```sh
-$ space
+space
 Hello, args are: Greetings World!
 
-$ space -- Universe!
+space -- Universe!
 Hello, args are: Greetings Universe!
 ```
 
@@ -108,7 +108,7 @@ FUN()
 
 When running this modified Module it is possible to see that data was changed during the build step:
 ```sh
-$ space
+space
 Hello, args are: Hi World!
 ```
 

@@ -103,12 +103,12 @@ The following table presents how many dimensions are loaded in relation to how m
 
 Given the following example:  
 ```sh
-$ space -f a.yaml /node1/ /node2/ -f b.yaml /node3/
+space -f a.yaml /node1/ /node2/ -f b.yaml /node3/
 ```  
 Both `node1` and `node3` are expected to be defined in `a.yaml` and they will be associated with that same _YAML_ file. On the other hand, `node2` will be associated with `b.yaml`.  
 The order of namespaces in which nodes are presented is irrelevant, thus:  
 ```sh
-$ space -f a.yaml -f b.yaml /node1/ /node2/ /node3/
+space -f a.yaml -f b.yaml /node1/ /node2/ /node3/
 ```
 will give the exact same result as the first example.
 
@@ -163,13 +163,13 @@ servers:
 
 Running _Space_ with the `-l` switch to list the nodes result in `dimension 1` having a single item in its list of node targets:
 ```sh
-$ space -f a.yaml /servers/alpha/ -l
+space -f a.yaml /servers/alpha/ -l
 /servers/alpha/
 ```
 
 However, running with a wildcard for node target result in `dimension 1` having a list composed of two node targets:  
 ```sh
-$ space -f a.yaml "/servers/.*/" -l
+space -f a.yaml "/servers/.*/" -l
 /servers/alpha/
 /servers/beta/
 ```
@@ -189,20 +189,20 @@ tasks:
 
 Running _Space_ referring to nodes both in `a.yaml` and `b.yaml` results in two node dimensions, that is, two columns, each with one node target in it:  
 ```sh
-$ space -f a.yaml /servers/alpha/ -f b.yaml /tasks/ping/ -l
+space -f a.yaml /servers/alpha/ -f b.yaml /tasks/ping/ -l
 /servers/alpha/ /tasks/ping/
 ```
 
 The wildcard can be also be used:  
 ```sh
-$ space -f a.yaml /servers/alpha/ -f b.yaml "/tasks/.*/" -l
+space -f a.yaml /servers/alpha/ -f b.yaml "/tasks/.*/" -l
 /servers/alpha/ /tasks/ping/
 /servers/alpha/ /tasks/status/
 ```
 
 Wildcards also work for multiple dimensions at the same time:
 ```sh
-$ space -f a.yaml "/servers/.*/" -f b.yaml "/tasks/.*/" -l
+space -f a.yaml "/servers/.*/" -f b.yaml "/tasks/.*/" -l
 /servers/alpha/ /tasks/ping/
 /servers/alpha/ /tasks/status/
 /servers/beta/ /tasks/ping/
@@ -212,13 +212,13 @@ In this hypothetical example we run the targets of two YAML files against each o
 
 You are welcome to try it with the `-d` switch to see the exported script:
 ```sh
-$ space -f a.yaml "/servers/.*/" -f b.yaml "/tasks/.*/" -d
+space -f a.yaml "/servers/.*/" -f b.yaml "/tasks/.*/" -d
 ```
 
 Until now, examples only took advantage of two out of three possible dimensions defined by the two node targets.
 One could refer to a module instead of a file by using the `-m` switch:  
 ```sh
-$ space -f a.yaml "/servers/.*/" -f b.yaml "/tasks/.*/" -m ssh /wrap/ -eSSHHOST="1.2.3.4" -l
+space -f a.yaml "/servers/.*/" -f b.yaml "/tasks/.*/" -m ssh /wrap/ -eSSHHOST="1.2.3.4" -l
 /servers/alpha/ /tasks/ping/ /wrap/
 /servers/alpha/ /tasks/status/ /wrap/
 /servers/beta/ /tasks/ping/ /wrap/
@@ -230,13 +230,13 @@ Dimension 2 overrides variables in dimension 1. Dimension 3 overrides variables 
 
 Dimensions could also refer to node targets within the same _YAML_ file or module:
 ```sh
-$ space -f a.yaml /servers/alpha/ /servers/beta/ -l
+space -f a.yaml /servers/alpha/ /servers/beta/ -l
 /servers/alpha/ /servers/beta/
 ```  
 In this case there is one `node combo` to run, which might not be what was originally intended. If one wants to run those two node targets separately, then it is necessary to use wildcards and regular expressions to fill out one dimension with targets.  
 The following example shows one dimension with two targets:  
 ```sh
-$ space -f a.yaml "/servers/(alpha|beta)/" -l
+space -f a.yaml "/servers/(alpha|beta)/" -l
 /servers/alpha/
 /servers/beta/
 ```
@@ -336,14 +336,14 @@ _dimensions:
 
 Run `a.yaml`:  
 ```sh
-$ space -f a.yaml /node1/ -l
+space -f a.yaml /node1/ -l
 /node1/ /node2/sub2/ /node3/sub3/
 /node1/ /node2/sub2b/ /node3/sub3b/
 ```
 
 Run `a.yaml` with `-l` acting as a wildcard `/.*/`:  
 ```sh
-$ space -f a.yaml /node1/ -a -l
+space -f a.yaml /node1/ -a -l
 /node1/sub1/ /node2/sub2/ /node3/sub3/
 /node1/sub1/ /node2/sub2/ /node3/sub3b/
 /node1/sub1/ /node2/sub2b/ /node3/sub3/
@@ -355,7 +355,7 @@ $ space -f a.yaml /node1/ -a -l
 ```
 Above is the same as running:
 ```sh
-$ space -f a.yaml "/node1/.*" -l
+space -f a.yaml "/node1/.*" -l
 ```
 
 Multiple objects under `/_dimensions/` is always a possibility.  

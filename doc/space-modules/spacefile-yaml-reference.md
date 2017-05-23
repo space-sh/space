@@ -233,12 +233,12 @@ Also when doing regular expressions on node targets, underscored target names ar
 
 This will ignore node names beginning with underscore:
 ```sh
-$ space "/.*/"
+space "/.*/"
 ```  
 
 This will include node names beginning with underscore or no underscore:
 ```sh
-$ space "/_?.*/"
+space "/_?.*/"
 ```  
 
 
@@ -525,7 +525,7 @@ Some tests require extra steps. Check the following subsections for extra notes 
 In the following example, "builduser" is the user name of the user who built the script and "mutable" signals that the HOME variable was evaluated in runtime.  
 
 ```sh
-$ space -f Spacefile.yaml /6/ -d | USER=immutable HOME=mutable sh
+space -f Spacefile.yaml /6/ -d | USER=immutable HOME=mutable sh
 builduser mutable
 ```  
 
@@ -552,22 +552,22 @@ SPACE_ENV="var1=\"${var1-${var2}}\""
 ###### SPACE_ARGS
 Argument passing works as regular functions:
 ```sh
-$ space /7/
+space /7/
 Hello Galaxy!
-$ space /7/ -- Universe!
+space /7/ -- Universe!
 Hello Universe!
 ```
 
 ###### SPACE_FN
 In this example, `RUN` points to an actual module function.
 ```sh
-$ space /8/ -d
+space /8/ -d
 ...
 
-$ space /8/
+space /8/
 going places
 
-$ space /8/ -- Going Places!
+space /8/ -- Going Places!
 Going Places!
 ```
 

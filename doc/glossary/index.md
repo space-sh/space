@@ -4,6 +4,8 @@ prev_title: "Lua coding and style guidelines"
 next: /references/
 next_title: "References"
 title: Glossary
+giturl: gitlab.com/space-sh/space
+editurl: /edit/master/doc/glossary/index.md
 weight: 900
 icon: "<b>9. </b>"
 ---

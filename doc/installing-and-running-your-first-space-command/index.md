@@ -4,6 +4,8 @@ prev_title: "How Space works"
 next: ./installing-from-latest-tarball/
 next_title: "Installing from latest tarball"
 title: Installing and running your first Space command
+giturl: gitlab.com/space-sh/space
+editurl: /edit/master/doc/installing-and-running-your-first-space-command/index.md
 weight: 400
 icon: "<b>4. </b>"
 ---

@@ -5,6 +5,8 @@ next: /getting-help/
 next_title: "Getting help"
 title: References
 weight: 1000
+giturl: gitlab.com/space-sh/space
+editurl: /edit/master/doc/references/index.md
 icon: "<b>10. </b>"
 ---
 

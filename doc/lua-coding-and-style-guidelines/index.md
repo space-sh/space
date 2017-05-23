@@ -5,6 +5,8 @@ next: /glossary/
 next_title: "Glossary"
 title: Lua coding and style guidelines
 weight: 800
+giturl: gitlab.com/space-sh/space
+editurl: /edit/master/doc/lua-coding-and-style-guidelines/index.md
 icon: "<b>8. </b>"
 ---
 

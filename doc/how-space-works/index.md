@@ -4,6 +4,8 @@ prev: /why-space/
 prev_title: "Why Space"
 next: /installing-and-running-your-first-space-command/
 next_title: "Installing and running your first Space command"
+giturl: gitlab.com/space-sh/space
+editurl: /edit/master/doc/how-space-works/index.md
 weight: 300
 icon: "<b>3. </b>"
 ---

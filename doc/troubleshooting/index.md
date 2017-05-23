@@ -3,6 +3,8 @@ title: Troubleshooting
 prev: /contributing/
 prev_title: "Contributing"
 weight: 1300
+giturl: gitlab.com/space-sh/space
+editurl: /edit/master/doc/troubleshooting/index.md
 icon: "<b>13. </b>"
 ---
 

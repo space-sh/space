@@ -5,6 +5,8 @@ next: ../installing-current-version-from-source-control-repository/
 next_title: "Installing current version from source control repository"
 title: Installing from latest tarball
 toc: true
+giturl: gitlab.com/space-sh/space
+editurl: /edit/master/doc/installing-and-running-your-first-space-command/installing-from-latest-tarball.md
 weight: 401
 ---
 

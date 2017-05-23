@@ -5,6 +5,8 @@ next: ../space-variables/
 next_title: "Space variables"
 title: Writing your own Space module
 toc: true
+giturl: gitlab.com/space-sh/space
+editurl: /edit/master/doc/space-modules/writing-your-own-space-module.md
 weight: 505
 ---
 

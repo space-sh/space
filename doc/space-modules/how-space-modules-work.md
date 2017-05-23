@@ -5,6 +5,8 @@ next: ../writing-your-own-space-module/
 next_title: "Writing your own Space Module"
 title: How Space modules work
 toc: true
+giturl: gitlab.com/space-sh/space
+editurl: /edit/master/doc/space-modules/how-space-modules-work.md
 weight: 504
 ---
 

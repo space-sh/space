@@ -4,6 +4,8 @@ prev_title: "References"
 next: /contributing/
 next_title: "Contributing"
 title: Getting help
+giturl: gitlab.com/space-sh/space
+editurl: /edit/master/doc/getting-help/index.md
 weight: 1100
 icon: "<b>11. </b>"
 ---

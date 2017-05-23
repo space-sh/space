@@ -4,6 +4,8 @@ prev_title: "Installing current version from source control repository"
 next: ../customizing-installation-parameters/
 next_title: "Customizing installation parameters"
 title: Installing latest stable version from Space.sh site
+giturl: gitlab.com/space-sh/space
+editurl: /edit/master/doc/installing-and-running-your-first-space-command/installing-latest-stable-version-from-spacesh-site.md
 weight: 403
 ---
 

@@ -4,6 +4,8 @@ prev_title: "Space Modules"
 next: ../what-are-space-modules/
 next_title: "What are Space Modules"
 title: Why Space modules
+giturl: gitlab.com/space-sh/space
+editurl: /edit/master/doc/space-modules/why-space-modules.md
 weight: 501
 ---
 

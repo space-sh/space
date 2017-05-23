@@ -4,6 +4,8 @@ prev_title: "Installing latest stable version from space.sh"
 next: ../verifying-installation/
 next_title: "Verifying installation"
 title: Customizing installation parameters
+giturl: gitlab.com/space-sh/space
+editurl: /edit/master/doc/installing-and-running-your-first-space-command/customizing-installation-parameters.md
 weight: 404
 ---
 

@@ -4,6 +4,8 @@ prev_title: "Writing your own Space Module"
 next: ../spacefile-yaml-reference/
 next_title: "Spacefile YAML reference"
 title: Space variables
+giturl: gitlab.com/space-sh/space
+editurl: /edit/master/doc/space-modules/space-variables.md
 weight: 506
 ---
 

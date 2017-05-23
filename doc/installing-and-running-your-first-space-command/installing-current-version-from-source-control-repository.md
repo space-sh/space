@@ -4,6 +4,8 @@ prev_title: "Installing from latest tarball"
 next: ../installing-latest-stable-version-from-spacesh-site/
 next_title: "Installing latest stable version from space.sh"
 title: Installing current version from source control repository
+giturl: gitlab.com/space-sh/space
+editurl: /edit/master/doc/installing-and-running-your-first-space-command/installing-current-version-from-source-control-repository.md
 weight: 402
 ---
 

@@ -4,6 +4,8 @@ prev_title: "Modules best practices"
 next: /advanced-spacegal-shell-configuration/
 next_title: "Advanced SpaceGal shell configuration"
 title: Modules advanced topics
+giturl: gitlab.com/space-sh/space
+editurl: /edit/master/doc/space-modules/modules-advanced-topics.md
 weight: 510
 ---
 

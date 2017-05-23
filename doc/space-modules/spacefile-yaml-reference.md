@@ -5,6 +5,8 @@ next: ../modules-versioning/
 next_title: "Modules versioning"
 title: Spacefile YAML reference
 toc: true
+giturl: gitlab.com/space-sh/space
+editurl: /edit/master/doc/space-modules/spacefile-yaml-reference.md
 weight: 507
 ---
 

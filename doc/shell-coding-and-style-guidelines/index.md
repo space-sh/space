@@ -5,6 +5,8 @@ next: /lua-coding-and-style-guidelines/
 next_title: "Lua coding and style guidelines"
 title: Shell coding and style guidelines
 weight: 700
+giturl: gitlab.com/space-sh/space
+editurl: /edit/master/doc/shell-coding-and-style-guidelines/index.md
 icon: "<b>7. </b>"
 ---
 

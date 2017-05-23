@@ -5,6 +5,8 @@ prev_title: "An introduction to Space"
 next: ./benefits-and-advantages-of-using-space/
 next_title: "Benefits and advantages of using Space"
 weight: 200
+giturl: gitlab.com/space-sh/space
+editurl: /edit/master/doc/why-space/index.md
 icon: "<b>2. </b>"
 ---
 

@@ -4,6 +4,8 @@ prev_title: "Spacefile YAML reference"
 next: ../modules-best-practices/
 next_title: "Modules best practices"
 title: Modules versioning
+giturl: gitlab.com/space-sh/space
+editurl: /edit/master/doc/space-modules/modules-versioning.md
 weight: 508
 ---
 

@@ -4,6 +4,8 @@ prev_title: "Space Modules"
 next: /shell-coding-and-style-guidelines/
 next_title: "Shell coding and style guidelines"
 title: Advanced SpaceGal shell configuration
+giturl: gitlab.com/space-sh/space
+editurl: /edit/master/doc/advanced-spacegal-shell-configuration/index.md
 weight: 600
 icon: "<b>6. </b>"
 ---

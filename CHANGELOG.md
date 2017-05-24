@@ -8,6 +8,20 @@
 
 + Add `completion_cache` level to dynamic completion
 
++ Add a wrapper to output script in `main` function to defer execution until last line
+
++ Add namespaces support for functions `_push` and `_pop`
+
++ Add `SPACE_SUDO` for turning `su` and `sudo` into wrappers
+
++ Add ability to inherit `RUN` in _YAML_
+
++ Add ability to inherit `SPACE_REDIR` in _YAML_
+
++ Add ability to inherit `SPACE_ARGS` in _YAML_
+
++ Add control for storing sub shell `PID` to properly terminate _Space_ when killed while in background
+
 * Update packer module man page exporter to use environment variables for customization instead of command substitution
 
 * Fix auto completion cache file to have owner only permissions
@@ -29,6 +43,22 @@
 * Make `SPACE_SIGNATURE` mandatory arguments defaultto `:min=1`
 
 * Rewrite `_escape` function to support infinite levels of escaping
+
+* Change dumped scripts to use `/usr/bin/env` as _shebang_
+
+* Change `PRINT` function to not use subshells when `stderr` is not a terminal
+
+* Change `PRINT` function to not use colors when `stderr` is not a terminal
+
+* Change _Space_ status print after script completion to only use colors when outputting to a terminal
+
+* Fix a bug in exit status error when redirecting stderr to non-tty
+
+* Change `_RUN_` substitution tag prefix to allow for sub processing
+
+- Remove unused function: `_runinfo`
+
+- Remove local cloning of modules which has been superseded by modules versioning
 
 
 ## [0.13.0 - 2017-04-13]

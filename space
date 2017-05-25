@@ -904,10 +904,10 @@ _parse_yaml()
             arrayobject)
                 # New array object begins
                 # Output key index at given indent
-                local _i=$(($_indent+$_arrayextraindent))
+                local _i=$(( _indent + _arrayextraindent ))
                 local _varname="_index_count${_prefix//\//_}"
                 local _count=${!_varname-0}
-                eval "local $_varname=$(($_count+1))"
+                eval "local $_varname=$(( _count + 1 ))"
                 local _subrows=()
                 # Reinsert the key value of first line to have it handled as a normal leaf.
                 if [ -z "$_key" ]; then
@@ -1075,7 +1075,7 @@ _pp_yaml()
             if [[ $_immediatechild == 1 && ${#_subdoc[@]} -gt 0 ]]; then
                 local _subrow= _subrows=()
                 for _subrow in "${_subdoc[@]}"; do
-                    local _i=$(($_indent+$_nextindent))
+                    local _i=$(( _indent + _nextindent ))
                     printf -v _subrow "%*s%s" $_i "" "$_subrow"
                     _subrows+=("$_subrow")
                 done
@@ -1088,7 +1088,7 @@ _pp_yaml()
             continue
         fi
 
-        local _actualindent=$(($_indent-$_filterindent+$_inheritedindent))
+        local _actualindent=$(( _indent - _filterindent + _inheritedindent ))
         # Here we need to do the postponed preprocess variable substitution of @{PARENT} and @{PARENTPATH}.
         local _parentpath=
         _parentpath=$_inheritedprefix${_prefix#$_filter}
@@ -1123,7 +1123,7 @@ _pp_yaml()
                 unset _s _ppkey
                 ;;
             include) # Do an include of a file
-                local _i=$(($_indent-$_filterindent+$_inheritedindent))
+                local _i=$(( _indent - _filterindent + _inheritedindent ))
                 if [[ $_immediatechild == 2 && ${#_readahead[@]} == 0 ]]; then
                     if (( ${#_subdoc[@]} > 0 )); then
                         _readahead=("${_subdoc[@]}")
@@ -1132,21 +1132,21 @@ _pp_yaml()
                 _pp_yaml "$_varname" "${_includefile:-$_filepath}" "$_includefilter" $_i "${_parentpath}" $_includevariables
                 local _status=$?
                 if [ $_status -eq 2 ]; then
-                    _error "[$_filepath: $(($_rowindex))] Could not find file \"$_includefile\"."
+                    _error "[$_filepath: $(( _rowindex ))] Could not find file \"$_includefile\"."
                     return 1
                 elif [ $_status -gt 0 ]; then
                     return $_status
                 fi
                 ;;
             clone) # Clone module(s)
-                local _i=$(($_indent-$_filterindent+$_inheritedindent))
+                local _i=$(( _indent - _filterindent + _inheritedindent ))
                 # _retrepo variable is populated by _module_clone
                 local _retrepo= _v=
                 for _v in $value; do
                     _module_clone "_retrepo" "$_v"
                     local _status=$?
                     if [ $_status -gt 0 ]; then
-                        _error "[$_filepath: $(($_rowindex))] Could not clone module repository \"$_v\"."
+                        _error "[$_filepath: $(( _rowindex ))] Could not clone module repository \"$_v\"."
                         return 1
                     fi
                     printf -v _output "%*s%s" $_i "" "_source:"
@@ -1156,7 +1156,7 @@ _pp_yaml()
                 done
                 ;;
             source) # Source module(s) shell file
-                local _i=$(($_indent-$_filterindent+$_inheritedindent))
+                local _i=$(( _indent - _filterindent + _inheritedindent ))
                 printf -v _output "%*s%s" $_i "" "_source:"
                 eval "$_varname+=(\"\$_output\")"
                 printf -v _output "%*s    - %s" $_i "" "$value"
@@ -1181,7 +1181,7 @@ _pp_yaml()
                 _CACHE_LEVEL=$value
                 ;;
             leaf) # A regular key value row.
-                local _i=$(($_indent-$_filterindent+$_inheritedindent))
+                local _i=$(( _indent - _filterindent + _inheritedindent ))
                 if [ "${value:0:1}" == "[" ]; then
                     _error "Space does not support YAML inline list declarations: ${value}."
                     return 1
@@ -1221,8 +1221,8 @@ _pp_yaml()
                 fi
                 ;;
             object) # Start of new object
-                local _i=$(($_indent-$_filterindent+$_inheritedindent))
-                local _i2=$(($_i+$_nextindent))
+                local _i=$(( _indent - _filterindent + _inheritedindent ))
+                local _i2=$(( _i + _nextindent ))
                 printf -v _output "%*s%s" $_i "" "$_key:"
                 eval "$_varname+=(\"\$_output\")"
                 # Set the parent node for the sub nodes following
@@ -1230,8 +1230,8 @@ _pp_yaml()
                 ;;
             arrayobject) # Array item object start
                 # Output key index at given indent, also readahead.
-                local _i2=$(($_indent-$_filterindent+$_inheritedindent))
-                local _i3=$(($_arrayextraindent-1))
+                local _i2=$(( _indent - _filterindent + _inheritedindent ))
+                local _i3=$(( _arrayextraindent - 1 ))
                 _isarrayobjectfiltered=0
                 if [ "${value:0:1}" == "[" ] || [ "${value:0:1}" == "{" ]; then
                     _error "Space does not support YAML inline list/object declarations: ${value}."
@@ -1264,7 +1264,7 @@ _pp_yaml()
                     fi
                     eval "$_varname+=(\"\$_output\")"
                 fi
-                local _i4=$(($_i2+$_i3+4))
+                local _i4=$(( _i2 + _i3 + 4 ))
                 if ((${#_readahead[@]} > 0)); then
                     local _line=
                     for _line in "${_readahead[@]}"; do
@@ -1335,7 +1335,7 @@ _yaml_pp_multiline_include()
             # Ignore missing yaml file.
             continue
         else
-            _error "[$_filepath: $(($_rowindex))] Could not find file \"$_includefile\"."
+            _error "[$_filepath: $(( _rowindex ))] Could not find file \"$_includefile\"."
             return 1
         fi
     fi
@@ -1672,7 +1672,7 @@ _yaml_find_nextindent()
         fi
     done
     if [ "$_yamlindent" -gt "$_indent" ]; then
-        _nextindent=$(($_yamlindent-$_indent))
+        _nextindent=$(( _yamlindent - _indent ))
     fi
 }
 
@@ -1717,7 +1717,7 @@ _yaml_get_multiline()
                     if [ "$_subindent2" -lt "$_subindent" ]; then
                         break
                     fi
-                    printf -v _subvalue "%*s%s" $(($_subindent2-$_subindent)) "" \
+                    printf -v _subvalue "%*s%s" $(( _subindent2 - _subindent )) "" \
                         "${BASH_REMATCH[2]}"
                     _readahead+=("$_subvalue")
                 else
@@ -2405,7 +2405,7 @@ _EOF
 
 _error()
 {
-    if (( $_VERBOSITY >= 1 )); then
+    if (( _VERBOSITY >= 1 )); then
         [ "$_LOG_ENABLE_COLORS" = "1" ] && printf "${_COLOR_FG_RED}" >&2
         _print "[ERROR] $@"
         [ "$_LOG_ENABLE_COLORS" = "1" ] && printf "${_COLOR_DEFAULT}" >&2
@@ -2414,7 +2414,7 @@ _error()
 
 _warning()
 {
-    if (( $_VERBOSITY >= 2 )); then
+    if (( _VERBOSITY >= 2 )); then
         [ "$_LOG_ENABLE_COLORS" = "1" ] && printf "${_COLOR_FG_YELLOW}" >&2
         _print "[WARN]  $@"
         [ "$_LOG_ENABLE_COLORS" = "1" ] && printf "${_COLOR_DEFAULT}" >&2
@@ -2424,7 +2424,7 @@ _warning()
 
 _info()
 {
-    if (( $_VERBOSITY >= 3 )); then
+    if (( _VERBOSITY >= 3 )); then
         [ "$_LOG_ENABLE_COLORS" = "1" ] && printf "${_COLOR_FG_WHITE}" >&2
         _print "[INFO]  $@"
         [ "$_LOG_ENABLE_COLORS" = "1" ] && printf "${_COLOR_DEFAULT}" >&2
@@ -2433,7 +2433,7 @@ _info()
 
 _debug()
 {
-    if (( $_VERBOSITY >= 4 )); then
+    if (( _VERBOSITY >= 4 )); then
         _print "[DEBUG] $@"
     fi
 }
@@ -2987,7 +2987,7 @@ _main()
                 _error "Unknown option $1."
                 _print "$_USAGE"
                 return 1
-            elif (($OPTIND == 1)); then
+            elif (( OPTIND == 1 )); then
                 # This happens when doing for example: -al
                 _error "Unknown option $1."
                 _print "$_USAGE"
@@ -3276,7 +3276,7 @@ _main()
             fi
             for _line in "${_evals[@]-}"; do
                 eval "$_line" || _status=$?
-                if (($_status != 0)); then
+                if (( _status != 0 )); then
                     [[ $_line =~ local\ ([^\=]+) ]]
                     local _varname=${BASH_REMATCH[1]}
                     _error "Could not evaluate YAML Bash translation for variable: $_varname. Likely some syntax error in the yaml."
@@ -3407,7 +3407,7 @@ _main()
         fi
         unset _l
 
-        if [[ $_dim == "1" ]] || ( [[ $_hasfriends == "0" ]] && (($_dim <= ${#_namespaces[@]})) ); then
+        if [[ $_dim == "1" ]] || ( [[ $_hasfriends == "0" ]] && (( _dim <= ${#_namespaces[@]})) ); then
             local _pattern=${_dimensions[((_dim-1))]}
             local _node=$_pattern
             if [[ ${_node: -1} != "/" ]]; then
@@ -4056,7 +4056,7 @@ _exec_dimensions()
             _debug "Load node: ${_node}, from namespace: ${_ns}."
             _loadnode "_res" "$_node" "$_strip_args"
             _status=$?
-            if (($_status != 0)); then
+            if (( _status != 0 )); then
                 _error "Could not evaluate node variables for node: $_node. There's probably some syntax error in the YAML."
                 return 1
             fi
@@ -4081,7 +4081,7 @@ _exec_dimensions()
                     fi
                     _status=0
                     eval "$_str" || _status="$?" 
-                    if (($_status != 0)); then
+                    if (( _status != 0 )); then
                         _error "Could not evaluate node variables for node: $_node. There's probably some syntax error in the YAML."
                         trap - EXIT
                         return 1
@@ -4152,7 +4152,7 @@ _load_yaml()
     if [[ $_DEBUG_OUTPUT_PREPROCESSED == "1" ]]; then
         _CACHE_LEVEL=0
     fi
-    if (( $_CACHE_LEVEL == 1 )); then
+    if (( _CACHE_LEVEL == 1 )); then
         # Use cache if exists and still valid
         if [[ -e $_cachefile ]]; then
             _debug "Found cache file: $_cachefile"
@@ -4207,7 +4207,7 @@ _load_yaml()
         else
             _debug "Cache file not found: $_cachefile"
         fi
-    elif (( $_CACHE_LEVEL == 0 )); then
+    elif (( _CACHE_LEVEL == 0 )); then
         # rm cache file, to avoid future confusions.
         _debug "Deleting cache file: $_cachefile"
         # EXTERNAL: rm
@@ -4229,10 +4229,10 @@ _load_yaml()
         fi
         _pp_yaml "_yamlrows" $_yamlfile
         local _status=$?
-        if (($_status == 2)); then
+        if (( _status == 2 )); then
             _error "Could not find file: $_yamlfile"
             return 1
-        elif (($_status > 0)); then
+        elif (( _status > 0 )); then
             return 1
         fi
         _debug "...done preprocessing."
@@ -4257,7 +4257,7 @@ _load_yaml()
         unset _parents
         _debug "...done parsing"
 
-        if (( $_CACHE_LEVEL > 0 )); then
+        if (( _CACHE_LEVEL > 0 )); then
             # (re)save cache file.
             _debug "Write to cache file: $_cachefile"
 
@@ -4689,7 +4689,7 @@ _match_node()
     _levels=${_nodepath//[^\/]}
     _levels=${#_levels}
     ((_levels-=1))
-    if (($_levels == 0)); then
+    if (( _levels == 0 )); then
         _nodes+=("/")
     else
         _match=""

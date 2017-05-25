@@ -59,7 +59,7 @@
 # Static analysis:
 #   Space cares about hints from static analysis tools. However, it has chosen not to disable friendly diagnostics and warnings.
 #   Below is a list of warnings which are considered harmless:
-#   <shellcheck> --exclude=2181
+#   <shellcheck> --exclude=2181 --exclude=2039
 #
 
 # Exit when trying to access undeclared variables.

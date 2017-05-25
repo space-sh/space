@@ -702,7 +702,9 @@ _source_added()
     while [ "$_i" -lt "${#_SOURCE_FILES[@]}" ]; do
         _file=${_SOURCE_FILES[$_i]}
         _source_file "${_file}"
-        [ "$?" -gt 0 ] && return 1
+        if [ "$?" -gt 0 ]; then
+            return 1
+        fi
         _i=$(( _i + 1 ))
     done
     unset _file _i

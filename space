@@ -1118,7 +1118,8 @@ _pp_yaml()
                 ;;
             prompt) # Prompt a value for a pp variable.
                 local _ppkey=_PP_$_key
-                local _s=$(prompt "$value")
+                local _s=
+                _s=$(prompt "$value")
                 eval "$_ppkey=\$_s"
                 unset _s _ppkey
                 ;;
@@ -1840,8 +1841,10 @@ _module_clone()
         if ! command -v git >/dev/null \
            || [ "$_FORCE_HTTPS_FALLBACK" = "1" ]; then
             # Git is not installed, check if we could use fallback.
-            local _d=$(_to_lower $_domain)
-            local _p=$(_to_lower $_protocol)
+            local _d=
+            local _p=
+            _d=$(_to_lower $_domain)
+            _p=$(_to_lower $_protocol)
             if [[ $_p != "https" ]]; then
                 _error "Could not clone module since Git is not installed."
                 return 1
@@ -1854,7 +1857,8 @@ _module_clone()
                 # Fetch tarball from Git host into /tmp, unpack it and move it to the right place.
                 _info "Downloading tarball \"$_giturl\" over HTTPS using: $_HTTPBIN."
                 # EXTERNAL: mktemp, tar, curl/wget
-                local _tmpdir=$(mktemp -d 2>/dev/null || mktemp -d -t 'sometmpdir')
+                local _tmpdir=
+                _tmpdir=$(mktemp -d 2>/dev/null || mktemp -d -t 'sometmpdir')
                 (( $? > 0 )) && { _error "Could not mktemp."; return 1; }
                 local _status_code=0
                 local _versionurl="$_giturl/raw/master/${_MODULE_STABLE_FILE_NAME}"
@@ -1926,7 +1930,8 @@ _module_clone()
                 fi
 
                 # EXTERNAL: find
-                local _tmpdir2=$(find $_tmpdir -maxdepth 1 -mindepth 1)
+                local _tmpdir2=
+                _tmpdir2=$(find $_tmpdir -maxdepth 1 -mindepth 1)
                 # EXTERNAL: mkdir
                 mkdir -p ${_dir%/*}
                 # EXTERNAL: mv
@@ -3061,7 +3066,9 @@ _main()
         _envE=()
     fi
 
-    local CWD=$(pwd)  # Set as global environment variable.
+    # Set as global environment variable.
+    local CWD=
+    CWD=$(pwd)
 
     if [[ $_help == "version" ]]; then
         _helpversion
@@ -4272,7 +4279,8 @@ _load_yaml()
                 printf "%s\n" "$_yamlfilelist"  >> $_cachefile
                 printf "%s\n" "$_currentsum" >> $_cachefile
                 printf "%s\n" "$_envPs" >> $_cachefile
-                local _s=$(IFS=';'; echo "${_parsedyamlcompletion[*]-}")
+                local _s=
+                _s=$(IFS=';'; echo "${_parsedyamlcompletion[*]-}")
                 printf "%s\n" "$_s" >> $_cachefile
                 unset _s
                 if (( ${#_parsedyaml[@]} > 0 )); then
@@ -4308,7 +4316,8 @@ _completion_modules()
     for _i in 1 2; do
         for _dir in "${_places[@]}"; do
             # EXTERNAL: find
-            local _modules=$(cd $_dir 2>/dev/null && find . -mindepth 3 -maxdepth 3 -wholename "./${_f}*" -type d)
+            local _modules=
+            _modules=$(cd $_dir 2>/dev/null && find . -mindepth 3 -maxdepth 3 -wholename "./${_f}*" -type d)
             for _f in $_modules; do 
                 _items+=("${_f:2}")
             done
@@ -4351,10 +4360,12 @@ _query_version_and_update()
     fi
     _debug "Checking version from: $_installer_url"
 
-    local _current_space_version="'${_VERSION}'"
+    local _current_space_version=
+    _current_space_version="'${_VERSION}'"
     local _latest_space_version=
 
-    local _tmpdir=$(mktemp -d 2>/dev/null || mktemp -d -t 'sometmpdir')
+    local _tmpdir=
+    _tmpdir=$(mktemp -d 2>/dev/null || mktemp -d -t 'sometmpdir')
     if [ "$?" -gt 0 ]; then
         _error "Could not mktemp directory"
         return 1
@@ -4490,7 +4501,8 @@ _update_modules()
     local _dir=
     for _dir in "${_places[@]}"; do
         # EXTERNAL: find
-        local _modules=$(cd $_dir 2>/dev/null && find . -mindepth 3 -maxdepth 3 -type d -regex "$_pattern")
+        local _modules=
+        _modules=$(cd $_dir 2>/dev/null && find . -mindepth 3 -maxdepth 3 -type d -regex "$_pattern")
         if [[ -n $_modules ]]; then
             _info "Modules found in $_dir: " $_modules
             (
@@ -4502,7 +4514,8 @@ _update_modules()
                     # EXTERNAL: git
                     if [[ -d .git ]] ; then
                         # Check the module banlist.
-                        local _giturl=$(git config --get remote.origin.url)
+                        local _giturl=
+                        _giturl=$(git config --get remote.origin.url)
                         if [[ "$d" =~ .*[:]+(.*) ]]; then
                             _module_check_banlist "${_giturl}:${BASH_REMATCH[1]}"
                             (( $? > 0 )) && return 1
@@ -5816,7 +5829,8 @@ _cmd_extract()
                 SPACE_BUILDARGS=
 
                 # EXTERNAL: mktemp, bash, rm, rmdir
-                local _tmpdir=$(mktemp -d 2>/dev/null || mktemp -d -t 'sometmpdir')
+                local _tmpdir=
+                _tmpdir=$(mktemp -d 2>/dev/null || mktemp -d -t 'sometmpdir')
                 (( $? > 0 )) && { _error "Could not mktemp dir for SPACE_FN isolation."; return 1; }
                 local _tmpfile="${_tmpdir}/output"
                 local _restrictedcode=$_fns
@@ -6546,7 +6560,8 @@ _get_fn()
     while [ "${_i}" -gt -1 ]; do
         _file="${_SOURCE_FILES_TOTAL[$_i]}"
         # EXTERNAL: cat
-        local _content="$(cat ${_file})"$'\n'  # We add a '\n' so that pattern matching below works properly.
+        local _content=
+        _content="$(cat ${_file})"$'\n'  # We add a '\n' so that pattern matching below works properly.
         if [[ ${_content} =~ (^|$'\n')${_cmdname}[\ ]*\(\)$'\n'\{[\ ]*$'\n'(.*$'\n') ]]; then
             if [ "${#BASH_REMATCH[1]}" -eq 0 -o "${BASH_REMATCH[1]}" = $'\n' ]; then
                 _content="${BASH_REMATCH[2]}"

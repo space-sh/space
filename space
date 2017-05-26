@@ -1856,7 +1856,7 @@ _module_clone()
             if [[ $_d == "github.com" || $_d == "gitlab.com" || $_d == "bitbucket.org" ]]; then
                 # Fetch tarball from Git host into /tmp, unpack it and move it to the right place.
                 _info "Downloading tarball \"$_giturl\" over HTTPS using: $_HTTPBIN."
-                # EXTERNAL: mktemp, tar, curl/wget
+                # EXTERNAL: mktemp, tar, curl/wget, rm
                 local _tmpdir=
                 _tmpdir=$(mktemp -d 2>/dev/null || mktemp -d -t 'sometmpdir')
                 (( $? > 0 )) && { _error "Could not mktemp."; return 1; }
@@ -4426,6 +4426,7 @@ _query_version_and_update()
         fi
     }
 
+    # EXTERNAL: curl/wget, rm
     if [ "$_HTTPBIN" = "curl" ]; then
         _status_code=$($_HTTPBIN -sL --write-out %{http_code} --silent --output "$_tmpfile" $_installer_url)
         if [ "$_status_code" -eq 200 ]; then

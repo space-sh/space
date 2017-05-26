@@ -5409,6 +5409,7 @@ fi'
         _cmd_export_vars "${_fn_env}" "${_fn_name}"
         (( $? > 0 )) && return 1
 
+        # EXTERNAL: cat
         local _i=
         for ((_i=1; _i<$((_wrappers+1)); _i+=1)); do
             local _SUDO=

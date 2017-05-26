@@ -1917,6 +1917,7 @@ _module_clone()
                     fi
                 fi
 
+                # EXTERNAL: tar
                 {
                     if [[ $_HTTPBIN == "curl" ]]; then
                         $_HTTPBIN -sL $_durl

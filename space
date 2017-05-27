@@ -1405,6 +1405,10 @@ _yaml_get_row()
     done
 }
 
+
+# Disable warning about unused variables: _PP_PARENT, _PP_PARENTPATH
+# shellcheck disable=2034
+
 #==========
 # _yaml_get_next
 #
@@ -3915,6 +3919,10 @@ _get_third_dimension()
     fi
 }
 
+
+# Disable warning about unused variables: _dimorder1, _dimorder2, _dimorder3
+# shellcheck disable=2034
+
 #=================
 # _exec_dimensions
 #
@@ -4678,7 +4686,10 @@ _match_node()
     local _includeleafs=${1:-0}
     shift || :
 
-    local _item= _node= _isleaf=
+    local _item=
+    local _node=
+    # shellcheck disable=2034
+    local _isleaf=
     local _nodelist=()
     eval '
     for _item in "${'$_inputname'[@]-}"; do
@@ -5061,6 +5072,7 @@ unset __spacegaltmp_
 #======================
 _balance_wrap_headers()
 {
+    # shellcheck disable=2034
     local _A=() _B=()
     _extract_wrap_headers "${SPACE_WRAP}" "${SPACE_WRAPARGS}" "_A" "_B"
 
@@ -5237,6 +5249,7 @@ _execute()
     local _cmd_envs=()
 
     # Check if $_RUN is a function or just a snippet.
+    # shellcheck disable=2034
     local _tmpname="" _tmpfunc=""
     _get_fn "${_RUN}" "_tmpname" "_tmpfunc"
     if [ -z "${_tmpname}" ]; then
@@ -5246,6 +5259,7 @@ _execute()
         # so it then could be handled in the general way, just as any other function.
         # We create this variable, and it will be available for _get_fn to read from
         # when it ecnouters the name "_anonymous".
+        # shellcheck disable=2034
         local _anonymous="    $_RUN \"\$@\""
         _RUN="_anonymous"
     else
@@ -5673,6 +5687,7 @@ _filter()
     local __output=${2:-$__input}
 
     # Work on internal data
+    # shellcheck disable=2034
     local __subst_data=
     eval "__subst_data=\$$__input"
 

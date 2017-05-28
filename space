@@ -2333,6 +2333,10 @@ _enter_gui_mode()
     return 0
 }
 
+
+# Disable warning about possible mispelling of _SPACE_NAME
+# shellcheck disable=2153
+
 #=====
 # PRINT
 #

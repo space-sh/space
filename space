@@ -6398,6 +6398,7 @@ _escape_inline()
     shift
 
     _escape "var" '"'
+    # shellcheck disable=2154
     echo "\"${var}\""
 }
 

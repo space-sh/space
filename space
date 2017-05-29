@@ -6540,6 +6540,7 @@ _split_args()
         trap - EXIT
         return 1
     fi
+    # shellcheck disable=SC2016
     _escape "_s" '$()&|<>'
     eval "_split_args_inner ${_s}"
     (( $? > 0 )) && { trap - ERR; return 1; }

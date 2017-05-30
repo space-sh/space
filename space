@@ -4056,11 +4056,11 @@ _exec_dimensions()
     local _envcompletioncache=""
     if [[ $_BASH_COMPLETION == "5" ]]; then
         _envvar="${_bash_completion_current%%=*}"
-        local _envval="${_bash_completion_current#*=}"
+        #local _envval="${_bash_completion_current#*=}"     # TODO: FIXME: currently unused
     elif [[ $_BASH_COMPLETION == "6" ]]; then
         _envvar="SPACE_ARGS"
         _envvarindex="${_bash_completion_current%%=*}"
-        local _envval="${_bash_completion_current#*=}"
+        #local _envval="${_bash_completion_current#*=}"     # TODO: FIXME: currently unused
     fi
 
     local _envcompletion2= _envcompletion2dim= _envcompletioncache2=

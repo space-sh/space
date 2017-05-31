@@ -18,6 +18,7 @@
 
 _TEST_ALL_RECURSIVELY()
 {
+    # shellcheck disable=2034
     SPACE_DEP="PRINT"
 
     # Use parameter as target, otherwise defaults to iterate over everything

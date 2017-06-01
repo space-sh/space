@@ -60,7 +60,9 @@ _EXPORT_MAN()
 
 _EXPORT_HTML()
 {
+    # shellcheck disable=2034
     SPACE_DEP="PRINT"
+    # shellcheck disable=2034
     SPACE_ENV="DATE_NOW MAN_NAME ORGANIZATION_NAME"
 
     if [ "$#" -eq 0 ]; then

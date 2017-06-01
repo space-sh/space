@@ -50,6 +50,7 @@ _EXPORT_MAN()
 
     ronn --roff --date="$DATE_NOW" --manual="$MAN_NAME" --organization="$ORGANIZATION_NAME" --pipe "$_doc_file_path" > "$_doc_export_path"
 
+    # shellcheck disable=2181
     if [ $? -ne 0 ]; then
         PRINT "Failed to generate man page for $_doc_file_name" "error"
         return 1
@@ -90,6 +91,7 @@ _EXPORT_HTML()
 
     ronn --html --date="$DATE_NOW" --manual="$MAN_NAME" --organization="$ORGANIZATION_NAME" --pipe "$_doc_file_path" > "$_doc_export_path"
 
+    # shellcheck disable=2181
     if [ $? -ne 0 ]; then
         PRINT "Failed to generate HTML page for $_doc_file_name" "error"
         return 1

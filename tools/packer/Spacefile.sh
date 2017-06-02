@@ -34,7 +34,9 @@ SPACE_PACKER_CHECK_AVAILABLE()
 
 SPACE_PACKER_MAKE()
 {
+    # shellcheck disable=2034
     SPACE_DEP="PRINT SPACE_PACKER_CHECK_AVAILABLE _EXPORT_MARKDOWN _EXPORT_MAN"
+    # shellcheck disable=2034
     SPACE_ENV="RELEASE_FILES"
 
     local _files=''
@@ -94,7 +96,9 @@ SPACE_PACKER_MAKE()
     # Generate man page on current directory
     local _space_man_input_file_path="${PWD}/manuals/space.md"
     local _space_man_expected_output_file_path="${PWD}/space.1"
+    # shellcheck disable=2034
     ORGANIZATION_NAME=$(space -V 2>&1)
+    # shellcheck disable=2034
     DATE_NOW=$(date +%Y-%m-%d)
     _EXPORT_MAN "$_space_man_input_file_path"
 
@@ -156,6 +160,7 @@ SPACE_PACKER_MAKE()
     local _doc_output_name="space-${_version}.md"
 
     # Export space_doc.md
+    # shellcheck disable=2034
     GENERATE_TOC=1
     _EXPORT_MARKDOWN "$_space_file_path"
     if [ ! -f "$_doc_expected_output_name" ]; then

@@ -32,6 +32,10 @@ SPACE_PACKER_CHECK_AVAILABLE()
     fi
 }
 
+
+# Disable warning about indirectly checking exit code
+# shellcheck disable=2181
+
 SPACE_PACKER_MAKE()
 {
     # shellcheck disable=2034

@@ -10,7 +10,7 @@ icon: "<b>1. </b>"
 
 # Introduction to Space
 
-_SpaceGal shell_, or simply _Space_, is an open source automation software for the _Internet of Things_ and digital life.  
+_Space.sh_, or simply _Space_, is an open source automation software for the _Internet of Things_ and digital life.  
 
 _Space_ is a single-file, dependency-free, command-line program written in _Bash_ programming language. It offers a parser and preprocessor for creating and executing user-authored content described in a _YAML-like_ declarative language and shell scripts.  
 
@@ -23,7 +23,7 @@ Other typical actions of _Space_:
 3. Create a new _Space_ module derived from an existing one  
 4. Run a _Space_ module operation wrapped around another Module's function, like a command line hook  
 
-_Space_ was first publicly available on November 30th, 2016, and it is part of _SpaceGal_.  
+_Space_ was first publicly available on November 30th, 2016, and it is part of _Space.sh_.  
 
 The next section talks about ["why"](../why-space/#content) _Space_ has been created, the reason behind it and project goals.  
 For code examples, refer to [Installing and running your first Space command](../installing-and-running-your-first-space-command/#content) section.

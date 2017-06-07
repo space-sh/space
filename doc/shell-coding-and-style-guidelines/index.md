@@ -1,6 +1,6 @@
 ---
-prev: /advanced-spacegal-shell-configuration/
-prev_title: "Advanced SpaceGal shell configuration"
+prev: /advanced-space-sh-configuration/
+prev_title: "Advanced Space.sh configuration"
 next: /lua-coding-and-style-guidelines/
 next_title: "Lua coding and style guidelines"
 title: Shell coding and style guidelines

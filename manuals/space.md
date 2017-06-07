@@ -9,7 +9,7 @@ space(1) -- automation using Bash
 
 
 ## DESCRIPTION
-**SpaceGal shell**, also known as **Space**, is a non-intrusive automation tool with a very small footprint, perfect to use with and on constrained environments and devices. It loads and runs YAML and Bash files.  
+**Space.sh**, also known as **Space**, is a non-intrusive automation tool with a very small footprint, perfect to use with and on constrained environments and devices. It loads and runs YAML and Bash files.  
 
 A YAML file is parsed and may refer to Bash functions loaded from a Bash file. The YAML structure is referred to as "nodes", and a "node" could have Bash variables associated to it. A node could be executed if it has the environment variable RUN set. The RUN variable typically refers to a Bash function, or is a Bash snippet in itself. A node could have many environment variables attached to it. When executing a node that has many levels such as "/a/b/c/", all Bash variables in each level will be loaded, where the deeper levels override their parent levels.  
 In short, the YAML structure sets up the environment and then execution is passed on to a Bash function that executes the actual task.  

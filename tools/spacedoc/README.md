@@ -1,6 +1,6 @@
 # Spacedoc
 
-Spacedoc is a module for SpaceGal shell that generates Markdown and HTML documentation based on code comments surrounding global variables and procedures in shell scripts.
+Spacedoc is a module for Space.sh that generates Markdown and HTML documentation based on code comments surrounding global variables and procedures in shell scripts.
 
 
 ## Dependencies

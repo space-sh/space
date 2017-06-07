@@ -42,7 +42,7 @@ _RUN_SHELLCHECK()
     PRINT "Shellcheck analysis..."
     # EXTERNAL: command
     if command -v "$_command_name" >/dev/null 2>&1; then
-        echo "###### spacegal ######" > "$_output_file_name"
+        echo "###### Space.sh ######" > "$_output_file_name"
         ${_command_name} --shell="$_shell_name" -e SC2004 -e SC2034 "$_file_name" >> "$_output_file_name"
         echo "Done"
     else
@@ -79,7 +79,7 @@ _RUN_CHECKBASHISMS()
     PRINT "Checkbashisms analysis..."
     # EXTERNAL: command
     if command -v "$_command_name" >/dev/null 2>&1; then
-        echo "###### spacegal ######" > "$_output_file_name"
+        echo "###### Space.sh ######" > "$_output_file_name"
         ${_command_name} -f "$_file_name" >> "$_output_file_name" 2>&1
         echo "Done"
     else

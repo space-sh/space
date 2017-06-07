@@ -1,14 +1,14 @@
 
 # Space | [![build status](https://gitlab.com/space-sh/space/badges/master/build.svg)](https://gitlab.com/space-sh/space/commits/master) [![latest stable version](https://img.shields.io/badge/latest%20stable-0.13.0-blue.svg?style=flat)](https://gitlab.com/space-sh/space/tags/0.13.0) [![Gitter](https://img.shields.io/gitter/room/nwjs/nw.js.svg)](https://gitter.im/blockie-org/spacegal)
 
-![SpaceGal](https://space.sh/static/img/logo.png)
+![Space.sh](https://space.sh/static/img/logo.png)
 
-The _SpaceGal shell_ is a single file program, referred to as _Space_, that relies only on _Bash version 3.2 or later_ as dependency for loading and running configuration files and invoking programs in a structured manner.  
+The _Space.sh_ is a single file program, referred to as _Space_, that relies only on _Bash version 3.2 or later_ as dependency for loading and running configuration files and invoking programs in a structured manner.  
 _Space_ is aimed to be run in constrained environments, embedded systems and devices geared towards the _Internet of Things (IoT)_. It also serves as a general purpose automation tool for structuring, setting up, deploying and executing commands, complex programs or replicating complete environments in an easy way.  
 _Space_ provides the notion of _Modules_, which in essence are _Git_ repositories filled with user content defined as _Space_ descriptions and operations. _Modules_ can also point to other modules, so it is possible to create content on top of other users' work.  
 
-_Space_ is part of _SpaceGal_ and can be found at [https://space.sh](https://space.sh).  
-_SpaceGal_ is a suite of services for _IoT_ automation, aimed to provide small footprint automation for _IoT_ devices, servers and digital life in general.  
+_Space_ is part of _Space.sh_ and can be found at [https://space.sh](https://space.sh).  
+_Space.sh_ is a suite of services for _IoT_ automation, aimed to provide small footprint automation for _IoT_ devices, servers and digital life in general.  
 
 
 ## Dependencies

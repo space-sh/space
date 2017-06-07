@@ -1,8 +1,8 @@
 ---
 prev: ../modules-best-practices/
 prev_title: "Modules best practices"
-next: /advanced-spacegal-shell-configuration/
-next_title: "Advanced SpaceGal shell configuration"
+next: /advanced-space-sh-configuration/
+next_title: "Advanced Space.sh configuration"
 title: Modules advanced topics
 giturl: gitlab.com/space-sh/space
 editurl: /edit/master/doc/space-modules/modules-advanced-topics.md

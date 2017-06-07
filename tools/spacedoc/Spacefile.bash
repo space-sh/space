@@ -17,7 +17,7 @@
 #
 
 #
-# spacedoc - Code documentation exporter for SpaceGal shell
+# spacedoc - Code documentation exporter for Space.sh
 #
 
 _GENERATE_DOC()

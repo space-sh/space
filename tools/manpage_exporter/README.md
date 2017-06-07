@@ -1,6 +1,6 @@
 # Man page exporter
 
-This SpaceGal shell module exports Markdown documentation to roff man pages and HTML.
+This Space.sh module exports Markdown documentation to roff man pages and HTML.
 
 ## Dependencies
 Depends on `ronn` which can be downloaded from: [https://github.com/rtomayko/ronn/blob/master/INSTALLING](https://github.com/rtomayko/ronn/blob/master/INSTALLING).

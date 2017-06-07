@@ -46,7 +46,7 @@ Official core Modules are located at [https://gitlab.com/space-sh](https://gitla
 #### Downloading and running a Space Module
 Let's run the core Module named `os`, located at [https://gitlab.com/space-sh/os](https://gitlab.com/space-sh/os). Its description says:  
 
->SpaceGal shell module to handle operating system tasks such as user processes, packages and services management
+>Space.sh module to handle operating system tasks such as user processes, packages and services management
 
 Now run:  
 

@@ -215,8 +215,8 @@ _RUN_CHECK_OK "Test -h switch" "" $_SPACE_BIN -h
 _RUN_CHECK_OK "Test -V switch" "Space " $_SPACE_BIN -V
 
 # -h: helpnode
-_RUN_CHECK_OK   "Test -h switch: root node" "SpaceGal shell installer" $_SPACE_BIN / -h
-_RUN_CHECK_OK   "Test -h switch: child node" "Install SpaceGal shell" $_SPACE_BIN /install/ -h
+_RUN_CHECK_OK   "Test -h switch: root node" "Space.sh installer" $_SPACE_BIN / -h
+_RUN_CHECK_OK   "Test -h switch: child node" "Install Space.sh" $_SPACE_BIN /install/ -h
 _RUN_CHECK_OK   "Test -h switch: specifying file" "+ 0" $_SPACE_BIN -f ./test/yaml/test.yaml /tests/ -h
 _RUN_CHECK_FAIL "Test -h switch: specifying file with incorrect node" "must begin and end with slash" $_SPACE_BIN -f ./test/yaml/test.yaml wrongnode -h
 _RUN_CHECK_FAIL "Test -h switch: specifying file with incorrect path" "Malformed node path" $_SPACE_BIN -f ./test/yaml/test.yaml /tests/wrongpath -h

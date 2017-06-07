@@ -22,7 +22,7 @@ _env:
     - AC_PREFIX: "/usr/share/bash-completion/completions"
 
 _info:
-    title: SpaceGal shell installer
+    title: Space.sh installer
     desc: |
         Provides system wide installation and Bash auto-completion setup.
         Provides an uninstall utility for listing files originally installed by Space.
@@ -41,9 +41,9 @@ _build:
 
 install:
     _info:
-        title: Install SpaceGal shell
+        title: Install Space.sh
         desc: |
-            Perform SpaceGal shell install.
+            Perform Space.sh install.
             Parameters (both optional):
                 1: BIN_PREFIX which is where the program and man page will be installed.
                 2: AC_PREFIX where the auto completion will be installed.
@@ -54,9 +54,9 @@ install:
 
 uninstall:
     _info:
-        title: Uninstall SpaceGal shell
+        title: Uninstall Space.sh
         desc: |
-            Auto detects and lists all the files originally installed by SpaceGal shell.
+            Auto detects and lists all the files originally installed by Space.sh.
     _env:
         - RUN: SPACE_UNINSTALL
 

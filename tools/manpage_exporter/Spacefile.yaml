@@ -17,7 +17,7 @@
 #
 
 _env:
-    - MAN_NAME: "SpaceGal shell Manual"
+    - MAN_NAME: "Space.sh Manual"
     - ORGANIZATION_NAME: ${ORGANIZATION_NAME-}
     - DATE_NOW: ${DATE_NOW-}
 

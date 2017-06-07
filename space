@@ -37,13 +37,13 @@
 # Hacker's Guide:
 #   See the man page and https://space.sh for more details.
 #
-# WHAT IS SpaceGal:
-#   SpaceGal is a suite of tools and services for automating the Internet of Things (IoT),
+# WHAT IS Space.sh:
+#   Space.sh is a suite of tools and services for automating the Internet of Things (IoT),
 #   aimed to provide small footprint automation for IoT devices,
 #   servers and life in general.
 #
-#   The SpaceGal shell is this Bash script, referred to as "Space" below.
-#   The SpaceGal shell's site is found at https://space.sh.
+#   The Space.sh is this Bash script, referred to as "Space" below.
+#   The Space.sh site is found at https://space.sh.
 #
 # Bash compatibility:
 #   Space is made to work with Bash version 3.2 and upwards.
@@ -352,7 +352,7 @@ $_USAGE
           -C  caching level, 0 = off, 1 = on (default), 2 = regenerate cache.
           -B  Set to force to run modules in Bash. Normally Bash dependency depends
               on module script files ending in .bash instead of .sh.
-          -Q  Queries updates and general state of the SpaceGal services.
+          -Q  Queries updates and general state of the Space.sh services.
           -u  Update current Space install to the latest version.
           -U  Update module(s). Performs a Git pull on matched module(s) then quit.
               Space will update repositories in the shared space_modules directory.

@@ -1,5 +1,5 @@
 # Tests
-This directory contains all tests needed in order to check SpaceGal shell. Each directory marks a subsystem or category in which the tests are performed.
+This directory contains all tests needed in order to check Space.sh. Each directory marks a subsystem or category in which the tests are performed.
 
 ## List of available tests
 

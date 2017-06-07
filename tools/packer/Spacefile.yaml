@@ -26,7 +26,7 @@ _env:
     - RELEASE_FILES: "space Spacefile.sh Spacefile.yaml completion/init_autocompletion.sh space.1"
 
 _info:
-    title: SpaceGal shell packer
+    title: Space.sh packer
     desc: |
         Builds new packages for Space releases.
 
@@ -34,7 +34,7 @@ make:
     _info:
         title: Make new release package
         desc: |
-            Performs SpaceGal shell packaging process.
+            Performs Space.sh packaging process.
             Generates a new package file containing the release file set for current Space version,
             along with exporting code documentation and user man page.
             Also creates hashes and GPG signature for verifying file integrity and authorship.

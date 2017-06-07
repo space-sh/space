@@ -14,7 +14,7 @@ icon: "<b>9. </b>"
 
 - API: Application program interface
 - Bash: Bourne again shell, an sh-compatible shell
-- Blockie: Blockie.org is the company developing SpaceGal
+- Blockie: Blockie.org is the company developing Space.sh
 - IoT: Internet of things
 - man: manual page documenting a computer program
 - Module: a Space Module
@@ -22,8 +22,8 @@ icon: "<b>9. </b>"
 - script: a computer program written in a scripting language
 - sh: shell script file extension and shorthand for shell.
 - shell: a program that serves as interface between a computer user and the operating system
-- Space: SpaceGal shell
-- SpaceGal: set of tools and services delivered by Blockie.org
+- Space: Space.sh
+- Space.sh: set of tools and services delivered by Blockie.org
 - stderr: standard error stream
 - stdout: standard output stream
 - terminal: a computer terminal

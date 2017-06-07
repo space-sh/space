@@ -8,4 +8,4 @@ weight: 1
 ---
 # The Space Tool
 
-Here you will find the documentation for the SpaceGal Shell.
+Here you will find the documentation for the Space.sh.

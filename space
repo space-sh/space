@@ -5437,11 +5437,10 @@ fi'
             _pop "_SUUSER" "su"
             if [ -z "${_SUDO}" ] && [ -z "${_SUUSER}" ]; then
                 _wrapped_fn_def="# BEGIN WRAP ${_i}
-RUN=\$(cat <<\"${_i}${_SPACEGAL_EOF_TAG}\"
+{ RUN=\$(cat) ; }<<\"${_i}${_SPACEGAL_EOF_TAG}\"
 ${_cmd_options}
 ${_wrapped_fn_def}${_export_vars}${_fn_def}${_fn_call}
 ${_i}${_SPACEGAL_EOF_TAG}
-)
 # END WRAP ${_i}
 
 "
@@ -5456,17 +5455,15 @@ ${_i}${_SPACEGAL_EOF_TAG}
                     _export_cmd_su='sudo "${shell}" -c "${RUN_SU}"'
                 fi
                 _wrapped_fn_def="# BEGIN WRAP ${_i}
-RUN=\$(cat <<\"${_i}${_SPACEGAL_EOF_TAG}\"
-RUN_SU=\$(cat <<\"SU_${_i}${_SPACEGAL_EOF_TAG}\"
+{ RUN=\$(cat) ; }<<\"${_i}${_SPACEGAL_EOF_TAG}\"
+{ RUN_SU=\$(cat) ; }<<\"SU_${_i}${_SPACEGAL_EOF_TAG}\"
 ${_cmd_options}
 ${_wrapped_fn_def}${_export_vars}${_fn_def}${_fn_call}
 SU_${_i}${_SPACEGAL_EOF_TAG}
-)
 ${_export_cmd_shell}
 
 ${_export_cmd_su}
 ${_i}${_SPACEGAL_EOF_TAG}
-)
 # END WRAP ${_i}
 
 "
@@ -5567,10 +5564,9 @@ ${_i}${_SPACEGAL_EOF_TAG}
                 _export_cmd_su='sudo "${shell}" -c "${RUN_SU}"'
             fi
             _export_cmd="
-RUN_SU=\$(cat <<\"0_SU${_SPACEGAL_EOF_TAG}\"
+{ RUN_SU=\$(cat) ; }<<\"0_SU${_SPACEGAL_EOF_TAG}\"
 ${_cmd_options}"$'\n'"${_export_cmd}${_wrapped_fn_def}${_export_vars}${_fn_def}${_run_main}
 0_SU${_SPACEGAL_EOF_TAG}
-)
 ${_export_cmd_shell}
 
 ${_export_cmd_su}"

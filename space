@@ -2328,9 +2328,15 @@ _module_find_yaml()
 _enter_gui_mode()
 {
     _debug "Entering GUI mode"
-    source "./gui/sg.sh"
-    _sg_entrypoint
-    return 0
+    local spacegui_file="./gui/sg.sh"
+    if [ -f "$spacegui_file" ]; then
+        source "$spacegui_file"
+        _sg_entrypoint
+        return 0
+    else
+        _error "Space.sh GUI is not installed"
+        return 1
+    fi
 }
 
 

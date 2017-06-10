@@ -5621,9 +5621,10 @@ ${_export_cmd_su}"
         fi
 
         # Make sure to kill process group on TERM.
-        trap 'trap - TERM INT HUP PIPE; kill -SIGKILL -$$; exit;' TERM INT HUP PIPE
-        ${_sh} -c "$_export_cmd" &
-        wait $!
+        # TODO: removed for now, it must TERM it's childs and then KILL itself?
+        #trap 'trap - TERM INT HUP PIPE; kill -SIGKILL -$$; exit;' TERM INT HUP PIPE
+        ${_sh} -c "$_export_cmd"
+        #wait $!
     fi
 }
 

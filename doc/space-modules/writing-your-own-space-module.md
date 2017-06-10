@@ -37,7 +37,8 @@ space -d
 #    / __/ _ \/ _ |/ ___/ __/ / __/ // /
 #   _\ \/ ___/ __ / /__/ _/_ _\ \/ _  /
 #  /___/_/  /_/ |_\___/___(_)___/_//_/
-#                                         space.sh
+#            https://space.sh
+#
 # Node: /
 
 set -u  # Will not allow for unset variables being used.

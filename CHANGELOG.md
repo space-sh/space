@@ -22,6 +22,8 @@
 
 + Add control for storing sub shell `PID` to properly terminate _Space_ when killed while in background
 
++ Add install check for GUI before executing
+
 * Update packer module man page exporter to use environment variables for customization instead of command substitution
 
 * Fix auto completion cache file to have owner only permissions
@@ -56,9 +58,23 @@
 
 * Change `_RUN_` substitution tag prefix to allow for sub processing
 
+* Update list of friendly shellcheck warnings
+
+* Split up single-line local variables declaration to prevent masking return values
+
+* Adapt command data wrapping to work on Bash 3.2.x
+
+* Update export header
+
+* Update build process to use Alpine 3.6
+
 - Remove unused function: `_runinfo`
 
 - Remove local cloning of modules which has been superseded by modules versioning
+
+- Remove unnecessary `$` for variables in arithmetic operations
+
+- Remove exit traps and wait process when exporting
 
 
 ## [0.13.0 - 2017-04-13]

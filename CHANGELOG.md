@@ -1,6 +1,6 @@
 # Space - Change log
 
-## [current]
+## [0.14.0 - 2017-06-11]
 
 + Add support for arguments constraints in `SPACE_SIGNATURE`
 

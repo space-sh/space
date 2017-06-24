@@ -23,6 +23,7 @@
 _GENERATE_DOC()
 {
     SPACE_DEP="_to_lower"
+    # shellcheck disable=2034
     SPACE_ENV="GENERATE_TOC GENERATE_VARIABLES"
 
     if [ "$#" -eq 0 ]; then
@@ -306,6 +307,7 @@ _EXPORT_MARKDOWN()
 
 _EXPORT_HTML()
 {
+    # shellcheck disable=2034
     SPACE_DEP="_EXPORT_MARKDOWN PRINT"
 
     if [ "$#" -eq 0 ]; then

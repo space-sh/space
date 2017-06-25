@@ -277,6 +277,10 @@ _GENERATE_DOC()
     PRINT "Documentation exported to \"${_doc_save_name}\""
 }
 
+
+# Disable warning about indirectly checking exit code
+# shellcheck disable=2181
+
 _EXPORT_MARKDOWN()
 {
     SPACE_DEP="PRINT _GENERATE_DOC"
@@ -304,6 +308,9 @@ _EXPORT_MARKDOWN()
     fi
 }
 
+
+# Disable warning about indirectly checking exit code
+# shellcheck disable=2181
 
 _EXPORT_HTML()
 {

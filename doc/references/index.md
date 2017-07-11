@@ -18,4 +18,6 @@ icon: "<b>10. </b>"
 
 3. Free Software Foundation. 2016. Bash Reference Manual. http://www.gnu.org/software/bash/manual/bash.html
 
-4. Cooper, Mendel. 2014. Advanced Bash-Scripting Guide: An in-depth exploration of the art of shell scripting. http://www.tldp.org/LDP/abs/html/abs-guide.html
+4. Greg's Wiki. 2015. BashGuide. http://mywiki.wooledge.org/FullBashGuide
+
+5. Cooper, Mendel. 2014. Advanced Bash-Scripting Guide: An in-depth exploration of the art of shell scripting. http://www.tldp.org/LDP/abs/html/abs-guide.html

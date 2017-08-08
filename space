@@ -1962,6 +1962,7 @@ _module_clone()
             cd "$_dir"
             if [ "$?" != "0" ]; then
                 _error "Could not enter directory: $_dir"
+                cd "$CWD"
                 return 1
             fi
             if [ "$_commit" = "" ]; then
@@ -1969,6 +1970,7 @@ _module_clone()
                     local _latest_stable_version=
                     _get_module_latest_stable_version "./${_MODULE_STABLE_FILE_NAME}"
                     if [ "$?" -gt 0 ]; then
+                        cd "$CWD"
                         return 1
                     fi
 
@@ -1985,6 +1987,7 @@ _module_clone()
             if [[ $? != "0" ]]; then
                 _error "Could not Git checkout $_commit of $_repofullname. Will delete directory."
                 ( rm -rf "$_dir" >&2 )
+                cd "$CWD"
                 return 1
             fi
             if [[ -f ${_dir}/.gitmodules ]]; then
@@ -1992,6 +1995,7 @@ _module_clone()
                 if [[ $? != "0" ]]; then
                     _error "Could not perform Git submodule init && update. Is Perl installed?"
                     ( rm -rf "$_dir" >&2 )
+                    cd "$CWD"
                     return 1
                 fi
             fi
@@ -2002,6 +2006,7 @@ _module_clone()
                 if [[ $? != "0" ]]; then
                     _security "Could not verify signature of Git repository: $_giturl."
                     ( rm -rf "$_dir" >&2 )
+                    cd "$CWD"
                     return 1
                 fi
             fi
@@ -2025,6 +2030,7 @@ _module_clone()
         fi
     done
 
+    cd "$CWD"
     return 0
 }
 

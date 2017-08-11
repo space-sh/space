@@ -1,5 +1,11 @@
 # Space - Change log
 
+## [0.15.0 - 2017-08-11]
+
+* Fix bug about wrongly entering shebang mode when the second argument happens to also be an existing filename
+
+* Fix bug about missing to escape variable names given on cmd line as arguments
+
 ## [0.14.0 - 2017-06-11]
 
 + Add support for arguments constraints in `SPACE_SIGNATURE`

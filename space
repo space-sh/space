@@ -5254,7 +5254,7 @@ _execute()
     for ((_rowindex=0; _rowindex<_cmd_args_count; _rowindex+=1 )); do
         _arg="${_args[$_rowindex]}"
         # Always quote arg for eval statement to avoid evaluating &&, >, etc
-        _escape "_arg" '"'
+        _escape "_arg" '"$'
         _cmd_args_str="${_cmd_args_str:+${_cmd_args_str} }\""$_arg$'"'
     done
     unset _rowindex _arg _args _cmd_args_count

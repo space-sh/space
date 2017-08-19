@@ -1,5 +1,7 @@
 # Space - Change log
 
+## [current]
+
 ## [0.15.0 - 2017-08-11]
 
 * Fix bug about wrongly entering shebang mode when the second argument happens to also be an existing filename

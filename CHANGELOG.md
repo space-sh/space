@@ -1,6 +1,8 @@
 # Space - Change log
 
-## [current]
+## [1.0.0 - 2017-08-28]
+
++ Release major version
 
 ## [0.15.0 - 2017-08-11]
 

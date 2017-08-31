@@ -3,7 +3,7 @@ space(1) -- automation using Bash
 
 ## SYNOPSIS
 
-`space` [`-f`|`m` namespace [`-M` modules] [`-ep` key=value] [node] [`-a`]] [`-vkKCX` value] [`-dlShgZB`] [`--` args]  
+`space` [`-f`|`m` namespace [`-M` modules] [`-ep` key=value] [node] [`-a`]] [`-vkKCXE` value] [`-dlShgZB`] [`--` args]  
 `space` [`-hVQu`]  
 `space` `-U` [module]  
 
@@ -53,7 +53,13 @@ When running **Space**, the following steps occur:
         Clone and load modules. Separate multiple by space within quotes or use multiple -M switches, one for each module.  
         Usually used together with '-m' option to load a needed module for use with SPACE_WRAP environment variable. `-M` module shell scripts are loaded after `-m` module shell scripts and can override functions.  
         Example: space -m dropalot -M ssh -e SPACE_WRAP=SSH_WRAP -e sshhost=111.222.123.4  
-        If any of the module script functions loaded using this switch depends on other modules, they must also be provided using the same switch (`-M`).  
+        If any of the module script functions loaded using this switch depends on other modules, they must be provided using the same switch (`-M`).  
+
+  * `-E` filename:
+        Reads a shell file with variable definitions to apply.  
+        Example: `var1=value`  
+        This setting is applied before the `-e` variables.  
+        Comments with `#` and the `export` keyword are ignored.  
 
   * `-e`  var=value:
         Environment variable to forcefully apply/overwrite before parsing the YAML.  

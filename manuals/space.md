@@ -51,8 +51,9 @@ When running **Space**, the following steps occur:
   * `-M` [giturl/][username]/reponame:
         Module to load e.g. "gitlab.com/blockie-org/amodule"  
         Clone and load modules. Separate multiple by space within quotes or use multiple -M switches, one for each module.  
-        Usually used together with '-m' option to load a needed module for use with SPACE_WRAP environment variable.  
-        Example: space -m dropalot -M ssh -e SPACE_WRAP=SSH_WRAP -e sshhost=111.222.123.4
+        Usually used together with '-m' option to load a needed module for use with SPACE_WRAP environment variable. `-M` module shell scripts are loaded after `-m` module shell scripts and can override functions.  
+        Example: space -m dropalot -M ssh -e SPACE_WRAP=SSH_WRAP -e sshhost=111.222.123.4  
+        If any of the module script functions loaded using this switch depends on other modules, they must also be provided using the same switch (`-M`).  
 
   * `-e`  var=value:
         Environment variable to forcefully apply/overwrite before parsing the YAML.  

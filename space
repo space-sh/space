@@ -317,13 +317,15 @@ $_USAGE
               -p inventory=staging.
               Use one -p for each variable.
           -s  Set SUDO and/or su to run the command as.
-                -s sudo will wrap the command in sudo.
-                -s sudo:root will run the command as root issuing su with sudo: sudo su root 
-                -s :root will issue: su root
+                -s sudo will wrap the command using sudo.
+                -s :root will issue "su root" to run the command.
+                -s sudo:root will issue "sudo su root" to run the command.
               When working with wrapped commands and/or outer commands you could apply levels
               of sudo to run each wrapper as a specific user or sudo, as:
-                 -s sudo:admin,sudo:root,sudo:sysadmin
+                 -s sudo:admin,sudo,:sysadmin
+                This is a comma separated list. Empty values are allowed.
               The rightmost sudo is for the innermost wrapped command (the actual command).
+              To "sudo" the wrapper but not the wrapped command do "-s sudo,".
           -v  verbosity level, 0 = off, 1 = error, 2 = warning, 3 = info, 4 = debug.
               Default is 2. Outputs to stderr.
           -d  dry run. Will echo the Bash command line computed instead of running it.

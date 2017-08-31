@@ -857,31 +857,31 @@ _parse_yaml()
                 _varname=${_varname//\//_}
                 if ((${#_readahead[@]} == 0)); then
                     # Simulate multiline value for the single line
-                    if [[ ${value//\ } != "" ]]; then
-                        _readahead[0]="$value"
+                    if [[ ${_value//\ } != "" ]]; then
+                        _readahead[0]="$_value"
                     else
                         _readahead[0]=""
                     fi
                 else
                     # Newlines and multiline strings....
-                    if [[ ${value:0:10} == "!nospace >" ]]; then
+                    if [[ ${_value:0:10} == "!nospace >" ]]; then
                         # Collapse newlines into one line non-space separated
                         printf -v _s "%s" "${_readahead[@]}"
                         _readahead=("$_s")
-                        if [[ ${value:10:1} != "-" ]]; then
+                        if [[ ${_value:10:1} != "-" ]]; then
                             # Make for trailing newline.
                             _readahead+=("")
                         fi
-                    elif [[ ${value:0:1} == ">" ]]; then
+                    elif [[ ${_value:0:1} == ">" ]]; then
                         # Collapse newlines into one line space separated
                         local _s=${_readahead[*]}
                         _readahead=("$_s")
-                        if [[ ${value:1:1} != "-" ]]; then
+                        if [[ ${_value:1:1} != "-" ]]; then
                             # Make for trailing newline.
                             _readahead+=("")
                         fi
-                    elif [[ ${value:0:1} == "|" ]]; then
-                        if [[ ${value:1:1} != "-" ]]; then
+                    elif [[ ${_value:0:1} == "|" ]]; then
+                        if [[ ${_value:1:1} != "-" ]]; then
                             # Make for trailing newline.
                             _readahead+=("")
                         fi
@@ -913,9 +913,9 @@ _parse_yaml()
                 local _subrows=()
                 # Reinsert the key value of first line to have it handled as a normal leaf.
                 if [ -z "$_key" ]; then
-                    printf -v _output "%*s%s" $_i "" "$_count: $value"
+                    printf -v _output "%*s%s" $_i "" "$_count: $_value"
                 else
-                    printf -v _output "%*s%s" $_i "" "$_key: $value"
+                    printf -v _output "%*s%s" $_i "" "$_key: $_value"
                 fi
                 _subrows+=("$_output")
                 if ((${#_readahead[@]} > 0)); then
@@ -1095,17 +1095,17 @@ _pp_yaml()
         local _parentpath=
         _parentpath=$_inheritedprefix${_prefix#$_filter}
         _key=${_key//_PP_PARENTPATH/$_parentpath}
-        value=${value//_PP_PARENTPATH/$_parentpath}
+        _value=${_value//_PP_PARENTPATH/$_parentpath}
 
         local _s=${_parents[$_actualindent]-}  # Get preprocess variable "parent".
         _key=${_key//_PP_PARENT/$_s}
-        value=${value//_PP_PARENT/$_s}
+        _value=${_value//_PP_PARENT/$_s}
         unset _s
 
         case "${_rowtype}" in
             assign) # Assign a preprocess variable
                 local _ppkey=_PP_$_key
-                eval "local ${_ppkey}=\$value"
+                eval "local ${_ppkey}=\$_value"
                 unset _s _ppkey
                 ;;
             dotdot) # do a "cd .." on a node path.
@@ -1121,7 +1121,7 @@ _pp_yaml()
             prompt) # Prompt a value for a pp variable.
                 local _ppkey=_PP_$_key
                 local _s=
-                _s=$(prompt "$value")
+                _s=$(prompt "$_value")
                 eval "$_ppkey=\$_s"
                 unset _s _ppkey
                 ;;
@@ -1145,7 +1145,7 @@ _pp_yaml()
                 local _i=$(( _indent - _filterindent + _inheritedindent ))
                 # _retrepo variable is populated by _module_clone
                 local _retrepo= _v=
-                for _v in $value; do
+                for _v in $_value; do
                     _module_clone "_retrepo" "$_v"
                     local _status=$?
                     if [ $_status -gt 0 ]; then
@@ -1162,31 +1162,31 @@ _pp_yaml()
                 local _i=$(( _indent - _filterindent + _inheritedindent ))
                 printf -v _output "%*s%s" $_i "" "_source:"
                 eval "$_varname+=(\"\$_output\")"
-                printf -v _output "%*s    - %s" $_i "" "$value"
+                printf -v _output "%*s    - %s" $_i "" "$_value"
                 eval "$_varname+=(\"\$_output\")"
                 ;;
             debug) # Output debug info
-                _debug "@debug: $value"
+                _debug "@debug: $_value"
                 ;;
             assert) # Do assertion
-                _debug "@assert: $value"
-                if [[ $value =~ (.*)\ (.*) ]]; then
+                _debug "@assert: $_value"
+                if [[ $_value =~ (.*)\ (.*) ]]; then
                     local _fn=${BASH_REMATCH[1]}
                     local _val=${BASH_REMATCH[2]}
                     if [ "$_fn" = "nonempty" ] && [ -z "$_val" ]; then
-                        _error "Assertion failed: $value: $_filepath:$_rowindex"
+                        _error "Assertion failed: $_value: $_filepath:$_rowindex"
                         return 1
                     fi
                 fi
                 ;;
             cache) # Change cache behaviour
-                _debug "@cache: $value"
-                _CACHE_LEVEL=$value
+                _debug "@cache: $_value"
+                _CACHE_LEVEL=$_value
                 ;;
             leaf) # A regular key value row.
                 local _i=$(( _indent - _filterindent + _inheritedindent ))
-                if [ "${value:0:1}" == "[" ]; then
-                    _error "Space does not support YAML inline list declarations: ${value}."
+                if [ "${_value:0:1}" == "[" ]; then
+                    _error "Space does not support YAML inline list declarations: ${_value}."
                     return 1
                 fi
                 if [[ "$_prefix$_key" =~ ^$_filter$ ]]; then
@@ -1194,15 +1194,15 @@ _pp_yaml()
                     if [ "${_isarrayobjectfiltered}" = "1" ]; then
                         _i=$((_i-2))
                     fi
-                    if [ "${value}" != "" ] && [ "${value:0:1}" != ">" ] && [ "${value:0:1}" != "|" ] && [ "${value:0:1}" != "!" ]; then
-                        printf -v _output "%*s%s" $_i "" "$value"
+                    if [ "${_value}" != "" ] && [ "${_value:0:1}" != ">" ] && [ "${_value:0:1}" != "|" ] && [ "${_value:0:1}" != "!" ]; then
+                        printf -v _output "%*s%s" $_i "" "$_value"
                         eval "$_varname+=(\"\$_output\")"
                     fi
                 else
-                    if [ "${#value}" -eq 0 ]; then
+                    if [ "${#_value}" -eq 0 ]; then
                         printf -v _output "%*s%s" $_i "" "$_key:"
                     else
-                        printf -v _output "%*s%s" $_i "" "$_key: $value"
+                        printf -v _output "%*s%s" $_i "" "$_key: $_value"
                     fi
                     eval "$_varname+=(\"\$_output\")"
                     _i=$(( _i + 4 ))
@@ -1236,19 +1236,19 @@ _pp_yaml()
                 local _i2=$(( _indent - _filterindent + _inheritedindent ))
                 local _i3=$(( _arrayextraindent - 1 ))
                 _isarrayobjectfiltered=0
-                if [ "${value:0:1}" == "[" ] || [ "${value:0:1}" == "{" ]; then
-                    _error "Space does not support YAML inline list/object declarations: ${value}."
+                if [ "${_value:0:1}" == "[" ] || [ "${_value:0:1}" == "{" ]; then
+                    _error "Space does not support YAML inline list/object declarations: ${_value}."
                     return 1
                 fi
                 if [[ -n $_key && $_prefix$_key =~ ^$_filter$ ]] || [[ -z $_key && "$_prefix${_key}.*" =~ ^$_filter$ ]]; then
                     # Handle "/.*" filtering.
-                    if [ "${value}" != "" ] && [ "${value:0:1}" != ">" ] && [ "${value:0:1}" != "|" ] && [ "${value:0:1}" != "!" ]; then
+                    if [ "${_value}" != "" ] && [ "${_value:0:1}" != ">" ] && [ "${_value:0:1}" != "|" ] && [ "${_value:0:1}" != "!" ]; then
                         if [ -z "$_key" ]; then
                             # index item
-                            printf -v _output "%*s%s" $_i2 "" "$value"
+                            printf -v _output "%*s%s" $_i2 "" "$_value"
                             eval "$_varname+=(\"\$_output\")"
-                        elif [ -n "$value" ]; then
-                            printf -v _output "%*s%s" $_i2 "" "$value"
+                        elif [ -n "$_value" ]; then
+                            printf -v _output "%*s%s" $_i2 "" "$_value"
                             eval "$_varname+=(\"\$_output\")"
                         fi
                     else
@@ -1259,9 +1259,9 @@ _pp_yaml()
                 else
                     if [ -z "$_key" ]; then
                         # index item
-                        printf -v _output "%*s-%*s%s" $_i2 "" $_i3 "" "$value"
-                    elif [ -n "$value" ]; then
-                        printf -v _output "%*s-%*s%s" $_i2 "" $_i3 "" "$_key: $value"
+                        printf -v _output "%*s-%*s%s" $_i2 "" $_i3 "" "$_value"
+                    elif [ -n "$_value" ]; then
+                        printf -v _output "%*s-%*s%s" $_i2 "" $_i3 "" "$_key: $_value"
                     else
                         printf -v _output "%*s-%*s%s" $_i2 "" $_i3 "" "$_key:"
                     fi
@@ -1360,7 +1360,7 @@ _yaml_pp_multiline_include()
 #
 # Expects:
 #   _allrows
-#   _PP_${value}
+#   _PP_${_value}
 #
 #==========
 _yaml_get_row()
@@ -1448,7 +1448,7 @@ _yaml_get_next()
     _rowindex=$(( _rowindex + 1 ))
 
     _key=""
-    value=""
+    _value=""
     _rowtype=""
     _readahead=()
 
@@ -1456,9 +1456,9 @@ _yaml_get_next()
         _indent=${#BASH_REMATCH[1]}
         _key=
         local _op=${BASH_REMATCH[3]}
-        value=${BASH_REMATCH[4]}
+        _value=${BASH_REMATCH[4]}
         _includevariables=
-        if [[ $value =~ ^(.*)[\ ]*\|[\ ]*(.*) ]]; then
+        if [[ $_value =~ ^(.*)[\ ]*\|[\ ]*(.*) ]]; then
             _includefile=${BASH_REMATCH[1]}
             local _s=${BASH_REMATCH[2]}
             if [[ $_s =~ (.*)\((.*)\)$ ]]; then
@@ -1468,7 +1468,7 @@ _yaml_get_next()
                 _includefilter=$_s
             fi
         else
-            _includefile=$value
+            _includefile=$_value
             _includefilter=""
         fi
         _yaml_get_multiline 0
@@ -1485,38 +1485,38 @@ _yaml_get_next()
     elif [[ $_row =~ ^([\ ]*)(\@clone)[\ ]*:[\ ]+(.*) ]]; then
         _indent=${#BASH_REMATCH[1]}
         _key=
-        value=${BASH_REMATCH[3]}
+        _value=${BASH_REMATCH[3]}
         _rowtype="clone"
     elif [[ $_row =~ ^([\ ]*)(\@source)[\ ]*:[\ ]+(.*) ]]; then
         _indent=${#BASH_REMATCH[1]}
         _key=
-        value=${BASH_REMATCH[3]}
+        _value=${BASH_REMATCH[3]}
         _rowtype="source"
     elif [[ $_row =~ ^([\ ]*)(\@debug)[\ ]*:[\ ]+(.*) ]]; then
         _indent=${#BASH_REMATCH[1]}
         _key=
-        value=${BASH_REMATCH[3]}
+        _value=${BASH_REMATCH[3]}
         _rowtype="debug"
     elif [[ $_row =~ ^([\ ]*)(\@dotdot)[\ ]*:[\ ]+(.*) ]]; then
         _indent=${#BASH_REMATCH[1]}
-        value=
+        _value=
         _key=${BASH_REMATCH[3]}
         _rowtype="dotdot"
     elif [[ $_row =~ ^([\ ]*)(\@assert)[\ ]*:[\ ]+(.*) ]]; then
         _indent=${#BASH_REMATCH[1]}
         _key=
-        value=${BASH_REMATCH[3]}
+        _value=${BASH_REMATCH[3]}
         _rowtype="assert"
     elif [[ $_row =~ ^([\ ]*)(\@cache)[\ ]*:[\ ]+(.*) ]]; then
         _indent=${#BASH_REMATCH[1]}
         _key=
-        value=${BASH_REMATCH[3]}
+        _value=${BASH_REMATCH[3]}
         _rowtype="cache"
     elif [[ $_row =~ ^([\ ]*)(\@prompt)[\ ]*:(-?)[\ ]+([^\ ]+)[\ ](.*) ]]; then
         _indent=${#BASH_REMATCH[1]}
         local _op=${BASH_REMATCH[3]}
         _key=${BASH_REMATCH[4]}
-        value=${BASH_REMATCH[5]}
+        _value=${BASH_REMATCH[5]}
         if [ "$_op" = "-" ]; then
             # @prompt:- means only prompt on variable if it lacks a value or is unset.
             local _pp_varname="_PP_$_key"
@@ -1547,7 +1547,7 @@ _yaml_get_next()
             # Fall through.
             :
         fi
-        value=${BASH_REMATCH[4]}
+        _value=${BASH_REMATCH[4]}
         _rowtype="assign"
     elif [[ $_row =~ ^([\ ]*)\@([a-zA-Z0-9_]+)[\ ]*(:|:-|:\+)$ ]]; then
         # Unset a preprocess variable.
@@ -1576,16 +1576,16 @@ _yaml_get_next()
         # Key value or new object/array row
         _indent=${#BASH_REMATCH[1]}
         _key=${BASH_REMATCH[2]}
-        value=${BASH_REMATCH[3]}
-        if [[ ${value//\ } != "" ]]; then
+        _value=${BASH_REMATCH[3]}
+        if [[ ${_value//\ } != "" ]]; then
             # This row has a value (other than spaces)
             _rowtype="leaf"
             # Check if we should do a read ahead.
-            if [[ ${value:0:1} == "|" || ${value:0:1} == ">" || ${value:0:10} == "!nospace >" ]]; then
+            if [[ ${_value:0:1} == "|" || ${_value:0:1} == ">" || ${_value:0:10} == "!nospace >" ]]; then
                 _yaml_get_multiline "$_dopreprocess"
             fi
         else
-            value=""
+            _value=""
             # This node has no value, we must figure out if it's
             # an empty leaf or an object.
 
@@ -1605,12 +1605,12 @@ _yaml_get_next()
         _indent=${#BASH_REMATCH[1]}
         _arrayextraindent=$((${#BASH_REMATCH[2]}+1))
         _key=${BASH_REMATCH[3]}
-        value=${BASH_REMATCH[4]}
+        _value=${BASH_REMATCH[4]}
         _rowtype="arrayobject"
-        if [[ ${value//\ } != "" ]]; then
+        if [[ ${_value//\ } != "" ]]; then
             # This row has a value (other than spaces)
             # Check if we should do a read ahead.
-            if [[ ${value:0:1} == "|" || ${value:0:1} == ">" || ${value:0:10} == "!nospace >" ]]; then
+            if [[ ${_value:0:1} == "|" || ${_value:0:1} == ">" || ${_value:0:10} == "!nospace >" ]]; then
                 _yaml_get_multiline "$_dopreprocess"
             fi
         fi
@@ -1619,12 +1619,12 @@ _yaml_get_next()
         _indent=${#BASH_REMATCH[1]}
         _arrayextraindent=0
         _key=
-        value=${BASH_REMATCH[2]}
+        _value=${BASH_REMATCH[2]}
         _rowtype="arrayobject"
-        if [[ ${value//\ } != "" ]]; then
+        if [[ ${_value//\ } != "" ]]; then
             # This row has a value (other than spaces)
             # Check if we should do a read ahead.
-            if [[ ${value:0:1} == "|" || ${value:0:1} == ">" || ${value:0:10} == "!nospace >" ]]; then
+            if [[ ${_value:0:1} == "|" || ${_value:0:1} == ">" || ${_value:0:10} == "!nospace >" ]]; then
                 _yaml_get_multiline "$_dopreprocess"
             fi
         fi

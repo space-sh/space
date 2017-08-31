@@ -1,5 +1,14 @@
 # Space - Change log
 
+## [current]
+
+* Update man pages
+
+* Update `-h` options list
+
+* Update `-h` options description
+
+
 ## [1.0.0 - 2017-08-28]
 
 + Release major version

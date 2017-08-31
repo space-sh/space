@@ -3,7 +3,7 @@ space(1) -- automation using Bash
 
 ## SYNOPSIS
 
-`space` [`-f`|`m` namespace [`-M` modules] [`-ep` key=value] [node] [`-a`]] [`-vkKCXE` value] [`-dlShgZB`] [`--` args]  
+`space` [`-f`|`m` namespace [`-M` modules] [`-ep` key=value] [node] [`-a`]] [`-vkKCXEs` value] [`-dlShgZB`] [`--` args]  
 `space` [`-hVQu`]  
 `space` `-U` [module]  
 
@@ -69,6 +69,15 @@ When running **Space**, the following steps occur:
   * `-p` var=value:
         Preprocess variable to set before preprocessing.  
         Use one -p for each variable.  
+
+  * `-s`:
+        Set `SUDO` or `su` to run the command as.  
+        `-s sudo` wraps the command in `sudo`.  
+        `-s sudo:root` runs the command as root issuing `su` with `sudo`: `sudo su root`.   
+        -s :root will issue: `su root`.  
+        When working with wrapped commands and/or "outer" commands, it is possible to apply levels of `sudo` to run each wrapper as a specific user or `sudo`.  
+        Example: `-s sudo:admin,sudo:root,sudo:sysadmin`  
+        The rightmost `sudo` is for the innermost wrapped command (the actual command).
 
   * `-v` level:
         Set verbosity level: 0 = off, 1 = error, 2 = warning, 3 = info, 4 = debug.  

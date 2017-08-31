@@ -3,7 +3,7 @@ space(1) -- automation using Bash
 
 ## SYNOPSIS
 
-`space` [`-f`|`m` namespace [`-M` modules] [`-ep` key=value] [node] [`-a`]] [`-vkKCBX` value] [`-dlShgZ`] [`--` args]  
+`space` [`-f`|`m` namespace [`-M` modules] [`-ep` key=value] [node] [`-a`]] [`-vkKCX` value] [`-dlShgZB`] [`--` args]  
 `space` [`-hV`]  
 `space` `-U` [module]  
 

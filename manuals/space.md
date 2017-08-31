@@ -4,7 +4,7 @@ space(1) -- automation using Bash
 ## SYNOPSIS
 
 `space` [`-f`|`m` namespace [`-M` modules] [`-ep` key=value] [node] [`-a`]] [`-vkKCX` value] [`-dlShgZB`] [`--` args]  
-`space` [`-hV`]  
+`space` [`-hVQu`]  
 `space` `-U` [module]  
 
 
@@ -111,6 +111,12 @@ When running **Space**, the following steps occur:
 
   * `-B` mode:
         Set to mode=1 to force to run modules in Bash. Normally Bash dependency depends on module script files ending in .bash instead of .sh.
+
+  * `-Q`:
+        Queries updates and general state of the Space.sh services.  
+
+  * `-u`:
+        Update current Space install to the latest version.  
 
   * `-U`:
         Update module(s). Performs a Git pull on matched module(s) then quit.  

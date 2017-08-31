@@ -5316,8 +5316,13 @@ _execute()
     # meaning that the innermost wrapped will pop
     # the rightmost value.
     if [ -n "${SPACE_SUDO-}" ]; then
+        # We need to check if last char is ',', then we append a space
+        # so the split works as intended.
+        if [ "${SPACE_SUDO:$((${#SPACE_SUDO}-1))}" = ',' ]; then
+            SPACE_SUDO="${SPACE_SUDO} "
+        fi
         local _items=()
-        IFS=',' read -r -a _items <<< "${SPACE_SUDO-}"
+        IFS=',' read -r -a _items <<< "${SPACE_SUDO}"
         local _item=
         for _item in "${_items[@]}"; do
             if [[ $_item =~ ^([^:]*)[:]?(.*)$ ]]; then

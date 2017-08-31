@@ -3,8 +3,8 @@ space(1) -- automation using Bash
 
 ## SYNOPSIS
 
-`space` [`-f`|`m` namespace [`-M` modules] [`-ep` key=value] [node] [`-a`]] [`-vkKCBX` value] [`-dlShgZ`] [`--` args]  
-`space` [`-hV`]  
+`space` [`-f`|`m` namespace [`-M` modules] [`-ep` key=value] [node] [`-a`]] [`-vkKCXEs` value] [`-dlShgZB`] [`--` args]  
+`space` [`-hVQu`]  
 `space` `-U` [module]  
 
 
@@ -51,8 +51,15 @@ When running **Space**, the following steps occur:
   * `-M` [giturl/][username]/reponame:
         Module to load e.g. "gitlab.com/blockie-org/amodule"  
         Clone and load modules. Separate multiple by space within quotes or use multiple -M switches, one for each module.  
-        Usually used together with '-m' option to load a needed module for use with SPACE_WRAP environment variable.  
-        Example: space -m dropalot -M ssh -e SPACE_WRAP=SSH_WRAP -e sshhost=111.222.123.4
+        Usually used together with '-m' option to load a needed module for use with SPACE_WRAP environment variable. `-M` module shell scripts are loaded after `-m` module shell scripts and can override functions.  
+        Example: space -m dropalot -M ssh -e SPACE_WRAP=SSH_WRAP -e sshhost=111.222.123.4  
+        If any of the module script functions loaded using this switch depends on other modules, they must be provided using the same switch (`-M`).  
+
+  * `-E` filename:
+        Reads a shell file with variable definitions to apply.  
+        Example: `var1=value`  
+        This setting is applied before the `-e` variables.  
+        Comments with `#` and the `export` keyword are ignored.  
 
   * `-e`  var=value:
         Environment variable to forcefully apply/overwrite before parsing the YAML.  
@@ -62,6 +69,15 @@ When running **Space**, the following steps occur:
   * `-p` var=value:
         Preprocess variable to set before preprocessing.  
         Use one -p for each variable.  
+
+  * `-s`:
+        Set `SUDO` or `su` to run the command as.  
+        `-s sudo` wraps the command in `sudo`.  
+        `-s sudo:root` runs the command as root issuing `su` with `sudo`: `sudo su root`.   
+        -s :root will issue: `su root`.  
+        When working with wrapped commands and/or "outer" commands, it is possible to apply levels of `sudo` to run each wrapper as a specific user or `sudo`.  
+        Example: `-s sudo:admin,sudo:root,sudo:sysadmin`  
+        The rightmost `sudo` is for the innermost wrapped command (the actual command).
 
   * `-v` level:
         Set verbosity level: 0 = off, 1 = error, 2 = warning, 3 = info, 4 = debug.  
@@ -111,6 +127,12 @@ When running **Space**, the following steps occur:
 
   * `-B` mode:
         Set to mode=1 to force to run modules in Bash. Normally Bash dependency depends on module script files ending in .bash instead of .sh.
+
+  * `-Q`:
+        Queries updates and general state of the Space.sh services.  
+
+  * `-u`:
+        Update current Space install to the latest version.  
 
   * `-U`:
         Update module(s). Performs a Git pull on matched module(s) then quit.  

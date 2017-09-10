@@ -4031,7 +4031,6 @@ _exec_dimensions()
             _push "_dimorder2"
             _push "_ns1"
             _push "_node1"
-            _push "1"
             _push "_dimorder1"
             local _i=
             for _i in ${_dimorder}; do

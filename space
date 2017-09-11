@@ -1018,6 +1018,7 @@ _pp_yaml()
 
     # Preprocess variable that points to the dir of the YAML file being processed.
     local _PP_DIR=${_filepath%/*}
+    local _PP_DIRNAME=${_PP_DIR##*/}
 
     local _allrows=() _rowindex=0
     # Read all lines and keeping blank lines for correct row counting.
@@ -4261,6 +4262,7 @@ _load_yaml()
         local _yamlrows=() _parents=() _yamlfilelist=""
         # Preprocess variable that points to the directory of the YAML file being processed
         local _PP_DIR=${_yamlfile%/*}
+        local _PP_DIRNAME=${_PP_DIR##*/}
         # Preprocess variable that points to current CWD where user invoked space.
         local _PP_CWD=$CWD
         if [[ $_PP_DIR != $_PP_CWD ]]; then

@@ -3153,7 +3153,7 @@ _main()
         _debug "Load environment files: ${_envFiles}."
         _load_env_files
         if [ "$?" != "0" ]; then
-            _error "Problem when evaluating -E environment file."
+            _error "Problem when evaluating -E environment file. Quotes inside values are not allowed."
             return 1
         fi
     fi
@@ -3761,7 +3761,14 @@ _load_env_files()
             if [[ $_line =~ ^(.+=)[\"'](.*)[\"']$ ]]; then
                 _line="${BASH_REMATCH[1]}${BASH_REMATCH[2]}"
             fi
-            _envE=("${_line}" "${_envE[@]}")
+            if [ "${_line//\"/}" != "${_line}" ]; then
+                return 1
+            fi
+            if [ "${#_envE[@]}" -gt 0 ]; then
+                _envE=("${_line}" "${_envE[@]}")
+            else
+                _envE=("${_line}")
+            fi
         done < ${_s}
     done
 }

@@ -2374,7 +2374,7 @@ PRINT()
     SPACE_ENV="_PRINT_COLUMN_POSITION"
     local color=''
     local header=''
-    local SPACE_NAME="${SPACE_NAME:-anonymous}"
+    local _SPACE_NAME="${_SPACE_NAME:-anonymous}"
     case "${2-info}" in
         error)
             if [ "${SPACE_LOG_LEVEL:-4}" -lt 1 ]; then return; fi

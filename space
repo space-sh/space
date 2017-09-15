@@ -4846,13 +4846,14 @@ _loadnode()
                 for _key in "${_envs[@]}"; do
                     # Check if it's a protected variable that's only
                     # allowed to be set on the last part of the node.
-                    if (( _i < _nrparts )); then
-                        case "${_key}" in
-                            RUN_ALIAS)
-                                continue
-                                ;;
-                        esac
-                    fi
+                    # Update: we don't apply this restriction anymore
+                    #if (( _i < _nrparts )); then
+                        #case "${_key}" in
+                            #xyz)
+                                #continue
+                                #;;
+                        #esac
+                    #fi
 
                     if [[ $_key =~ ^[0-9]+$ ]]; then
                         _error "${_nodepath}_env/$_arrindex/$_key is malformed, array inside object?. Syntax error in YAML."

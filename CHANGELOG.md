@@ -2,12 +2,27 @@
 
 ## [current]
 
++ Add `${DIRNAME}` variable to YAML preprocess step
+
++ Add `${RUN_ALIAS}` to be inherited in YAML structure
+
 * Update man pages
 
 * Update `-h` options list
 
 * Update `-h` options description
 
+* Fix bug about trailing comma on `-s "sudo,"` case
+
+* Update `-s` help text
+
+* Change `${value}` to `${_value}` to prevent collision with user variables
+
+* Fix bug about two dimensions
+
+* Fix bug in `PRINT` that would access unbound variable in anonymous functions
+
+* Fix unbound variable error for `-E` option
 
 ## [1.0.0 - 2017-08-28]
 

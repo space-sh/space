@@ -4100,6 +4100,7 @@ _exec_dimensions()
         _ns=${BASH_REMATCH[1]}
         _node=${BASH_REMATCH[2]}
         _YAML_NAMESPACE=${_ns}
+        local _aliasreiterationcounter=0
         while :; do
             local _res=()
             _debug "Load node: ${_node}, from namespace: ${_ns}."
@@ -4140,11 +4141,16 @@ _exec_dimensions()
             fi
             trap - EXIT
 
-            if [[ -n ${RUN_ALIAS-} ]]; then
+            if [[ -z ${RUN} && -n ${RUN_ALIAS-} ]]; then
                 # Rerun for the new node, same namespace.
                 _debug "Alias $_node to $RUN_ALIAS, namespace $_ns."
                 if [[ ! $RUN_ALIAS =~ (^/[^ ]+/$)|(^/$) ]]; then
                     _error 'RUN_ALIAS must begin and end with slash, and have no funny characters. Like: /a/b/c/'
+                    return 1
+                fi
+                (( _aliasreiterationcounter++))
+                if [ "${_aliasreiterationcounter}" -gt 5 ]; then
+                    _error 'RUN_ALIAS redirected to many times, aborting.'
                     return 1
                 fi
                 _node=$RUN_ALIAS

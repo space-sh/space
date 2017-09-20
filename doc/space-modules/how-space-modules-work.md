@@ -85,7 +85,7 @@ The _YAML_ structure sets up the environment and then execution is passed on to 
 
 A _YAML_ file is parsed and may refer to shell script functions loaded from a shell script file. The _YAML_ structure is referred to as "nodes", and a "node" can have shell variables associated to it.  
 
-A node can be executed if it has the environment variable `RUN` set. The `RUN` variable typically refers to a shell script function, or is a shell script snippet in itself. A node could have many environment variables attached to it (using the `_env` sub node). When executing a node that has many levels such as `/a/b/c/`, all shell script variables in each level will be loaded, where the deeper levels override their parent levels (except for the variables RUN, SPACE_REDIR, RUN_ALIAS and SPACE_ARGS which are not inherited).  
+A node can be executed if it has the environment variable `RUN` set. The `RUN` variable typically refers to a shell script function, or is a shell script snippet in itself. A node could have many environment variables attached to it (using the `_env` sub node). When executing a node that has many levels such as `/a/b/c/`, all shell script variables in each level will be loaded, where the deeper levels override their parent levels.  
 
 #### Namespaces
 A namespace is where a _YAML_ document is loaded. Each document has its own namespace to prevent conflicts.  

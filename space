@@ -4141,7 +4141,7 @@ _exec_dimensions()
             fi
             trap - EXIT
 
-            if [[ -z ${RUN} && -n ${RUN_ALIAS-} ]]; then
+            if [[ -z ${RUN-} && -n ${RUN_ALIAS-} ]]; then
                 # Rerun for the new node, same namespace.
                 _debug "Alias $_node to $RUN_ALIAS, namespace $_ns."
                 if [[ ! $RUN_ALIAS =~ (^/[^ ]+/$)|(^/$) ]]; then

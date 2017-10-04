@@ -1106,7 +1106,17 @@ _pp_yaml()
         case "${_rowtype}" in
             assign) # Assign a preprocess variable
                 local _ppkey=_PP_$_key
-                eval "local ${_ppkey}=\$_value"
+                # If variable name is ALL CAPS, then we treat it as global from it's first declaration,
+                # meaning nested includes can "bubble" up values to variables defined above them.
+                if [[ $_key =~ ^[A-Z0-9_]+$ ]]; then
+                    if [[ ${!_ppkey+set} == "set" ]]; then
+                        eval "${_ppkey}=\$_value"
+                    else
+                        eval "local ${_ppkey}=\$_value"
+                    fi
+                else
+                    eval "local ${_ppkey}=\$_value"
+                fi
                 unset _s _ppkey
                 ;;
             dotdot) # do a "cd .." on a node path.

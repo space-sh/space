@@ -1171,6 +1171,28 @@ _pp_yaml()
                 ;;
             source) # Source module(s) shell file
                 local _i=$(( _indent - _filterindent + _inheritedindent ))
+                # Look at the filepath if it's relative
+                # and search through paths to find the file.
+                local _value="${_value}"
+                if [[ ${_value:0:1} != "/" ]]; then
+                    local _dir=
+                    while :; do
+                        # Check path relative to current YAML file's dir _PP_DIR.
+                        if [ -f "$_PP_DIR/$_value" ]; then
+                            _value=$_PP_DIR/$_value
+                            _debug "Found file in path: $_value"
+                            break
+                        fi
+                        for _dir in "${_INCLUDEPATH[@]}"; do
+                            if [ -f "$_dir/$_value" ]; then
+                                _value=$_dir/$_value
+                                _debug "Found file in shared path: $_value"
+                                break
+                            fi
+                        done
+                        break
+                    done
+                fi
                 printf -v _output "%*s%s" $_i "" "_source:"
                 eval "$_varname+=(\"\$_output\")"
                 printf -v _output "%*s    - %s" $_i "" "$_value"
@@ -1347,7 +1369,7 @@ _yaml_pp_multiline_include()
     if [ -n "${_includefile}" ] && [ ! -f "$_includefile" ]; then
         if [ "$_op" = "-" ]; then
             # Ignore missing yaml file.
-            continue
+            return 0
         else
             _error "[$_filepath: $(( _rowindex ))] Could not find file \"$_includefile\"."
             return 1
@@ -2080,6 +2102,14 @@ _extract_repo_parts()
     _str_commit=
     _repofullname=
 
+    # We'll do a sneek peek here and see if to inject gitlab.com for Space n' friends.
+    if [[ $_mod =~ ^([-A-Za-z0-9_]+)/([-A-Za-z0-9_:.]+)$ ]]; then
+        if [[ "${BASH_REMATCH[1]}" = "space-sh" || "${BASH_REMATCH[1]}" = "machines-sh" || "${BASH_REMATCH[1]}" = "things-ai" ]]; then
+            _debug "Assuming domain gitlab.com for module ${_mod}"
+            _mod="gitlab.com/${_mod}"
+        fi
+    fi
+
     # Extract protocol if given.
     if [[ $_mod =~ (.+)://(.*) ]]; then
         _protocol=${BASH_REMATCH[1]}
@@ -2127,7 +2157,7 @@ _extract_repo_parts()
         fi
 
         # Expect both username and reponame to have been provided
-        if [[ $_mod =~ (.*://)?([-@:A-Za-z0-9.?]+)/([-A-Za-z0-9_]+)/([-A-Za-z0-9_:.]+) ]]; then
+        if [[ $_mod =~ ^(.*://)?([-@:A-Za-z0-9.?]+)/([-A-Za-z0-9_]+)/([-A-Za-z0-9_:.]+)$ ]]; then
             _username=${BASH_REMATCH[3]}
             _reponame=${BASH_REMATCH[4]}
             # Remove .git extension if exists
@@ -2138,7 +2168,7 @@ _extract_repo_parts()
         fi
     else
         # Domain not provided, expect username and/or reponame[:commit]
-        if [[ $_mod =~ ([-A-Za-z0-9_]+)/([-A-Za-z0-9_:.]+) ]]; then
+        if [[ $_mod =~ ^([-A-Za-z0-9_]+)/([-A-Za-z0-9_:.]+)$ ]]; then
             _username=${BASH_REMATCH[1]}
             _reponame=${BASH_REMATCH[2]}
         elif [[ $_mod =~ ^([-A-Za-z0-9_:.]*) ]]; then
@@ -3218,8 +3248,14 @@ _main()
                 fi
                 _debug "Found file $_path."
             elif [[ ! -f $_path ]]; then
-                _error "YAML file $_path does not exist."
-                return 1
+                # Try shared module path
+                if [[ -f "${_MODULES_SHARED}/${_path}" ]]; then
+                    _path="${_MODULES_SHARED}/${_path}"
+                    _debug "Found file in shared module path: $_path"
+                else
+                    _error "YAML file $_path does not exist."
+                    return 1
+                fi
             fi
 
             # Figure out the absolute path of $_path

@@ -10,6 +10,8 @@
 
 + Add empty default value for `RUN` variable (fixes a case of undeclared variable)
 
++ Add ability to set preprocess UPPER CASE variables from nested scopes
+
 * Update man pages
 
 * Update `-h` options list
@@ -29,6 +31,17 @@
 * Fix unbound variable error for `-E` option
 
 * Update documentation
+
+* Update cache format
+
+* Improve `@include` path searching
+
+* Improve `-m` path searching
+
+* Update error messages to be more descriptive
+
+* Fix a bug in variable escaping during execution
+
 
 ## [1.0.0 - 2017-08-28]
 

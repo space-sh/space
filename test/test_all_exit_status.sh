@@ -173,7 +173,7 @@ _RUN_CHECK_OK   "Test -h switch: contains basic program info" "Space. (C) Blocki
 _RUN_CHECK_OK   "Test -h switch: contains usage section" "Usage:" $_SPACE_BIN -h
 
 # -e: Regular environment variable
-_RUN_CHECK_FAIL "Test -e switch: key=value" "This node has no RUN defined. Use -h to get help or -a -l to list all child nodes" $_SPACE_BIN -e dummyenv=mukyanjong
+_RUN_CHECK_FAIL "Test -e switch: key=value" "This node has no RUN defined" $_SPACE_BIN -e dummyenv=mukyanjong
 _RUN_CHECK_FAIL "Test -e switch: malformed pair" "Malformed -e switch" $_SPACE_BIN -e malformedEnv
 
 # -p: Valid preprocessing variables
@@ -230,7 +230,7 @@ _RUN_CHECK_OK "Test misc base cases: root node" "+ print_test" $_SPACE_BIN -C0 -
 
 # Fail cloning repo
 if command -v git >/dev/null; then
-    _RUN_CHECK_FAIL "Test @clone" "fatal: unable to access 'https://test/cases/wrongrepo.git/'" $_SPACE_BIN -f ./test/exit_status_cases/fail_pp_clone.yaml / -h
+    _RUN_CHECK_FAIL "Test @clone" "Could not clone module repository" $_SPACE_BIN -f ./test/exit_status_cases/fail_pp_clone.yaml / -h
 else
     _RUN_CHECK_FAIL "Test @clone" "Could not clone module since Git is not installed" $_SPACE_BIN -f ./test/exit_status_cases/fail_pp_clone.yaml / -h
 fi
@@ -242,7 +242,7 @@ _RUN_CHECK_FAIL "Test preprocessor include on include file" "Could not find file
 
 # Malformed clone import name
 if command -v git >/dev/null; then
-    _RUN_CHECK_FAIL "Test malformed clone import" "Could not Git clone" $_SPACE_BIN -f ./test/exit_status_cases/fail_pp_clone_malformed.yaml / -h
+    _RUN_CHECK_FAIL "Test malformed clone import" "Could not clone" $_SPACE_BIN -f ./test/exit_status_cases/fail_pp_clone_malformed.yaml / -h
 else
     _RUN_CHECK_FAIL "Test malformed clone import" "Failed to access" $_SPACE_BIN -f ./test/exit_status_cases/fail_pp_clone_malformed.yaml / -h
 fi
@@ -253,8 +253,8 @@ _RUN_CHECK_FAIL "Test @assert" "Assertion failed: nonempty" $_SPACE_BIN -f ./tes
 #
 # Fail cloning module repository
 if command -v git >/dev/null; then
-    _RUN_CHECK_FAIL "Test @clone" "Could not Git clone" $_SPACE_BIN -m ssh://gitlab.com/space-sh/non-existent-repo/ / -h
-    _RUN_CHECK_FAIL "Test @clone" "Could not Git clone" $_SPACE_BIN -m ssh://username@gitlab.com/space-sh/non-existent-repo/ / -h
+    _RUN_CHECK_FAIL "Test @clone" "Could not clone" $_SPACE_BIN -m ssh://gitlab.com/space-sh/non-existent-repo/ / -h
+    _RUN_CHECK_FAIL "Test @clone" "Could not clone" $_SPACE_BIN -m ssh://username@gitlab.com/space-sh/non-existent-repo/ / -h
 else
     _RUN_CHECK_FAIL "Test @clone" "Could not clone module since Git is not installed" $_SPACE_BIN -m ssh://gitlab.com/space-sh/non-existent-repo/ / -h
     _RUN_CHECK_FAIL "Test @clone" "Could not clone module since Git is not installed" $_SPACE_BIN -m ssh://username@gitlab.com/space-sh/non-existent-repo/ / -h

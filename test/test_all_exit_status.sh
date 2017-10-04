@@ -229,11 +229,7 @@ _RUN_CHECK_OK "Test misc base cases: root node" "+ print_test" $_SPACE_BIN -C0 -
 #_RUN_CHECK_OK "Test misc base cases: print_test node" "" $_SPACE_BIN -C0 -f ./test/exit_status_cases/test.yaml /print_test/
 
 # Fail cloning repo
-if command -v git >/dev/null; then
-    _RUN_CHECK_FAIL "Test @clone" "Could not clone module repository" $_SPACE_BIN -f ./test/exit_status_cases/fail_pp_clone.yaml / -h
-else
-    _RUN_CHECK_FAIL "Test @clone" "Could not clone module since Git is not installed" $_SPACE_BIN -f ./test/exit_status_cases/fail_pp_clone.yaml / -h
-fi
+_RUN_CHECK_FAIL "Test @clone" "Could not clone module repository" $_SPACE_BIN -f ./test/exit_status_cases/fail_pp_clone.yaml / -h
 
 # Fail include during preprocessing
 _RUN_CHECK_FAIL "Test preprocessor include file" "Could not find file \"NonExistentFile.yaml\"." $_SPACE_BIN -f ./test/exit_status_cases/fail_pp_include_file.yaml / -h
@@ -256,8 +252,8 @@ if command -v git >/dev/null; then
     _RUN_CHECK_FAIL "Test @clone" "Could not clone" $_SPACE_BIN -m ssh://gitlab.com/space-sh/non-existent-repo/ / -h
     _RUN_CHECK_FAIL "Test @clone" "Could not clone" $_SPACE_BIN -m ssh://username@gitlab.com/space-sh/non-existent-repo/ / -h
 else
-    _RUN_CHECK_FAIL "Test @clone" "Could not clone module since Git is not installed" $_SPACE_BIN -m ssh://gitlab.com/space-sh/non-existent-repo/ / -h
-    _RUN_CHECK_FAIL "Test @clone" "Could not clone module since Git is not installed" $_SPACE_BIN -m ssh://username@gitlab.com/space-sh/non-existent-repo/ / -h
+    _RUN_CHECK_FAIL "Test @clone" "Could not clone module repository" $_SPACE_BIN -m ssh://gitlab.com/space-sh/non-existent-repo/ / -h
+    _RUN_CHECK_FAIL "Test @clone" "Could not clone module repository" $_SPACE_BIN -m ssh://username@gitlab.com/space-sh/non-existent-repo/ / -h
 fi
 
 _RUN_CHECK_FAIL "Test module: bad commit" "Expected username and reponame" $_SPACE_BIN -m username/os:badversion3 / -h

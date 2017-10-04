@@ -307,7 +307,17 @@ Append to `varname` if it already contains data
 * `@{varname-default value if unset}` or `@{varname:-default value if empty}`:
 Use `@{varname}` anywhere to have it substituted with the value of the variable.
 Default value could be another variable from the preprocessor such as `@{var2}`.
-Ex: `@{var1-@{var2}}`
+Ex: `@{var1-@{var2}}`  
+
+Variables are scoped in the sense that for each `include` a new variable instance
+is created for the same variable name. This means that overridng a variable in an `include`
+will not override the variable in the outer scope.  
+
+However, is you use upper case letters `[A-Z0-9_]` as the variable name the
+variable will be considered global from the scope where it was first declared, and
+nested scopes could then override the variable value so that the values can be allowed
+to "bubble" upwards.
+
 
 ##### Preprocessor keywords
 The following keywords are functions and cannot be used as preprocessor variables:

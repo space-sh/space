@@ -6,6 +6,10 @@
 
 + Add `${RUN_ALIAS}` to be inherited in YAML structure
 
++ Add maximum number of `RUN_ALIAS` iterations to `exec_dimensions`
+
++ Add empty default value for `RUN` variable (fixes a case of undeclared variable)
+
 * Update man pages
 
 * Update `-h` options list
@@ -23,6 +27,8 @@
 * Fix bug in `PRINT` that would access unbound variable in anonymous functions
 
 * Fix unbound variable error for `-E` option
+
+* Update documentation
 
 ## [1.0.0 - 2017-08-28]
 

@@ -4187,7 +4187,8 @@ _exec_dimensions()
             fi
             trap - EXIT
 
-            if [[ -z ${RUN-} && -n ${RUN_ALIAS-} ]]; then
+            # Even if $RUN is set we will follow $RUN_ALIAS, this is a useful feature.
+            if [[ -n ${RUN_ALIAS-} ]]; then
                 # Rerun for the new node, same namespace.
                 _debug "Alias $_node to $RUN_ALIAS, namespace $_ns."
                 if [[ ! $RUN_ALIAS =~ (^/[^ ]+/$)|(^/$) ]]; then

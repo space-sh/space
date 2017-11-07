@@ -358,6 +358,9 @@ The filter is also optional.
 To include from within the same file leave out the file name, as: `@include |/filter/.`  
 Absolute paths are also allowed.  
 Anything that is indented below the @include is treated as a sub-document that will get injected below every direct child node from the @include. Like a for loop.  
+YAML files are normally cached after parsing.
+It is not recommended to `@include` files from modules back into user space, since caching can get confused.
+User space projects can include user space files and modules. Modules should only include it self and other modules.
 
 * `@dotdot: variable`:
 Perform the equivalent of `cd ..` on the variable containing a node path.  
@@ -365,8 +368,8 @@ Perform the equivalent of `cd ..` on the variable containing a node path.
 For each server, include all services:  
 ```yaml
 @include: servers.yaml
-	server: This is server @{PARENT}
-	@include: services.yaml
+    server: This is server @{PARENT}
+    @include: services.yaml
 ```
 
 A filter is ended with slash if the filter is for everything below that node, if the filter does not end with slash it means: **get the content of the node and below**. The most useful aspect of this is to dynamically build multiline strings. Examples:

@@ -1,5 +1,10 @@
 # Space - Change log
 
+## [current]
+
+- Remove constraint that prevents `RUN` to be set together with `RUN_ALIAS`
+
+
 ## [1.1.0 - 2017-10-04]
 
 + Add `${DIRNAME}` variable to YAML preprocess step

@@ -2107,7 +2107,7 @@ _extract_repo_parts()
 
     # We'll do a sneek peek here and see if to inject gitlab.com for Space n' friends.
     if [[ $_mod =~ ^([-A-Za-z0-9_]+)/([-A-Za-z0-9_:.]+)$ ]]; then
-        if [[ "${BASH_REMATCH[1]}" = "space-sh" || "${BASH_REMATCH[1]}" = "machines-sh" || "${BASH_REMATCH[1]}" = "things-ai" ]]; then
+        if [[ "${BASH_REMATCH[1]}" = "space-sh" || "${BASH_REMATCH[1]}" = "machines-sh" || "${BASH_REMATCH[1]}" = "things-ai" || "${BASH_REMATCH[1]}" = "web3-sh" ]]; then
             _debug "Assuming domain gitlab.com for module ${_mod}"
             _mod="gitlab.com/${_mod}"
         fi

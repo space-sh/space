@@ -2,6 +2,12 @@
 
 ## [current]
 
++ Add `-L` option
+
+* Update default _gitlab.com_ list to include _web3-sh_
+
+* Optimize `match_node` for speed
+
 - Remove constraint that prevents `RUN` to be set together with `RUN_ALIAS`
 
 

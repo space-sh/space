@@ -87,7 +87,7 @@ arch_test_all:
   stage: test
   image: finalduty/archlinux:monthly
   script:
-    - pacman -Sy --noconfirm curl git
+    - pacman -Sy --noconfirm git
     - mkdir ~/.ssh
     - printf "Host *\n StrictHostKeyChecking no" > ~/.ssh/config
     - which bash

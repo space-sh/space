@@ -328,6 +328,7 @@ $_USAGE
               To "sudo" the wrapper but not the wrapped command do "-s sudo,".
           -v  verbosity level, 0 = off, 1 = error, 2 = warning, 3 = info, 4 = debug.
               Default is 2. Outputs to stderr.
+              This is the verbosity of Space build-time. See -L for run-time log level.
           -d  dry run. Will echo the Bash command line computed instead of running it.
           -l  list nodes. Do not run anything, only output the nodes matched.
           -k  Check modules against the ban list. 0 = off, 1 = accept unknown modules
@@ -366,6 +367,8 @@ $_USAGE
               1 = preprocessed YAML result, 2 = YAML parsed to Bash, 3 = YAML loaded from Bash (retransformed), 4 = eval code
           -g  Enable graphical user interface. Defaults to 0, disabled.
           -Z  Skips checking modules version compatibility against current Space version
+          -L  Set run-time log level: 0, 1, 2, 3, 4, 5. Shortcut to -e SPACE_LOG_LEVEL=x.
+              This is not the same as the build-time verbosity level (-v).
 
 Examples:
 
@@ -2700,7 +2703,7 @@ _main()
                 [ "${1}" != "-s" ] && [ "${1}" != "-v" ] &&
                 [ "${1}" != "-k" ] && [ "${1}" != "-K" ] &&
                 [ "${1}" != "-C" ] && [ "${1}" != "-U" ] &&
-                [ "${1}" != "-g" ]; then
+                [ "${1}" != "-g" ] && [ "${1}" != "-L" ]; then
                 _isshebang=1
                 # Break $1 into parts.
                 local _args_shebang=()
@@ -2781,7 +2784,7 @@ _main()
         elif [[ ${1:0:1} == '-' ]]; then
             # A normal switch, let getopts handle it.
             OPTIND=1
-            getopts ":f:m:aM:e:dp:v:k:K:ShVlC:BQuU:X:13:4:5:6:gZE:s:" "_o"
+            getopts ":f:m:aM:e:dp:v:k:K:ShVlC:BQuU:X:13:4:5:6:gZE:s:L:" "_o"
             case "${_o}" in
                 f)
                     if (( ${#_namespaces[@]} == 3 )); then
@@ -2877,6 +2880,39 @@ _main()
                     esac
                     if (($? == 0)); then
                         _error "Unknown -v argument $OPTARG."
+                        return 1
+                    fi
+                    (return 1)
+                    ;;
+                L)
+                    case "${OPTARG}" in
+                        0)
+                            SPACE_LOG_LEVEL=0
+                            (return 1)
+                            ;;
+                        1)
+                            SPACE_LOG_LEVEL=1
+                            (return 1)
+                            ;;
+                        2)
+                            SPACE_LOG_LEVEL=2
+                            (return 1)
+                            ;;
+                        3)
+                            SPACE_LOG_LEVEL=3
+                            (return 1)
+                            ;;
+                        4)
+                            SPACE_LOG_LEVEL=4
+                            (return 1)
+                            ;;
+                        5)
+                            SPACE_LOG_LEVEL=5
+                            (return 1)
+                            ;;
+                    esac
+                    if (($? == 0)); then
+                        _error "Unknown -L argument $OPTARG."
                         return 1
                     fi
                     (return 1)

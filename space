@@ -614,6 +614,7 @@ _quicksort()
             _sort_pad "_line1padded" "$str"
             _arr+=("$_line1padded $str")
         done
+        # EXTERNAL: sort awk
         while IFS=$'\n' read -r _line; do
             _quicksort_output+=("$_line")
         done < <(printf "%s\n" "${_arr[@]}" | sort | awk '{print $3" "$4}')
@@ -4809,66 +4810,85 @@ _match_node()
     local _includeleafs=${1:-0}
     shift || :
 
-    local _item=
-    local _node=
-    # shellcheck disable=2034
-    local _isleaf=
-    local _nodelist=()
-    eval '
-    for _item in "${'$_inputname'[@]-}"; do
-        if [[ $_item =~ ([^ ]+)\ (.*) ]]; then
-            _node=${BASH_REMATCH[1]}
-            _isleaf=${BASH_REMATCH[2]}
-            if [[ ($_isleaf == "1" && $_includeleafs == "1") || $_isleaf == "0" ]]; then
-                _nodelist+=($_node)
-            fi
-        fi
-    done
-    '
-    unset _item _node _isleaf
-
-    if ((${#_nodelist[@]} == 0)); then
-        return 0
-    fi
-
-    local _item= _levels=
-    local _match= _matched=
-
     # Figure out how many levels we have by counting slashes.
+    local _levels=
     _levels=${_nodepath//[^\/]}
     _levels=${#_levels}
     ((_levels-=1))
     if (( _levels == 0 )); then
         _nodes+=("/")
+        return
+    fi
+
+    # Figure out the fixed prefix of the nodepath
+    # so we can do a first comparison without using regex.
+    local _nodepathfixed="${_nodepath}"
+    local _fixedlength=0
+    local _nodepathfixed2=
+    local _i=
+    for ((_i=0;_i<${#_nodepath};_i++)); do
+        _nodepathfixed2="${_nodepathfixed#[a-z0-9A-Z_/]}"
+        if [[ $_nodepathfixed2 != $_nodepathfixed ]]; then
+            ((_fixedlength++))
+            _nodepathfixed=$_nodepathfixed2
+        else
+            break
+        fi
+    done
+    unset _i _nodepathfixed2
+    _nodepathfixed="${_nodepath:0:$_fixedlength}"
+    _nodepathfixed="${_nodepathfixed//\//\\\/}"
+
+    local _item=
+    local _node=
+    local _isleaf=
+    local _inputlist=
+    local _levels2=
+
+    if [ "${_ALLOW_EXTERNAL}" = "1" ]; then
+        local _ifs=$IFS
+        IFS=$'\n'
+        # EXTERNAL: sed
+        eval "_inputlist=( \$(printf \"%s\n\" \"\${${_inputname}[@]-}\" | sed '/^${_nodepathfixed}/!d'))"
+        IFS=$_ifs
+        unset _ifs
     else
-        _match=""
-        for ((i=0; i<$_levels; i++)); do
-            #if ((i < _levels-1)) || [[ $_includehidden == "1" ]]; then
-            if [[ $_includehidden == "1" ]]; then
-                _match="${_match}/[a-zA-Z0-9_]+"
-            else
-                _match="${_match}/[a-zA-Z0-9][a-zA-Z0-9_]*"
-            fi
-        done
-        _match="${_match}/"
-        for _item in "${_nodelist[@]}"; do
-            if [[ $_item =~ ^($_match)$ ]]; then
-                _matched=${BASH_REMATCH[1]}
-                if [[ $_matched =~ $_nodepath ]]; then
-                    if [[ $_simple == "0" ]]; then
-                        _nodes+=("$_matched")
-                    else
-                        local _arr=()
-                        IFS='/' read -r -a _arr <<< "${_matched}"
-                        _nodes+=("${_arr[$((${#_arr[@]}-1))]}")
-                        unset _arr
+        eval "_inputlist=(\"\${${_inputname}[@]-}\")"
+    fi
+    for _item in "${_inputlist[@]-}"; do
+        _node="${_item%%\ *}"
+        if [[ $_node == $_item ]]; then
+            continue
+        fi
+        _isleaf="${_item##*\ }"
+
+        if [[ ($_isleaf == "1" && $_includeleafs == "1") || $_isleaf == "0" ]]; then
+            _levels2=${_node//[^\/]}
+            _levels2=${#_levels2}
+            ((_levels2-=1))
+            if [ "${_levels}" -eq "${_levels2}" ]; then
+                if [[ ${_node:0:$_fixedlength} == ${_nodepathfixed} || true ]]; then
+                    if [[ $_includehidden == "0" ]]; then
+                        if [[ "${_node/\/_}" != "${_node}" ]]; then
+                            # Ignore hidden node.
+                            continue
+                        fi
+                    fi
+                    if [[ $_node =~ ^$_nodepath$ ]]; then
+                        if [[ $_simple == "0" ]]; then
+                            _nodes+=("$_node")
+                        else
+                            _node="${_node:0: -1}"
+                            _node="${_node##*/}"
+                            _nodes+=("$_node")
+                        fi
                     fi
                 fi
             fi
-        done
-    fi
-    unset _item _levels
-    unset _match _matched
+        fi
+    done
+    unset _item _node _isleaf _inputlist
+    unset _node _levels _levels2
     unset _nodepath
 }
 

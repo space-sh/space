@@ -814,6 +814,7 @@ _parse_yaml()
     local _arrayextraindent=0
     local _output=''
 
+    local _completionnamelist=""
     while _yaml_get_next 0;
     do
         # Set node prefix for changed indentation level.
@@ -836,13 +837,10 @@ _parse_yaml()
                 # Break down the path and add each sub path as completion name, early quit when
                 # a path is found since we are guaranteed all the remaining sub paths are already added.
                 while :; do
-                    eval '
-                    for _item in "${'$_outcompletionvarname'[@]-}"; do
-                        if [[ $_item == "${_completionname} 0" || $_item == "${_completionname} 1" ]]; then
-                            break 2
-                        fi
-                    done
-                    '
+                    if [[ ${_completionnamelist} =~ \ $_completionname\  ]]; then
+                        break
+                    fi
+                    _completionnamelist="${_completionnamelist} $_completionname "
                     if [ "$_completionname" = "${_varname}/" ]; then
                         # The leaf node
                         eval "$_outcompletionvarname+=(\"${_completionname} 1\")"
@@ -937,6 +935,7 @@ _parse_yaml()
                 ;;
         esac
     done
+    unset _completionnamelist
 }
 
 #==========

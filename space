@@ -4837,7 +4837,9 @@ _match_node()
     done
     unset _i _nodepathfixed2
     _nodepathfixed="${_nodepath:0:$_fixedlength}"
-    _nodepathfixed="${_nodepathfixed//\//\\\/}"
+    local _tag='\/'
+    _nodepathfixed="${_nodepathfixed//[\/]/$_tag}"
+    unset _tag
 
     local _item=
     local _node=
@@ -4878,7 +4880,7 @@ _match_node()
                         if [[ $_simple == "0" ]]; then
                             _nodes+=("$_node")
                         else
-                            _node="${_node:0: -1}"
+                            _node="${_node:0:$((${#_node}-1))}"
                             _node="${_node##*/}"
                             _nodes+=("$_node")
                         fi

@@ -8,6 +8,8 @@
 
 * Optimize `match_node` for speed
 
+* Update installer to remove downloaded _Space_ package
+
 - Remove constraint that prevents `RUN` to be set together with `RUN_ALIAS`
 
 

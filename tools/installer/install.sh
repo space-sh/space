@@ -76,6 +76,7 @@ fi
 # Extract package
 printf "Extracting package %s to TMPDIR...\n" "$_package_name"
 tar xzf "$_package_name" -C "$_tmp_dir"
+rm ./"$_package_name"
 
 #
 # Enter directory

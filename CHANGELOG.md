@@ -4,6 +4,8 @@
 
 + Add `-L` option
 
++ Add additional error checking to installer
+
 * Update default _gitlab.com_ list to include _web3-sh_
 
 * Optimize `match_node` for speed

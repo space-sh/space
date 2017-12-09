@@ -154,6 +154,9 @@ _RUN_CHECK_OK "Test space -V" "Space " space -V
 _RUN_CHECK_OK "Test Space install: overwrite existing install" "Replacing current installed version" space /install/
 _RUN_CHECK_OK "Test space -V: repeating test" "Space " space -V
 
+# Test installer script
+_RUN_CHECK_OK "Test install.sh" "Space " ./tools/installer/install.sh
+
 # Pass no args but set PREFIX first
 export PREFIX=$(pwd)
 _RUN_CHECK_OK "Test space install: PREFIX set" "\[OK\]    SPACE_INSTALL_BIN:" space /install/

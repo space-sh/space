@@ -86,6 +86,10 @@ cd "$_tmp_dir"
 # Change shebang line according to environment
 _bash_path=$(which bash)
 sed -i.bak -E "1 s@^#\!(.*)/bin/(.*)@#\!${_bash_path}@" ./space
+if [ "$?" -ne 0 ]; then
+    printf "Failed to set shebang line according to bash path: %s. Exiting...\n" "${_bash_path}"
+    exit 1
+fi
 
 # Install
 if [ -n "$1" ]; then

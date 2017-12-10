@@ -837,7 +837,7 @@ _parse_yaml()
                 # Break down the path and add each sub path as completion name, early quit when
                 # a path is found since we are guaranteed all the remaining sub paths are already added.
                 while :; do
-                    if [[ ${_completionnamelist} =~ \ $_completionname\  ]]; then
+                    if [[ ${_completionnamelist} =~ [\ ]$_completionname[\ ] ]]; then
                         break
                     fi
                     _completionnamelist="${_completionnamelist} $_completionname "
@@ -1206,7 +1206,7 @@ _pp_yaml()
                 ;;
             assert) # Do assertion
                 _debug "@assert: $_value"
-                if [[ $_value =~ (.*)\ (.*) ]]; then
+                if [[ $_value =~ (.*)[\ ](.*) ]]; then
                     local _fn=${BASH_REMATCH[1]}
                     local _val=${BASH_REMATCH[2]}
                     if [ "$_fn" = "nonempty" ] && [ -z "$_val" ]; then
@@ -1352,10 +1352,10 @@ _yaml_pp_multiline_include()
     local _includefile=
     local _includefilter=
     local _includevariables=
-    if [[ $_value =~ ^(.*)[\ ]*\|[\ ]*(.*) ]]; then
+    if [[ $_value =~ ^(.*)[\ ]*[|][\ ]*(.*) ]]; then
         _includefile=${BASH_REMATCH[1]}
         local _s=${BASH_REMATCH[2]}
-        if [[ $_s =~ (.*)\((.*)\)$ ]]; then
+        if [[ $_s =~ (.*)[(](.*)[)]$ ]]; then
             _includefilter=${BASH_REMATCH[1]}
             _includevariables=${BASH_REMATCH[2]}
         else
@@ -1366,7 +1366,7 @@ _yaml_pp_multiline_include()
         _includefilter=""
     fi
     # Check if $_includefile is a module
-    if [[ -n $_includefile && ! $_includefile =~ \.yaml$ ]]; then
+    if [[ -n $_includefile && ! $_includefile =~ [\.]yaml$ ]]; then
         _module_find_yaml "$_includefile" "_includefile"
     fi
     if [ -n "${_includefile}" ] && [ ! -f "$_includefile" ]; then
@@ -1407,12 +1407,12 @@ _yaml_get_row()
     shift
 
     _row=${_allrows[$_index]}
-    while [[ $_dopreprocess == "1" ]] && [[ $_row =~ ^(.*)\@\{([^}]+)\}(.*)$ ]]; do
+    while [[ $_dopreprocess == "1" ]] && [[ $_row =~ ^(.*)[@][{]([^}]+)[}](.*)$ ]]; do
         # Substitute preprocessed variable
         local _left=${BASH_REMATCH[1]}
         local _s=${BASH_REMATCH[2]}
         local _right=${BASH_REMATCH[3]}
-        if [[ $_s =~ ([a-zA-Z0-9_]+)(:?\-)(.+) ]]; then
+        if [[ $_s =~ ([a-zA-Z0-9_]+)(:?[-])(.+) ]]; then
             local _substvar=_PP_${BASH_REMATCH[1]}
             local _op=${BASH_REMATCH[2]}
             local _substvar2=${BASH_REMATCH[3]}
@@ -1494,10 +1494,10 @@ _yaml_get_next()
         local _op=${BASH_REMATCH[3]}
         _value=${BASH_REMATCH[4]}
         _includevariables=
-        if [[ $_value =~ ^(.*)[\ ]*\|[\ ]*(.*) ]]; then
+        if [[ $_value =~ ^(.*)[\ ]*[|][\ ]*(.*) ]]; then
             _includefile=${BASH_REMATCH[1]}
             local _s=${BASH_REMATCH[2]}
-            if [[ $_s =~ (.*)\((.*)\)$ ]]; then
+            if [[ $_s =~ (.*)[(](.*)[)]$ ]]; then
                 _includefilter=${BASH_REMATCH[1]}
                 _includevariables=${BASH_REMATCH[2]}
             else
@@ -1509,7 +1509,7 @@ _yaml_get_next()
         fi
         _yaml_get_multiline 0
         # Check if $_includefile is a module
-        if [[ -n $_includefile && ! $_includefile =~ \.yaml$ ]]; then
+        if [[ -n $_includefile && ! $_includefile =~ [\.]yaml$ ]]; then
             _module_find_yaml "$_includefile" "_includefile"
         fi
         if [ "$_op" = "-" ] && [ ! -f "$_includefile" ]; then
@@ -1518,37 +1518,37 @@ _yaml_get_next()
         else
             _rowtype="include"
         fi
-    elif [[ $_row =~ ^([\ ]*)(\@clone)[\ ]*:[\ ]+(.*) ]]; then
+    elif [[ $_row =~ ^([\ ]*)([@]clone)[\ ]*:[\ ]+(.*) ]]; then
         _indent=${#BASH_REMATCH[1]}
         _key=
         _value=${BASH_REMATCH[3]}
         _rowtype="clone"
-    elif [[ $_row =~ ^([\ ]*)(\@source)[\ ]*:[\ ]+(.*) ]]; then
+    elif [[ $_row =~ ^([\ ]*)([@]source)[\ ]*:[\ ]+(.*) ]]; then
         _indent=${#BASH_REMATCH[1]}
         _key=
         _value=${BASH_REMATCH[3]}
         _rowtype="source"
-    elif [[ $_row =~ ^([\ ]*)(\@debug)[\ ]*:[\ ]+(.*) ]]; then
+    elif [[ $_row =~ ^([\ ]*)([@]debug)[\ ]*:[\ ]+(.*) ]]; then
         _indent=${#BASH_REMATCH[1]}
         _key=
         _value=${BASH_REMATCH[3]}
         _rowtype="debug"
-    elif [[ $_row =~ ^([\ ]*)(\@dotdot)[\ ]*:[\ ]+(.*) ]]; then
+    elif [[ $_row =~ ^([\ ]*)([@]dotdot)[\ ]*:[\ ]+(.*) ]]; then
         _indent=${#BASH_REMATCH[1]}
         _value=
         _key=${BASH_REMATCH[3]}
         _rowtype="dotdot"
-    elif [[ $_row =~ ^([\ ]*)(\@assert)[\ ]*:[\ ]+(.*) ]]; then
+    elif [[ $_row =~ ^([\ ]*)([@]assert)[\ ]*:[\ ]+(.*) ]]; then
         _indent=${#BASH_REMATCH[1]}
         _key=
         _value=${BASH_REMATCH[3]}
         _rowtype="assert"
-    elif [[ $_row =~ ^([\ ]*)(\@cache)[\ ]*:[\ ]+(.*) ]]; then
+    elif [[ $_row =~ ^([\ ]*)([@]cache)[\ ]*:[\ ]+(.*) ]]; then
         _indent=${#BASH_REMATCH[1]}
         _key=
         _value=${BASH_REMATCH[3]}
         _rowtype="cache"
-    elif [[ $_row =~ ^([\ ]*)(\@prompt)[\ ]*:(-?)[\ ]+([^\ ]+)[\ ](.*) ]]; then
+    elif [[ $_row =~ ^([\ ]*)([@]prompt)[\ ]*:(-?)[\ ]+([^\ ]+)[\ ](.*) ]]; then
         _indent=${#BASH_REMATCH[1]}
         local _op=${BASH_REMATCH[3]}
         _key=${BASH_REMATCH[4]}
@@ -1561,7 +1561,7 @@ _yaml_get_next()
             fi
         fi
         _rowtype="prompt"
-    elif [[ $_row =~ ^([\ ]*)\@([a-zA-Z0-9_]+)[\ ]*(:|:-|:\+)\ (.*) ]]; then
+    elif [[ $_row =~ ^([\ ]*)[@]([a-zA-Z0-9_]+)[\ ]*(:|:-|:\+)[\ ](.*) ]]; then
         # Assign preprocess variable.
         _indent=${#BASH_REMATCH[1]}
         _key=${BASH_REMATCH[2]}
@@ -1585,7 +1585,7 @@ _yaml_get_next()
         fi
         _value=${BASH_REMATCH[4]}
         _rowtype="assign"
-    elif [[ $_row =~ ^([\ ]*)\@([a-zA-Z0-9_]+)[\ ]*(:|:-|:\+)$ ]]; then
+    elif [[ $_row =~ ^([\ ]*)[@]([a-zA-Z0-9_]+)[\ ]*(:|:-|:\+)$ ]]; then
         # Unset a preprocess variable.
         _indent=${#BASH_REMATCH[1]}
         _key=${BASH_REMATCH[2]}
@@ -1635,8 +1635,8 @@ _yaml_get_next()
             fi
             unset _yamlindent
         fi
-    elif [[ $_row =~ ^([\ ]*)\-([\ ]+)([a-zA-Z0-9_]+)[\ ]*:[\ ]+(.*) ||
-             $_row =~ ^([\ ]*)\-([\ ]+)([a-zA-Z0-9_]+)[\ ]*:($) ]]; then
+    elif [[ $_row =~ ^([\ ]*)[-]([\ ]+)([a-zA-Z0-9_]+)[\ ]*:[\ ]+(.*) ||
+             $_row =~ ^([\ ]*)[-]([\ ]+)([a-zA-Z0-9_]+)[\ ]*:($) ]]; then
         # Array item with child object.
         _indent=${#BASH_REMATCH[1]}
         _arrayextraindent=$((${#BASH_REMATCH[2]}+1))
@@ -1650,7 +1650,7 @@ _yaml_get_next()
                 _yaml_get_multiline "$_dopreprocess"
             fi
         fi
-    elif [[ $_row =~ ^([\ ]*)\-[\ ]+(.*) || $_row =~ ^([\ ]*)\-($) ]]; then
+    elif [[ $_row =~ ^([\ ]*)[-][\ ]+(.*) || $_row =~ ^([\ ]*)[-]($) ]]; then
         # Array index item with only value.
         _indent=${#BASH_REMATCH[1]}
         _arrayextraindent=0
@@ -1700,16 +1700,16 @@ _yaml_find_nextindent()
         fi
         local _peekrow=${_allrows[$_i]}
         _i=$(( _i + 1 ))
-        if [[ $_peekrow =~ ^([\ ]*)\-([\ ]+)[a-zA-Z0-9_]+[\ ]*:[\ ]*.* ]]; then
+        if [[ $_peekrow =~ ^([\ ]*)[-]([\ ]+)[a-zA-Z0-9_]+[\ ]*:[\ ]*.* ]]; then
             _yamlindent=$((${#BASH_REMATCH[1]}+${#BASH_REMATCH[2]}+1))
             break
         elif [[ $_peekrow =~ ^([\ ]*)([a-zA-Z0-9_@]+)[\ ]*:[\ ]*(.*) ]]; then
             _yamlindent=${#BASH_REMATCH[1]}
             break
-        elif [[ $_peekrow =~ ^([\ ]*)\-[\ ]*$ ]]; then
+        elif [[ $_peekrow =~ ^([\ ]*)[-][\ ]*$ ]]; then
             _yamlindent=${#BASH_REMATCH[1]}
             break
-        elif [[ $_peekrow =~ ^([\ ]*)\-[\ ]*.+$ ]]; then
+        elif [[ $_peekrow =~ ^([\ ]*)[-][\ ]*.+$ ]]; then
             _yamlindent=${#BASH_REMATCH[1]}
             break
         fi
@@ -2230,7 +2230,7 @@ _urlencode()
 
   for (( _counter=0; _counter<_length; _counter++ )); do
      local _curr_char=${_data:$_counter:1}
-     if [[ "$_curr_char" =~ ^[a-zA-Z0-9\~\_\.\-]$ ]]; then
+     if [[ "$_curr_char" =~ ^[a-zA-Z0-9\~[_][\.][-]]$ ]]; then
         _encoded_data+="${_curr_char}"
      else
         local _tmp_char=
@@ -2587,7 +2587,7 @@ _check_minimum_requirements()
         _debug "Reading minimum requirements from: $_minimum_requirements_file"
         # EXTERNAL: cat
         _minimum_required_space_version=$(cat "$_minimum_requirements_file")
-        if [[ ! "$_minimum_required_space_version" =~ ^[0-9]+\.[0-9]+\.[0-9] ]]; then
+        if [[ ! "$_minimum_required_space_version" =~ ^[0-9]+[\.][0-9]+[\.][0-9] ]]; then
             _error "Unexpected minimum required version for ${_base_directory##*/}. Version \"$_minimum_required_space_version\" does not match format \"major.minor.patch\""
             return 1
         fi
@@ -2837,7 +2837,7 @@ _main()
                     (return 1)
                     ;;
                 e)
-                    if [[ ! $OPTARG =~ ^[a-zA-Z0-9_]+\=.*$ ]]; then
+                    if [[ ! $OPTARG =~ ^[a-zA-Z0-9_]+[=].*$ ]]; then
                         if [[ $_BASH_COMPLETION == "0" ]]; then
                             _error "Malformed -e switch not on format [a-ZA-Z0-9_]+=.*: $OPTARG"
                             return 1
@@ -2859,7 +2859,7 @@ _main()
                     (return 1)
                     ;;
                 p)
-                    if [[ ! $OPTARG =~ ^[a-zA-Z0-9_]+\=.*$ ]]; then
+                    if [[ ! $OPTARG =~ ^[a-zA-Z0-9_]+[=].*$ ]]; then
                         _error "Malformed -p switch not on format [a-ZA-Z0-9_]+=.*: $OPTARG"
                         #if [[ $_BASH_COMPLETION != "2" ]]; then
                             #_error "Malformed -p switch not on format [a-ZA-Z0-9_]+=[a-ZA-Z0-9_-.]*: $OPTARG"
@@ -3418,14 +3418,14 @@ _main()
             for _line in "${_evals[@]-}"; do
                 eval "$_line" || _status=$?
                 if (( _status != 0 )); then
-                    [[ $_line =~ local\ ([^\=]+) ]]
+                    [[ $_line =~ local[\ ]([^\=]+) ]]
                     local _varname=${BASH_REMATCH[1]}
                     _error "Could not evaluate YAML Bash translation for variable: $_varname. Likely some syntax error in the yaml."
                     unset _varname
                     return 1
                 fi
                 if [[ $_DEBUG_OUTPUT_PARSED == "1" ]]; then
-                    [[ $_line =~ local\ ([^\=]+) ]]
+                    [[ $_line =~ local[\ ]([^\=]+) ]]
                     local _varname=${BASH_REMATCH[1]}
                     eval "printf \"%s=%s\n\" $_varname \"\$$_varname\""
                     unset _varname
@@ -5337,7 +5337,7 @@ _execute()
     if [[ $_RUN =~ ([^ ]+)[\ ]+(.*) ]]; then
         _RUN=${BASH_REMATCH[1]}
         _defaultargs=${BASH_REMATCH[2]}
-        if [[ $_RUN =~ \= ]]; then
+        if [[ $_RUN =~ [=] ]]; then
             _error "Sorry, but the RUN (\"$_RUN $_defaultargs\") seems to be prefixed by variable assignment(s), the RUN variable assigned from YAML or -e cannot not take such a complex form. Please use a Space module instead to set RUN."
             return 1
         fi
@@ -6038,7 +6038,7 @@ _cmd_extract()
                 local _value=
                 while IFS= read -r _line; do
                     if [ -z "${_varname}" ]; then
-                        if [[ $_line =~ ^([a-zA-Z0-9][a-zA-Z0-9_]*)\ (.+)$ ]]; then
+                        if [[ $_line =~ ^([a-zA-Z0-9][a-zA-Z0-9_]*)[\ ](.+)$ ]]; then
                             _varname=${BASH_REMATCH[1]}
                             _linecount=${BASH_REMATCH[2]}
                             _value=""
@@ -6463,7 +6463,7 @@ _cmd_add_fn_dep()
         (( _i += 1 ))
         # Check so that this function does not already exists in $_fn_def
         # to avoid multiple occurrences.
-        if [[ ${_fn_def} =~ (.?)${_fn_dep_item}[\ ]*\(\)$'\n'\{[\ ]*$'\n' ]]; then
+        if [[ ${_fn_def} =~ (.?)${_fn_dep_item}[\ ]*[(][)]$'\n'\{[\ ]*$'\n' ]]; then
             if [ "${#BASH_REMATCH[1]}" -eq 0 -o "${BASH_REMATCH[1]}" = $'\n' ]; then
                 continue
             fi
@@ -6752,7 +6752,7 @@ _get_fn()
         # EXTERNAL: cat
         local _content=
         _content="$(cat ${_file})"$'\n'  # We add a '\n' so that pattern matching below works properly.
-        if [[ ${_content} =~ (^|$'\n')${_cmdname}[\ ]*\(\)$'\n'\{[\ ]*$'\n'(.*$'\n') ]]; then
+        if [[ ${_content} =~ (^|$'\n')${_cmdname}[\ ]*[(][)]$'\n'[{][\ ]*$'\n'(.*$'\n') ]]; then
             if [ "${#BASH_REMATCH[1]}" -eq 0 -o "${BASH_REMATCH[1]}" = $'\n' ]; then
                 _content="${BASH_REMATCH[2]}"
                 _content="${_content%%$'\n'\}$'\n'*}"

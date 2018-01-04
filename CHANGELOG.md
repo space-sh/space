@@ -6,11 +6,19 @@
 
 + Add additional error checking to installer
 
++ Add `$@` arguments when calling main function of exported script
+
 * Update default _gitlab.com_ list to include _web3-sh_
 
 * Optimize `match_node` for speed
 
 * Update installer to remove downloaded _Space_ package
+
+* Change installer shebang line replacement to work on simpler `sed` implementations
+
+* Change regular expressions to expand Bash compatibility (includes SailfishOS support)
+
+* Update debug output
 
 - Remove constraint that prevents `RUN` to be set together with `RUN_ALIAS`
 

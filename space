@@ -5713,7 +5713,7 @@ ${_i}${_SPACEGAL_EOF_TAG}
     fi
 }
 
-'${_run_mainfn}
+'${_run_mainfn}' "$@"'
 
         local _run_main="${_runinfo_head}${_runinfo_tail}"
         local _SUDO=

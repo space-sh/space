@@ -4429,6 +4429,8 @@ _load_yaml()
             if [[ -z $_currentsum ]]; then
                 _warning "Cache could not be stored since checksum could not be generated"
             else
+                # EXTERNAL: rm
+                rm -f "${_cachefile}"
                 printf "%s\n" "$_CACHE_FORMAT" > $_cachefile
                 printf "%s\n" "$_yamlfilelist"  >> $_cachefile
                 printf "%s\n" "$_currentsum" >> $_cachefile
@@ -4440,6 +4442,8 @@ _load_yaml()
                 if (( ${#_parsedyaml[@]} > 0 )); then
                     printf "%s\n" "${_parsedyaml[@]}" >> $_cachefile
                 fi
+                # EXTERNAL: chmod
+                chmod 644 "${_cachefile}"
             fi
         fi
         unset _yamlfilelist

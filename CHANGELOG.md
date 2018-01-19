@@ -1,6 +1,6 @@
 # Space - Change log
 
-## [current]
+## [1.2.1 - 2018-01-19]
 
 - Remove test case for installer script
 

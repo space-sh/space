@@ -1,6 +1,6 @@
 # Space - Change log
 
-## [current]
+## [1.2.0 - 2018-01-19]
 
 + Add `-L` option
 

@@ -1,5 +1,10 @@
 # Space - Change log
 
+## [current]
+
+- Remove test case for installer script
+
+
 ## [1.2.0 - 2018-01-19]
 
 + Add `-L` option

@@ -20,6 +20,8 @@
 
 * Update debug output
 
+* Change cache behavior to better handle file permissions
+
 - Remove constraint that prevents `RUN` to be set together with `RUN_ALIAS`
 
 

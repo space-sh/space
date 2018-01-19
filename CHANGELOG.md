@@ -22,6 +22,8 @@
 
 * Change cache behavior to better handle file permissions
 
+* Change install warning messages to explicitly mention auto completion feature is optional
+
 - Remove constraint that prevents `RUN` to be set together with `RUN_ALIAS`
 
 

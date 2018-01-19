@@ -203,27 +203,27 @@ SPACE_INSTALL()
     # Check source file is present
     if [ ! -f $_ac_file_path ]; then
         PRINT "[${_acdest}/${_ac_file_name}]  FAILED" "warning"
-        PRINT "Auto completion will not work because the completion script could not be located at ${_ac_file_path}" "warning"
+        PRINT "Optional auto completion will not work because the completion script could not be located at ${_ac_file_path}" "warning"
     else
         if [ -d "${_acdest}" ]; then
             command install -m 644 "$_ac_file_path" "${_acdest}/space"
             if [ "$?" -gt 0 ]; then
                 PRINT "[${_acdest}/space]  FAILED" "warning"
-                PRINT "Auto completion will not work because destination doesn't exist: [${_acdest}]. Make sure the destination directory is valid and bash-completion is installed. After that, repeat the installation process if bash completion is desired." "warning"
+                PRINT "Optional auto completion will not work because destination doesn't exist: [${_acdest}]. Make sure the destination directory is valid and bash-completion is installed. After that, repeat the installation process if bash completion is desired." "warning"
             else
                 PRINT "[${_acdest}/space]  OK" "ok"
                 PRINT "You might want to re-login into bash to get the bash completion loaded."
             fi
         else
             PRINT "[${_acdest}/space]  FAILED" "warning"
-            PRINT "Auto completion will not work because destination doesn't exist: [${_acdest}]. Make sure the destination directory is valid and bash-completion is installed. After that, repeat the installation process if bash completion is desired." "warning"
+            PRINT "Optional auto completion will not work because destination doesn't exist: [${_acdest}]. Make sure the destination directory is valid and bash-completion is installed. After that, repeat the installation process if bash completion is desired." "warning"
 
             local _uname_s=
             _uname_s=$(uname -s)
             if [ "$_uname_s" = "Darwin" ]; then
-                PRINT "Ah! I noticed you are running on Darwin. Take the following hint:"
+                PRINT "Ah! I noticed you are running on Darwin. If you want to enable optional auto completion, take the following hint:"
                 PRINT "brew install bash-completion && ./space /install/ -- \"/usr/local\" \"/usr/local/etc/bash_completion.d\""
-                PRINT "Now relog on the terminal in order to have the new auto completion loaded."
+                PRINT "After that, relog on the terminal in order to have the new auto completion loaded."
             fi
         fi
     fi

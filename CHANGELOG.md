@@ -1,5 +1,10 @@
 # Space - Change log
 
+## [current]
+
+* Rebranding: update documentation, copyright notices and link references
+
+
 ## [1.2.1 - 2018-01-19]
 
 - Remove test case for installer script

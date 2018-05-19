@@ -236,7 +236,7 @@ Relevant traps for controlling exit: `SIGINT SIGTERM EXIT ERR`
 ## Bash-only language constructs
 
 ### local
-Local defines a new isolated variable, even if the same variable name happens to be declared on outisde scope. After function return, the other variable instance is always reestablished (compatible with Dash).  
+Local defines a new isolated variable, even if the same variable name happens to be declared on outside scope. After function return, the other variable instance is always reestablished (compatible with Dash).  
 Do not declare multiple local variables in the same line.  
 Local keyword is not defined by _POSIX_ and its implementation is shell-specific. Some shells will only handle the first variable as local, while exposing the rest as global. Example:
 ```sh
@@ -281,7 +281,7 @@ https://shellcheck.net
 
 
 ## Testing
-Testing is strongly encouraged and should always be provided in separate files inside a subdirectory (e.g. test/test_all.sh).
+Testing is strongly encouraged and should always be provided in separate files inside a sub-directory (e.g. test/test_all.sh).
 
 
 ## Debugging

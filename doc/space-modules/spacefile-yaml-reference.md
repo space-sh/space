@@ -310,7 +310,7 @@ Default value could be another variable from the preprocessor such as `@{var2}`.
 Ex: `@{var1-@{var2}}`  
 
 Variables are scoped in the sense that for each `include` a new variable instance
-is created for the same variable name. This means that overridng a variable in an `include`
+is created for the same variable name. This means that overriding a variable in an `include`
 will not override the variable in the outer scope.  
 
 However, is you use upper case letters `[A-Z0-9_]` as the variable name the
@@ -330,7 +330,7 @@ This will output the text and read input from `stdin` which will be stored in pr
 Use `@prompt:-` to only prompt if var1 is unset or empty.  
 One exception happens when using `prompt` in the preprocessor: whenever preprocess output is cached, so will the prompted value be. The next time it runs the user will not be prompted because _Space_ will be running a cached version.  
 Please refer to the caching options for controlling that behavior from the command line: `-C` option.  
-A note of warning is that tab auto completion and `@prompt` shoudl generally not be used together since the prompt will get in the way of the completion process because it outputs to terminal and reads from stdin.
+A note of warning is that tab auto completion and `@prompt` should generally not be used together since the prompt will get in the way of the completion process because it outputs to terminal and reads from stdin.
 
 * `@cache: {0,1,2}`:
 Force the caching behaviour of this YAML file. Could be useful to turn off caching when using `@prompt`, since prompted values are cached.  

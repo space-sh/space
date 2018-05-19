@@ -186,11 +186,11 @@ due to restrictions in the _Space_ YAML parser.
 _env:
     str: |  
         Multiline  
-........  
+  
         With some empty lines  
         Thanks to the spaces  
-........  
-........  
+  
+  
         Thanks!  
 ```
 

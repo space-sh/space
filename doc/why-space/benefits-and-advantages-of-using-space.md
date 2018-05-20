@@ -25,4 +25,5 @@ weight: 201
 - **Composable**: modules can be combined to quickly create new programs, giving great flexibility
 - **Decentralized content**: distributed user-content by design
 - **Exportable**: possibility to build standalone programs for more secure deployments by exporting _Space_ modules where any redundant code has been removed by tree-shaking, for easy inspection
-- **Agentless**: no agents required for running commands on remote targets
+- **Agentless**: no agents required for running commands on remote targets  
+

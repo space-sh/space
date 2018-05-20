@@ -32,7 +32,7 @@ Releases are signed either by one of the following keys:
   - **Key**: [blund-3611E9C24F6C6E63.asc](https://gitlab.com/space-sh/space/snippets/32500/raw)
 - Maicon Diniz Filippsen
   - **Fingerprint**: `295E 7B7B 14D8 8EEC 62E7  FBB1 DC8D 6348 0F72 A139`
-  - **Key**: [filippsen-DC8D63480F72A139.asc](https://gitlab.com/space-sh/space/snippets/32501/raw)
+  - **Key**: [filippsen-DC8D63480F72A139.asc](https://gitlab.com/space-sh/space/snippets/32501/raw)  
 
 
 It is then possible to verify the release signatures using the following command:  

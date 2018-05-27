@@ -3756,8 +3756,8 @@ _main()
     _copy "_dimensions_fill" "/_dimensions_fill"
     if [ -z "${_dimensions_fill}" ]; then
         _dimensions_fill=0
-    elif [[ ! $_dimensions_fill =~ [0-3] ]]; then
-        _error "_dimensions_fill must be a number: 0 to 3."
+    elif [[ ! $_dimensions_fill =~ [2-3] ]]; then
+        _error "_dimensions_fill must be a number: 2 to 3."
         return 1
     fi
     local _execcounter=0

@@ -105,6 +105,9 @@ SPACE_LOG_LEVEL=${SPACE_LOG_LEVEL:-4}
 # Also used internally for Space.
 SPACE_LOG_ENABLE_COLORS=${SPACE_LOG_ENABLE_COLORS:-1}
 _LOG_ENABLE_COLORS=${SPACE_LOG_ENABLE_COLORS}
+if [ ! -t 2 ]; then
+    _LOG_ENABLE_COLORS=0
+fi
 
 # The expected script exit status.
 # This is exported to script, it's not a SPACE header variable.

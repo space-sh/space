@@ -5708,7 +5708,7 @@ ${_i}${_SPACEGAL_EOF_TAG}
             [ "${SPACE_LOG_ENABLE_COLORS:-1}" = "1" ] && [ -t 2 ] && printf "'${_COLOR_DEFAULT}'" >&2
         fi
         if [ "${SPACE_MUTE_EXIT}" != 1 ]; then
-            exit $((SPACE_ASSERT_EXIT = 0 ? _status : 1))
+            exit $((SPACE_ASSERT_EXIT == 0 ? _status : 1))
         fi
     else
         if [ "${SPACE_LOG_LEVEL}" -ge 2 ]; then

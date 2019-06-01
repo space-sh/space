@@ -4292,7 +4292,7 @@ _exec_dimensions()
     fi
 
     if [[ -z ${RUN-} ]]; then
-        _error "This node has no RUN defined. Use '/ -h' to view help or '/ -a -l' to list all child nodes."
+        _error "The node $_nodecombo has no RUN defined. Use '/ -h' to view help or '/ -a -l' to list all child nodes."
         return 1
     fi
 
@@ -4378,7 +4378,7 @@ _load_yaml()
     if (( ${#_parsedyaml[@]} == 0 )); then
         # (re)generate yaml
         _debug "preprocess YAML file: $_yamlfile ..."
-        _info2 "Compiling app..."
+        _debug "Compiling app..."
         local _yamlrows=() _parents=() _yamlfilelist=""
         # Preprocess variable that points to the directory of the YAML file being processed
         local _PP_DIR=${_yamlfile%/*}
@@ -4398,7 +4398,6 @@ _load_yaml()
         elif (( _status > 0 )); then
             return 1
         fi
-        _info2 "done." 1
         _debug "...done preprocessing."
         unset _status
 
@@ -4411,13 +4410,13 @@ _load_yaml()
         fi
 
         if (( ${#_yamlrows[@]} > 0 )); then
-            _info2 "Building app..."
+            _debug "Building app..."
             _parse_yaml "_yamlrows" "_parsedyaml" "_parsedyamlcompletion"
             (( $? > 0 )) && return 1
             local _quicksort_output=()
             _quicksort "${_parsedyamlcompletion[@]}"
             _parsedyamlcompletion=("${_quicksort_output[@]}")
-            _info2 "done." 1
+            _debug "...done."
         fi
         unset _parents
 

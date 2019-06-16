@@ -5680,7 +5680,7 @@ ${_i}${_SPACEGAL_EOF_TAG}
             _runinfo_head=${_run_mainfn}'()
 {
     # Space will print the node name to be run.
-    if [ "${SPACE_LOG_LEVEL}" -ge 2 ]; then
+    if [ "${SPACE_LOG_LEVEL}" -ge 3 ]; then
         [ "${SPACE_LOG_ENABLE_COLORS:-1}" = 1 ] && printf "'${_COLOR_FG_WHITE}'" >&2
         printf "%s\n" "[RUN]   '"(${_currentexecuting}/${_counttoexecute}): ${_nodecombo}"'" >&2
         [ "${SPACE_LOG_ENABLE_COLORS:-1}" = 1 ] && printf "'${_COLOR_DEFAULT}'" >&2
@@ -5692,17 +5692,19 @@ ${_i}${_SPACEGAL_EOF_TAG}
         local _runinfo_tail=""
         # Exit info
         local _runinfo_fail=""
+        local _loglevel_success=5  # For single scripts we only report successes on debug level.
         if [ "${_counttoexecute}" -gt 1 ]; then
             _runinfo_fail='printf "%s\n" "[ERROR] '"(${_currentexecuting}/${_counttoexecute})"': Script exited with status $_status for node '${_nodecombo}'" >&2'
             _runinfo_success='printf "%s\n" "[OK]    '"(${_currentexecuting}/${_counttoexecute})"': Script exited with success (status $_status) for node '${_nodecombo}'" >&2'
+            _loglevel_success=3  # For multi node runs, we report successes on the INFO level. We are more verbose since it makes sense to be so.
         else
             _runinfo_fail='printf "%s\n" "[ERROR] Script exited with status $_status for node '${_nodecombo}'" >&2'
-            _runinfo_success='printf "%s\n" "[OK]    Script exited with success (status $_status) for node '${_nodecombo}'" >&2'
+            _runinfo_success='printf "%s\n" "[DEBUG] Script exited with success (status $_status) for node '${_nodecombo}'" >&2'
         fi
 
         _runinfo_tail='
     # Space will print exit status.
-    _status=$?
+    local _status=$?
     if [ "${_status}" -ne "${SPACE_ASSERT_EXIT}" ]; then
         if [ "${SPACE_LOG_LEVEL}" -ge 1 ]; then
             [ "${SPACE_LOG_ENABLE_COLORS:-1}" = "1" ] && [ -t 2 ] && printf "'${_COLOR_FG_RED}'" >&2
@@ -5713,10 +5715,10 @@ ${_i}${_SPACEGAL_EOF_TAG}
             exit $((SPACE_ASSERT_EXIT == 0 ? _status : 1))
         fi
     else
-        if [ "${SPACE_LOG_LEVEL}" -ge 2 ]; then
-            [ "${SPACE_LOG_ENABLE_COLORS:-1}" = "1" ] && [ -t 2 ] && printf "'${_COLOR_FG_GREEN}'" >&2
+        if [ "${SPACE_LOG_LEVEL}" -ge '$_loglevel_success' ]; then
+            [ "${SPACE_LOG_ENABLE_COLORS:-1}" = "1" ] && [ '"${_loglevel_success}"' -eq 3 ] && [ -t 2 ] && printf "'${_COLOR_FG_GREEN}'" >&2
             '$_runinfo_success'
-            [ "${SPACE_LOG_ENABLE_COLORS:-1}" = "1" ] && [ -t 2 ] && printf "'${_COLOR_DEFAULT}'" >&2
+            [ "${SPACE_LOG_ENABLE_COLORS:-1}" = "1" ] && [ '"${_loglevel_success}"' -eq 3 ] && [ -t 2 ] && printf "'${_COLOR_DEFAULT}'" >&2
             : # Important to reset status here.
         fi
     fi

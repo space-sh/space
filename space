@@ -5396,6 +5396,7 @@ _execute()
     # Append command line arguments to _RUN.
     if [ "${_allowappend}" -eq 1 ]; then
         for _arg in "$@"; do
+            _filter "_arg"
             _args+=("$_arg")
         done
     fi

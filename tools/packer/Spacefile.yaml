@@ -17,10 +17,10 @@
 #
 
 ---
-@include: @{CWD}/tools/spacedoc/Spacefile.yaml
-@include: @{CWD}/tools/manpage_exporter/Spacefile.yaml
-@source: @{CWD}/tools/spacedoc/Spacefile.bash
-@source: @{CWD}/tools/manpage_exporter/Spacefile.sh
+@include: @{DIR}/../spacedoc/Spacefile.yaml
+@include: @{DIR}/../manpage_exporter/Spacefile.yaml
+@source: @{DIR}/../spacedoc/Spacefile.bash
+@source: @{DIR}/../manpage_exporter/Spacefile.sh
 
 _env:
     - RELEASE_FILES: "space Spacefile.sh Spacefile.yaml completion/init_autocompletion.sh space.1"

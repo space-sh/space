@@ -272,15 +272,27 @@ space "/_?.*/"
                - B: A is: $A  
 ```
 
+* `_source`:
+    Source a shell script file.
+
+```yaml
+    node:
+        _source:
+            - a.sh
+            - b.sh
+```
+
+Note that when sourcing shell files only the functions are of interested to Space, anything outside of function bodies is ignored.
+
 
 #### Preprocessor
 Preprocessing variable assignments, usage and directives:
 
 * `@{DIR}`:  
-Variable containing the current processed _YAML_ files directory.
+Variable containing the directory of the YAML file currently being processed.
 
-* `@{CWD}`  
-Variable containing the directory from where _Space_ was invoked.
+* `@{DIRNAME}`:  
+Variable containing the basename of the directory of the YAML file currently being processed.
 
 * `@{PARENT}`  
 Variable containing the current parent node name.
@@ -341,7 +353,7 @@ will suffer greatly.
 The clone directive exists for using another module.  
 The `@clone:` keyword can be defined anywhere in the YAML structure. When using the `include` filters this feature can be leveraged to only clone modules as needed.
 It is possible to specify multiple arguments in a single `@clone:` statement.  
-Internally `@clone` translates to `_clone_source` in preprocessed _YAML_ and points to shell files to be sourced when the _YAML_ node is parsed.  
+Internally `@clone` translates to `_source` in preprocessed _YAML_ and points to shell files to be sourced when the _YAML_ node is parsed.  
 When cloning, one could specify a module version to use. For example:  
 `@clone: mymodule:1.2.3` or `@clone: mymodule:master`  
 If no version is specified, _Space_ will try to figure out what version to use according to _Space's_ own version.
@@ -421,9 +433,8 @@ These variables are saved with the cache and if they change or are not provided,
 * `CWD`:
 The directory from where the user invoked _Space_.
 
-* `DIR`:
-The directory of where the sourced Bash file is located.
-Use this as `_source ${DIR}/somefile.bash` in the module bash file header.
+* `CWDNAME`:
+The top level directory name from where the user invoked _Space_.
 
 #### Examples
 

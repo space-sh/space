@@ -3202,7 +3202,9 @@ _main()
 
     # Set as global environment variable.
     local CWD=
+    local CWDNAME=
     CWD=$(pwd)
+    CWDNAME=${CWD##*/}
 
     if [[ $_help == "version" ]]; then
         _helpversion
@@ -3294,7 +3296,6 @@ _main()
             # Load file.
             if [[ -z $_path ]]; then
                 # No -f give, try the defaults.
-                local _cwddir=${CWD##*/}
                 local _f=
                 for _f in "./Spacefile.yaml"; do
                     if [[ -f $_f ]]; then
@@ -3302,7 +3303,7 @@ _main()
                         break
                     fi
                 done
-                unset _f _cwddir
+                unset _f
 
                 if [[ -z $_path ]]; then
                     _error "No Spacefile.yaml file found."
@@ -4386,9 +4387,7 @@ _load_yaml()
         # Preprocess variable that points to the directory of the YAML file being processed
         local _PP_DIR=${_yamlfile%/*}
         local _PP_DIRNAME=${_PP_DIR##*/}
-        # Preprocess variable that points to current CWD where user invoked space.
-        local _PP_CWD=$CWD
-        if [[ $_PP_DIR != $_PP_CWD ]]; then
+        if [[ $_PP_DIR != $CWD ]]; then
             # If CWD is different that initial YAML file dir, then add
             # YAML file dir to _INCLUDEPATH.
             _INCLUDEPATH+=("$_PP_DIR")

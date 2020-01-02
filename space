@@ -5348,7 +5348,7 @@ _execute()
     # in the sense that A=1 isn't treated as the command and the rest as arguments.
     local _defaultargs=
     local _RUN="${RUN}"  # Isolate this since we are changing it. As a courtesy.
-    if [[ $_RUN =~ ([^ ]+)[\ ]+(.*) ]]; then
+    if [[ $_RUN =~ ([^ ]+)[\ ]+(.*) ]]; then  # Bug in regex? Will allow for initial spaces
         _RUN=${BASH_REMATCH[1]}
         _defaultargs=${BASH_REMATCH[2]}
         if [[ $_RUN =~ [=] ]]; then
@@ -5453,7 +5453,7 @@ _execute()
     _debug "RUN args: $_cmd_args_str"
     _debug "RUN wrap: ${SPACE_WRAP-}"
 
-    local SPACE_FN=$_RUN                       # Inherited value from YAML.
+    local SPACE_FN=$_RUN                       # Extracted value from YAML modified.
     local SPACE_REDIR=${SPACE_REDIR-}          # Inherited value from YAML.
     local SPACE_OUTER=${SPACE_OUTER-}          # Inherited value from YAML.
     local SPACE_OUTERARGS=${SPACE_OUTERARGS-}  # Inherited value from YAML.

@@ -4,7 +4,7 @@
 ##           |                       .                                 |     ##
 #            !                       _                                 !      #
 #            .               S P A C E `...                            .      #
-#            .   Server Apps and Automation`- By Blockie               .      #
+#            .   Structured shell scripting`- By Blockie               .      #
 #                                          .                                  #
 ##           .                             .                                .##
 ###                                                                        !###
@@ -15,7 +15,7 @@
 
 #
 # Copyright:
-#   Blockie AB 2016-2019 (blockie.org)
+#   Blockie AB 2016-2020 (blockie.org)
 #
 # Authors:
 #   Thomas Backlund (blund@blockie.org).
@@ -278,7 +278,7 @@ _helpusage()
 {
     local _s=
     IFS= read -d '' -r _s << _EOF
-Space. (C) Blockie AB 2016-2017, blockie.org. GPL version 3 licensed.
+Space. (C) Blockie AB 2016-2020, blockie.org. GPL version 3 licensed.
 
 See man pages and https://space.sh for more info.
 

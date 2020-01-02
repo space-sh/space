@@ -2411,6 +2411,7 @@ _enter_gui_mode()
 # Parameters:
 #   $1: output message
 #   $2: level type (error, warning, debug, ...). Defaults to "info"
+#   $3: Show function name or not. 0=do not show, 1=show. Default is 1.
 #
 # Expects:
 #   SPACE_LOG_ENABLE_COLORS: use colors if stderr is connected to a terminal.
@@ -2423,7 +2424,12 @@ PRINT()
     SPACE_ENV="_PRINT_COLUMN_POSITION"
     local color=''
     local header=''
-    local _SPACE_NAME="${_SPACE_NAME:-anonymous}"
+    [ "${3:-1}" = 1 ] && {
+        local _SPACE_NAME="${_SPACE_NAME:-anonymous}: ";
+    } || {
+        local _SPACE_NAME="";
+    }
+
     case "${2-info}" in
         error)
             if [ "${SPACE_LOG_LEVEL:-4}" -lt 1 ]; then return; fi
@@ -2454,9 +2460,9 @@ PRINT()
             ;;
     esac
     if [ "${SPACE_LOG_ENABLE_COLORS}" = "1" ] && [ -t 2 ]; then
-        printf "\033[${_PRINT_COLUMN_POSITION}G${color}%s%s: %s\033[0m\n" "${header}" "${_SPACE_NAME}" "${1}" >&2
+        printf "\033[${_PRINT_COLUMN_POSITION}G${color}%s%s%s\033[0m\n" "${header}" "${_SPACE_NAME}" "${1}" >&2
     else
-        printf "%s%s: %s\n" "${header}" "${_SPACE_NAME}" "${1}" >&2
+        printf "%s%s%s\n" "${header}" "${_SPACE_NAME}" "${1}" >&2
     fi
 }
 

@@ -169,11 +169,11 @@ _RUN_CHECK_FAIL "Test -m switch: Explicit protocol HTTPS, missing domain name ex
 _RUN_CHECK_FAIL "Test -m switch: Explicit protocol SSH, missing domain name extension" "Expected domain extension" $_SPACE_BIN -m ssh://host./user/repo / -h 
 
 # -h: Help
-_RUN_CHECK_OK   "Test -h switch: contains basic program info" "Space. (C) Blockie AB 2016-2017, blockie.org. GPL version 3 licensed." $_SPACE_BIN -h
+_RUN_CHECK_OK   "Test -h switch: contains basic program info" "Space. (C) Blockie AB 2016-2020, blockie.org. GPL version 3 licensed." $_SPACE_BIN -h
 _RUN_CHECK_OK   "Test -h switch: contains usage section" "Usage:" $_SPACE_BIN -h
 
 # -e: Regular environment variable
-_RUN_CHECK_FAIL "Test -e switch: key=value" "This node has no RUN defined" $_SPACE_BIN -e dummyenv=mukyanjong
+_RUN_CHECK_FAIL "Test -e switch: key=value" "The node / has no RUN defined" $_SPACE_BIN -e dummyenv=mukyanjong
 _RUN_CHECK_FAIL "Test -e switch: malformed pair" "Malformed -e switch" $_SPACE_BIN -e malformedEnv
 
 # -p: Valid preprocessing variables
@@ -240,7 +240,7 @@ _RUN_CHECK_FAIL "Test preprocessor include on include file" "Could not find file
 if command -v git >/dev/null; then
     _RUN_CHECK_FAIL "Test malformed clone import" "Could not clone" $_SPACE_BIN -f ./test/exit_status_cases/fail_pp_clone_malformed.yaml / -h
 else
-    _RUN_CHECK_FAIL "Test malformed clone import" "Failed to access" $_SPACE_BIN -f ./test/exit_status_cases/fail_pp_clone_malformed.yaml / -h
+    _RUN_CHECK_FAIL "Test malformed clone import" "Could not clone module repository" $_SPACE_BIN -f ./test/exit_status_cases/fail_pp_clone_malformed.yaml / -h
 fi
 
 # Fail assert during preprocessing

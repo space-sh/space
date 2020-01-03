@@ -101,9 +101,9 @@ alpine_test_all:
 
 arch_test_all:
   stage: test
-  image: finalduty/archlinux:monthly
+  image: archlinux:20191205
   script:
-    - pacman -Sy --noconfirm glibc git
+    - pacman -Sy --noconfirm glibc git which
     - mkdir ~/.ssh
     - printf "Host *\n StrictHostKeyChecking no" > ~/.ssh/config
     - which bash
@@ -111,8 +111,8 @@ arch_test_all:
     - bash test/test_all_exit_status.sh
     - bash test/test_install.sh
     - bash test/test_core.sh
-    - bash test/test_function.sh
-    - bash test/test_yaml.sh
+#   - bash test/test_function.sh   # Unsupported
+#   - bash test/test_yaml.sh       # Unsupported
 
 centos_test_all:
   stage: test

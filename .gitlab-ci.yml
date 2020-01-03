@@ -51,6 +51,17 @@ bash40_base_tests:
 #    - bash test/test_function.sh
 #    - bash test/test_yaml.sh
 
+bash50_base_tests:
+  stage: test
+  image: bash:5.0
+  script:
+    - which bash
+    - bash --version
+    - bash test/test_install.sh
+    - bash test/test_core.sh
+    - bash test/test_function.sh
+    - bash test/test_yaml.sh
+
 # Commented out due to: `ERROR: Build failed: execution took longer than X seconds`
 #bashlatest_base_tests:
 #  stage: test

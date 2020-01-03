@@ -2,7 +2,35 @@
 
 ## [current]
 
-* Rebranding: update documentation, copyright notices and link references
++ Add runtime variable `${CWDNAME}` as top level directory from where _Space_ was invoked
+
+* Improve documentation formatting
+
+* Improve command line arguments security by adding `_filter` step
+
+* Change default log settings to disable colors when `stderr` is not terminal
+
+* Change `_dimensions_fill` from `0-3` to `2-3`
+
+* Change "Compiling app..." output to only appear when debug level is set
+
+* Change preprocess variable `@{CWD}` to `@{DIR}`
+
+* Change default log settings to only report success on debug level for when exiting _Space_ apps
+
+* Change `PRINT` to mute function name in output
+
+* Fix typo in documentation
+
+* Fix bug when returning error `>1` always exiting as `1`
+
+* Update textual header comments
+
+* Update copyright information
+
+- Remove special notice tag from documentation
+
+- Remove runtime variable `${DIR}`
 
 
 ## [1.2.1 - 2018-01-19]
@@ -39,9 +67,9 @@
 
 ## [1.1.0 - 2017-10-04]
 
-+ Add `${DIRNAME}` variable to YAML preprocess step
++ Add `${DIRNAME}` variable to _YAML_ preprocess step
 
-+ Add `${RUN_ALIAS}` to be inherited in YAML structure
++ Add `${RUN_ALIAS}` to be inherited in _YAML_ structure
 
 + Add maximum number of `RUN_ALIAS` iterations to `exec_dimensions`
 
@@ -83,6 +111,7 @@
 ## [1.0.0 - 2017-08-28]
 
 + Release major version
+
 
 ## [0.15.0 - 2017-08-11]
 
@@ -245,7 +274,7 @@
 
 * Fix wrong warning message during _Space_ replacement installation
 
-* Fix bug about trailing spaces for quoted YAML environment variables
+* Fix bug about trailing spaces for quoted _YAML_ environment variables
 
 * Fix bug about extracting functions from modules
 
@@ -273,7 +302,7 @@
 
 * Change `stable.txt` to `space-module.txt`
 
-* Fix `SPACE_WRAP` to handle correctly when defined in YAML multiple times
+* Fix `SPACE_WRAP` to handle correctly when defined in _YAML_ multiple times
 
 * Update `-U` switch to continue to the next module on error
 
@@ -316,7 +345,7 @@
 
 * Rename `clone` to `_clone`
 
-* Change YAML parser to read and count empty lines
+* Change _YAML_ parser to read and count empty lines
 
 * Change source module file behaviour to not source file at all
 

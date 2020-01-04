@@ -36,7 +36,7 @@ _TEST_QUICKSORT()
         _stored_locale="${LC_ALL}"
     fi
     # Set locale to get traditional sort order (bytes comparison)
-    export LC_ALL="C"
+    LC_ALL="C"
 
     _quicksort "${_unsorted_array[@]}"
 

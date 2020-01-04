@@ -623,7 +623,7 @@ _quicksort()
         # EXTERNAL: sort awk
         while IFS=$'\n' read -r _line; do
             _quicksort_output+=("$_line")
-        done < <(printf "%s\n" "${_arr[@]}" | sort | awk '{print $3" "$4}')
+        done < <(printf "%s\n" "${_arr[@]}" | LC_ALL="C" sort | awk '{print $3" "$4}')
         return
     fi
 
@@ -4431,7 +4431,7 @@ _load_yaml()
                 _stored_locale="${LC_ALL}"
             fi
             # Set locale to get traditional sort order (bytes comparison)
-            export LC_ALL="C"
+            LC_ALL="C"
 
             local _quicksort_output=()
             _quicksort "${_parsedyamlcompletion[@]}"

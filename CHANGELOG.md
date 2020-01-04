@@ -4,11 +4,11 @@
 
 + Add runtime variable `${CWDNAME}` as top level directory from where _Space_ was invoked
 
-+ Add fixed locale setting around quicksort call to guarantee traditional sort order
-
 * Improve documentation formatting
 
 * Improve command line arguments security by adding `_filter` step
+
+* Improve quicksort call to contain fixed locale setting to guarantee traditional sort order
 
 * Change default log settings to disable colors when `stderr` is not terminal
 

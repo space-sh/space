@@ -1,5 +1,5 @@
 
-# Space | [![build status](https://gitlab.com/space-sh/space/badges/master/build.svg)](https://gitlab.com/space-sh/space/commits/master) [![latest stable version](https://img.shields.io/badge/latest%20stable-1.2.1-blue.svg?style=flat)](https://gitlab.com/space-sh/space/tags/1.2.1) [![Gitter](https://img.shields.io/gitter/room/nwjs/nw.js.svg)](https://gitter.im/blockie-org/space.sh)
+# Space | [![build status](https://gitlab.com/space-sh/space/badges/master/build.svg)](https://gitlab.com/space-sh/space/commits/master) [![latest stable version](https://img.shields.io/badge/latest%20stable-1.3.0-blue.svg?style=flat)](https://gitlab.com/space-sh/space/tags/1.3.0) [![Gitter](https://img.shields.io/gitter/room/nwjs/nw.js.svg)](https://gitter.im/blockie-org/space.sh)
 
 ![Space.sh](https://space.sh/static/img/logo.png)
 
@@ -39,7 +39,7 @@ Download, extract and install the latest stable version of _Space_:
 
 ```
 mkdir space
-curl https://space.sh/static/download/space-1.2.1/space-1.2.1.tar.gz | tar xvfz - -C ./space && cd ./space && ./space /install/
+curl https://space.sh/static/download/space-1.3.0/space-1.3.0.tar.gz | tar xvfz - -C ./space && cd ./space && ./space /install/
 ```
 Note: this exact method does not check for the integrity of the downloaded .tar.gz file. It is possible to do so while still performing a manual install, please refer to the [install documentation](manuals/install.md).
 

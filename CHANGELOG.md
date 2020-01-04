@@ -1,6 +1,6 @@
 # Space - Change log
 
-## [current]
+## [1.3.0 - 2020-01-04]
 
 + Add runtime variable `${CWDNAME}` as top level directory from where _Space_ was invoked
 

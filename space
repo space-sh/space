@@ -5634,12 +5634,12 @@ ${_i}${_SPACEGAL_EOF_TAG}
             else
                 local _export_cmd_su=
                 if [ -n "${_SUUSER}" ] && [ -n "${_SUDO}" ]; then
-                    _export_cmd_su='sudo su '${_SUUSER}' -s "${shell}" -c "${RUN_SU}"'
+                    _export_cmd_su='sudo su '${_SUUSER}' -s "${shell}" -c "${RUN_SU}" "${shell##*/} "$@""'
 
                 elif [ -n "${_SUUSER}" ]; then
-                    _export_cmd_su='su '${_SUUSER}' -s "${shell}" -c "${RUN_SU}"'
+                    _export_cmd_su='su '${_SUUSER}' -s "${shell}" -c "${RUN_SU}" "${shell##*/}" "$@"'
                 else
-                    _export_cmd_su='sudo "${shell}" -c "${RUN_SU}"'
+                    _export_cmd_su='sudo "${shell}" -c "${RUN_SU}" "${shell##*/}" "$@"'
                 fi
                 _wrapped_fn_def="# BEGIN WRAP ${_i}
 { RUN=\$(cat) ; }<<\"${_i}${_SPACEGAL_EOF_TAG}\"
@@ -5746,11 +5746,11 @@ ${_i}${_SPACEGAL_EOF_TAG}
         else
             local _export_cmd_su=
             if [ -n "${_SUUSER}" ] && [ -n "${_SUDO}" ]; then
-                _export_cmd_su='sudo su '${_SUUSER}' -s "${shell}" -c "${RUN_SU}"'
+                _export_cmd_su='sudo su '${_SUUSER}' -s "${shell}" -c "${RUN_SU}" "${shell##*/}" "$@"'
             elif [ -n "${_SUUSER}" ]; then
-                _export_cmd_su='su '${_SUUSER}' -s "${shell}" -c "${RUN_SU}"'
+                _export_cmd_su='su '${_SUUSER}' -s "${shell}" -c "${RUN_SU}" "${shell##*/}" "$@"'
             else
-                _export_cmd_su='sudo "${shell}" -c "${RUN_SU}"'
+                _export_cmd_su='sudo "${shell}" -c "${RUN_SU}" "${shell##*/}" "$@"'
             fi
             _export_cmd="
 { RUN_SU=\$(cat) ; }<<\"0_SU${_SPACEGAL_EOF_TAG}\"

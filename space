@@ -2430,7 +2430,7 @@ PRINT()
         local _SPACE_NAME="";
     }
 
-    case "${2-info}" in
+    case "${2:-info}" in
         error)
             if [ "${SPACE_LOG_LEVEL:-4}" -lt 1 ]; then return; fi
             header="[ERROR] "; color="\033[31m"

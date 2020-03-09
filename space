@@ -3267,6 +3267,7 @@ _main()
     unset _ev
 
     # Load all YAML files into respective namespace.
+    local _firstyamlfile=""  # Save the path of the first yaml file, we want it for $0 in "sh -c" later on.
     local _counter=0
     while (( _counter < ${#_namespaces[@]} )); do
         local _namespace=${_namespaces[$_counter]}
@@ -3375,6 +3376,10 @@ _main()
             _cachefile=${_yamlfile%/*}
             _cachefile=$_cachefile"/."${_yamlfile##*/}".cache"
             unset _module _protocol _domain _domainuser _username _reponame _commit _str_commit _repofullname
+        fi
+
+        if [ "${_counter}" = "1" ]; then
+            _firstyamlfile="${_yamlfile}"
         fi
 
         ## Parse and load YAML file(s).
@@ -5802,7 +5807,7 @@ ${_export_cmd_su}"
         # Make sure to kill process group on TERM.
         # TODO: removed for now, it must TERM it's childs and then KILL itself?
         #trap 'trap - TERM INT HUP PIPE; kill -SIGKILL -$$; exit;' TERM INT HUP PIPE
-        ${_sh} -c "$_export_cmd"
+        ${_sh} -c "$_export_cmd" "${_firstyamlfile}"
         #wait $!
     fi
 }

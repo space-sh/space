@@ -2515,26 +2515,6 @@ _info()
     fi
 }
 
-# Print and continue on same line.
-_info2()
-{
-    local msg="${1}"
-    shift
-
-    local state="${1-0}"
-    shift
-
-    if (( _VERBOSITY >= 3 )); then
-        [ "$_LOG_ENABLE_COLORS" = "1" ] && printf "${_COLOR_FG_WHITE}" >&2
-        if [[ $state != 1 ]]; then
-            printf "[INFO]  %s" "$msg" >&2
-        else
-            printf "%s\n" "$msg" >&2
-        fi
-        [ "$_LOG_ENABLE_COLORS" = "1" ] && printf "${_COLOR_DEFAULT}" >&2
-    fi
-}
-
 _debug()
 {
     if (( _VERBOSITY >= 4 )); then

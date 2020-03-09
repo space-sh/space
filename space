@@ -6431,8 +6431,17 @@ _cmd_export_vars()
         _split_args "_arr" "${_fn_env}"
         (( $? > 0 )) && { trap - EXIT; return 1; }
         for _fn_env_item in "${_arr[@]}"; do
+            local __evaluate="0"
+            local __varescape="0"
             _k1=${_fn_env_item%%=*}
             if [[ ${_k1} == ${_fn_env_item} ]]; then
+                __evaluate="1"
+            elif [[ "${_k1}=\$" == "${_fn_env_item}" ]]; then
+                # This means evaulate the variable and then escape it on $
+                __evaluate="1"
+                __varescape="1"
+            fi
+            if [ "${__evaluate}" = "1" ]; then
                 # Let's evaluate the variable.
                 _v="${_k1}"
                 _eval_var "_v"
@@ -6444,6 +6453,9 @@ _cmd_export_vars()
                 _v=${_fn_env_item#*=}
             fi
             _escape "_v" '"'
+            if [ "${__varescape}" = "1" ]; then
+                _escape "_v" '$'
+            fi
             _export_vars="${_export_vars}${_k1}=\""$_v"\""$'\n'
         done
         unset _fn_env_item _k1 _v

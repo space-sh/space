@@ -102,6 +102,7 @@ readonly _USAGE="Usage:
 
 # Set log level for final script in interval [0,5]
 # Inherited from environment and forwarded to final script.
+# Also settable using the -L flag.
 SPACE_LOG_LEVEL=${SPACE_LOG_LEVEL:-4}
 
 # Enable colored message output
@@ -120,6 +121,10 @@ SPACE_ASSERT_EXIT=0
 # Set to 1 to ignore exit status and always return 0.
 # This is exported to script, it's not a SPACE header variable.
 SPACE_MUTE_EXIT=0
+
+# Set to 1 to not show the exit status message (regardless exit code)
+# This is exported to script, it's not a SPACE header variable.
+SPACE_MUTE_EXIT_MESSAGE=0
 
 # The verbosity level: 0-4 [none-everything]
 _VERBOSITY=3
@@ -5607,6 +5612,7 @@ fi'
                     _fn_env="${_fn_env} SPACE_LOG_ENABLE_COLORS=\${SPACE_LOG_ENABLE_COLORS:-$SPACE_LOG_ENABLE_COLORS}"
                     _fn_env="${_fn_env} SPACE_ASSERT_EXIT=\${SPACE_ASSERT_EXIT:-$SPACE_ASSERT_EXIT}"
                     _fn_env="${_fn_env} SPACE_MUTE_EXIT=\${SPACE_MUTE_EXIT:-$SPACE_MUTE_EXIT}"
+                    _fn_env="${_fn_env} SPACE_MUTE_EXIT_MESSAGE=\${SPACE_MUTE_EXIT_MESSAGE:-$SPACE_MUTE_EXIT_MESSAGE}"
                     _cmd_export_vars "${_fn_env}" "${_fn_name}"
                     (( $? > 0 )) && return 1
 
@@ -5625,6 +5631,7 @@ fi'
         _fn_env="${_fn_env} SPACE_LOG_ENABLE_COLORS=\${SPACE_LOG_ENABLE_COLORS:-$SPACE_LOG_ENABLE_COLORS}"
         _fn_env="${_fn_env} SPACE_ASSERT_EXIT=\${SPACE_ASSERT_EXIT:-$SPACE_ASSERT_EXIT}"
         _fn_env="${_fn_env} SPACE_MUTE_EXIT=\${SPACE_MUTE_EXIT:-$SPACE_MUTE_EXIT}"
+        _fn_env="${_fn_env} SPACE_MUTE_EXIT_MESSAGE=\${SPACE_MUTE_EXIT_MESSAGE:-$SPACE_MUTE_EXIT_MESSAGE}"
         _cmd_export_vars "${_fn_env}" "${_fn_name}"
         (( $? > 0 )) && return 1
 
@@ -5729,21 +5736,19 @@ ${_i}${_SPACEGAL_EOF_TAG}
     # Space will print exit status.
     local _status=$?
     if [ "${_status}" -ne "${SPACE_ASSERT_EXIT}" ]; then
-        if [ "${SPACE_LOG_LEVEL}" -ge 1 ]; then
+        if [ "${SPACE_MUTE_EXIT_MESSAGE}" != "1" ] && [ "${SPACE_LOG_LEVEL}" -ge 1 ]; then
             [ "${SPACE_LOG_ENABLE_COLORS:-1}" = "1" ] && [ -t 2 ] && printf "'${_COLOR_FG_RED}'" >&2
             '$_runinfo_fail'
             [ "${SPACE_LOG_ENABLE_COLORS:-1}" = "1" ] && [ -t 2 ] && printf "'${_COLOR_DEFAULT}'" >&2
         fi
         if [ "${SPACE_MUTE_EXIT}" != 1 ]; then
-            exit $((SPACE_ASSERT_EXIT == 0 ? _status : 1))
+            return $((SPACE_ASSERT_EXIT == 0 ? _status : 1))
         fi
-    else
-        if [ "${SPACE_LOG_LEVEL}" -ge '$_loglevel_success' ]; then
-            [ "${SPACE_LOG_ENABLE_COLORS:-1}" = "1" ] && [ '"${_loglevel_success}"' -eq 3 ] && [ -t 2 ] && printf "'${_COLOR_FG_GREEN}'" >&2
-            '$_runinfo_success'
-            [ "${SPACE_LOG_ENABLE_COLORS:-1}" = "1" ] && [ '"${_loglevel_success}"' -eq 3 ] && [ -t 2 ] && printf "'${_COLOR_DEFAULT}'" >&2
-            : # Important to reset status here.
-        fi
+    elif [ "${SPACE_MUTE_EXIT_MESSAGE}" != "1" ] && [ "${SPACE_LOG_LEVEL}" -ge '$_loglevel_success' ]; then
+        [ "${SPACE_LOG_ENABLE_COLORS:-1}" = "1" ] && [ '"${_loglevel_success}"' -eq 3 ] && [ -t 2 ] && printf "'${_COLOR_FG_GREEN}'" >&2
+        '$_runinfo_success'
+        [ "${SPACE_LOG_ENABLE_COLORS:-1}" = "1" ] && [ '"${_loglevel_success}"' -eq 3 ] && [ -t 2 ] && printf "'${_COLOR_DEFAULT}'" >&2
+        : # Important to reset status here.
     fi
 }
 

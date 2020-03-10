@@ -6441,6 +6441,8 @@ _cmd_export_vars()
 
     trap '_error "Problem when evaluating SPACE_FN ENV header variables associated with ${_fn_name}. Look for unbound variable or syntax error in named function or in its chain of functions."; trap - EXIT; return 1; ' EXIT
 
+    local duplicates=()
+
     if [[ -n ${_fn_env} ]]; then
         local _arr=()
         local _fn_env_item= _k1= _v=
@@ -6450,6 +6452,10 @@ _cmd_export_vars()
             local __evaluate="0"
             local __varescape="0"
             _k1=${_fn_env_item%%=*}
+            if [[ " ${duplicates[@]} " =~ " ${_k1} " ]]; then
+                continue
+            fi
+            duplicates=("${duplicates[@]}" "${_k1}")
             if [[ ${_k1} == ${_fn_env_item} ]]; then
                 __evaluate="1"
             elif [[ "${_k1}=\$" == "${_fn_env_item}" ]]; then

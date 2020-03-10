@@ -5785,13 +5785,6 @@ ${_export_cmd_su}"
 
 
     if [[ ${_dry-1} == "1" ]]; then
-        if [[ -t 1 ]]; then
-            _info "##################################################"
-            _info "#######       DRY RUN - NOT EXECUTING      #######"
-            _info "####### Redirect STDOUT to save as script. #######"
-            _info "##################################################"
-        fi
-
         local _sh="/usr/bin/env sh"
         if [ "${_FORCE_BASH}" = "1" ]; then
             _sh="/usr/bin/env bash"

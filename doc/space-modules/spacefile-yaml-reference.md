@@ -74,9 +74,17 @@ The quotes are automatically removed.
 
 Node environment variables which are wrapped in double quotes will be _Bash_ evaluated at the parse stage, just as values that are unquoted.
 The quotes are automatically removed.
-When arguments and commands are wrapped inside other commands, their escape levels of double quotes and dollar signs are automatically increased.
 
-Using environment variables in _YAML_ will be properly substituted, if not escaped. However subshells `$(...)` are not allowed and will be filtered out.
+Using environment variables in _YAML_ will be properly substituted, if not escaped. However subshells `$(...)` are not allowed and the `$` will be filtered out.
+
+NOTE: if `$(...)` is quoted in single quotes it will not be filtered out and the subcommand *will* be executed at runtime!
+
+#### Valid variable names
+In _Bash_ and other shells variable names can contain the characters `a-zA-Z0-9_`, but cannot begin with a number `(0-9)`.
+
+In _Space_, the above rules apply but also variables declared in the _YAML_ definitions cannot start with an underscore. This is to protect the inner workings of Space while the YAML is being processed, because variables in shell have very "generous" scopes.
+
+If using any other invalid characters for variable names declared in the _YAML_, Space might silently ignore them (and not throw an error) because the _YAML_ parser is limited.
 
 #### Strings and quoting
 Unquoted and double quoted values will be parameter expanded by _Bash_ during parsing, while single quoted lines will be treated as raw strings and evaluated later, at run time.  
@@ -282,7 +290,7 @@ space "/_?.*/"
             - b.sh
 ```
 
-Note that when sourcing shell files only the functions are of interested to Space, anything outside of function bodies is ignored.
+Note that when sourcing shell files only the functions are of interested to _Space_, anything outside of function bodies is ignored.
 
 
 #### Preprocessor
@@ -342,11 +350,11 @@ This will output the text and read input from `stdin` which will be stored in pr
 Use `@prompt:-` to only prompt if var1 is unset or empty.  
 One exception happens when using `prompt` in the preprocessor: whenever preprocess output is cached, so will the prompted value be. The next time it runs the user will not be prompted because _Space_ will be running a cached version.  
 Please refer to the caching options for controlling that behavior from the command line: `-C` option.  
-A note of warning is that tab auto completion and `@prompt` should generally not be used together since the prompt will get in the way of the completion process because it outputs to terminal and reads from stdin.
+A note of warning is that tab auto completion and `@prompt` should generally not be used together since the prompt will get in the way of the completion process because it outputs to stderr and reads from stdin.
 
 * `@cache: {0,1,2}`:
 Force the caching behaviour of this YAML file. Could be useful to turn off caching when using `@prompt`, since prompted values are cached.  
-A note of warning dough is that you should not turn off caching when using tab auto completion because the performance and responsiveness
+A note of warning though is that you should not turn off caching when using tab auto completion because the performance and responsiveness
 will suffer greatly.
 
 * `@clone: space-sh/ssh space-sh/docker`:
@@ -429,16 +437,19 @@ It is also possible to set any preprocessor variables using `-pvarname=` via the
 These variables are saved with the cache and if they change or are not provided, the cache will be invalidated.
 
 #### Internal environment variables 
+There are two special environment variables, both which are available in the _YAML_ build stage and can be referenced.  
 
 * `CWD`:
-The directory from where the user invoked _Space_.
+The full directory path from where the user invoked _Space_.
 
 * `CWDNAME`:
-The top level directory name from where the user invoked _Space_.
+The base name of the directory from where the user invoked _Space_.
+
+Both these variables are write protected and cannot be assigned from within the _YAML_.
 
 #### Examples
 
-The following shows some Space variables in practice.
+The following shows some _Space_ variables in practice.
 
 ##### Setup a test Module
 For `Spacefile.yaml`:  

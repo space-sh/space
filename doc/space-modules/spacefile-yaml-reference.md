@@ -350,7 +350,7 @@ This will output the text and read input from `stdin` which will be stored in pr
 Use `@prompt:-` to only prompt if var1 is unset or empty.  
 One exception happens when using `prompt` in the preprocessor: whenever preprocess output is cached, so will the prompted value be. The next time it runs the user will not be prompted because _Space_ will be running a cached version.  
 Please refer to the caching options for controlling that behavior from the command line: `-C` option.  
-A note of warning is that tab auto completion and `@prompt` should generally not be used together since the prompt will get in the way of the completion process because it outputs to stderr and reads from stdin.
+A note of warning is that tab auto completion and `@prompt` should generally not be used together since the prompt will get in the way of the completion process because it outputs to `stderr` and reads from `stdin`.
 
 * `@cache: {0,1,2}`:
 Force the caching behaviour of this YAML file. Could be useful to turn off caching when using `@prompt`, since prompted values are cached.  

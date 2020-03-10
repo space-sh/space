@@ -17,12 +17,12 @@ icon: "<b>6. </b>"
 #### SPACE_LOG_ENABLE_COLORS
 Enables colored message output.  
 Default: 1  
-Set this from cmdline, using the -e flag or from the _YAML_.
+Set this from cmdline, using the `-e` flag or from the _YAML_.
 
 #### SPACE_LOG_LEVEL
 Set level of logging in interval [0,5] for the final script.  
 Default: 4  
-Set this from cmdline, using the -e flag or from the _YAML_.
+Set this from cmdline, using the `-e` flag or from the _YAML_.
 
 #### SPACE_MODULES_SHARED
 The directory for shared resources i.e. modules.  

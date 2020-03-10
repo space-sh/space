@@ -82,7 +82,7 @@ hej2:
 
 - OK4: Yes!
   OK4a:
-      # not ignored, even dough no trailing space
+      # not ignored, even though no trailing space
       -
       # Not ignored, trailing space.
       - 

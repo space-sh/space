@@ -537,7 +537,7 @@ _list()
     shift || :
 
     if [[ ! $_path =~ (^/.+/$)|(^/$) ]]; then
-        _error "Malformed path ($_path) as argument to _list. Must start and end with a slash. Lonesome cowboy slashes are OK dough."
+        _error "Malformed path ($_path) as argument to _list. Must start and end with a slash. Lonesome cowboy slashes are OK though."
         return 1
     fi
 
@@ -5368,7 +5368,7 @@ _execute()
 
     # Split string into array of arguments.
     if [[ "${_defaultargs//\\\"/}" != "${_defaultargs}" ]]; then
-            _error "RUN: $_RUN $_defaultargs, has a value containing nested quotes. Passing such a variable by value using the YAML RUN variable or by setting the SPACE_ARGS variable is a problem due to a known limitation in the Space parser. Passing nested quotes on cmd line using positional arguments will work dough. Recommended is to export the variable using SPACE_ENV and then referencing it by name in the shell function."
+            _error "RUN: $_RUN $_defaultargs, has a value containing nested quotes. Passing such a variable by value using the YAML RUN variable or by setting the SPACE_ARGS variable is a problem due to a known limitation in the Space parser. Passing nested quotes on cmd line using positional arguments will work though. Recommended is to export the variable using SPACE_ENV and then referencing it by name in the shell function."
             return 1
     fi
     local _args=()

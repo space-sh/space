@@ -32,7 +32,7 @@
 #   The parsing of COMP_WORDS has become horrendous.
 #   It will need a rewrite and a solid way of rearranging the 
 #   words to our preferred format. Bash3 and Bash4 seem to behave
-#   differently on word splitting even dough their COMP_WORDBREAKS are the same.
+#   differently on word splitting even though their COMP_WORDBREAKS are the same.
 #
 #==========
 [ -n "${BASH_VERSION}" ] &&

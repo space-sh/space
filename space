@@ -4998,6 +4998,17 @@ _loadnode()
             _list "_envs" "${_nodepath}_env/$_arrindex/" "1" "1"
             if (( ${#_envs[@]} > 0 )); then
                 for _key in "${_envs[@]}"; do
+                    # Check if write protected variable.
+                    case "${_key}" in
+                        CWD)
+                            _warning "Trying to set write protected variable CWD."
+                            continue
+                            ;;
+                        CWDNAME)
+                            _warning "Trying to set write protected variable CWDNAME."
+                            continue
+                            ;;
+                    esac
                     # Check if it's a protected variable that's only
                     # allowed to be set on the last part of the node.
                     # Update: we don't apply this restriction anymore
@@ -5011,6 +5022,11 @@ _loadnode()
 
                     if [[ $_key =~ ^[0-9]+$ ]]; then
                         _error "${_nodepath}_env/$_arrindex/$_key is malformed, array inside object?. Syntax error in YAML."
+                        return 1
+                    fi
+
+                    if [[ $_key =~ ^[0-9] ]]; then
+                        _error "${_nodepath}_env/$_arrindex/$_key is malformed, variable names cannot begin with a digit."
                         return 1
                     fi
 
@@ -6590,6 +6606,7 @@ _add_cmd()
 #============
 _escape_inline()
 {
+    # TODO: parse out the individual variables and filter out those prefixed with underscore, to not leak internal variables.
     eval "local var=\"$*\""
     shift
 

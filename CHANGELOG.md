@@ -1,5 +1,38 @@
 # Space - Change log
 
+## [current]
+
++ Add the ability for `SPACE_DEP` variables to be variable escaped
+
++ Add the (first) _YAML_ file path as `$0` value when running directly from _Space_
+
++ Add `$0` for wrapped calls using `sudo` or `su`
+
++ Add command line arguments `$@` for wrapped calls as `$1`, `$2`, ...
+
++ Add write protection against `CWD` environment variable assignment from _YAML_
+
++ Add write protection against `CWDNAME` environment variable assignment from _YAML_
+
++ Add variable name check to prevent names starting with a digit
+
++ Add `SPACE_MUTE_EXIT_MESSAGE` flag to not show the exit status (node output)
+
+* Change `PRINT` to default to `info` mode when passing in empty string as second argument
+
+* Fix documentation typos
+
+* Update documentation
+
+* Change `SPACE_ENV` variables export to not include duplicated entries
+
+- Remove unused procedures
+
+- Remove `_PRINT_COLUMN_POSITION` variable
+
+- Remove the dry run message banner when dumping to TTY
+
+
 ## [1.3.0 - 2020-01-04]
 
 + Add runtime variable `${CWDNAME}` as top level directory from where _Space_ was invoked

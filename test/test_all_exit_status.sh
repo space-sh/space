@@ -175,6 +175,11 @@ _RUN_CHECK_OK   "Test -h switch: contains usage section" "Usage:" $_SPACE_BIN -h
 # -e: Regular environment variable
 _RUN_CHECK_FAIL "Test -e switch: key=value" "The node / has no RUN defined" $_SPACE_BIN -e dummyenv=mukyanjong
 _RUN_CHECK_FAIL "Test -e switch: malformed pair" "Malformed -e switch" $_SPACE_BIN -e malformedEnv
+# Check duplicates
+_duplicates_count="$(bash ${_SPACE_BIN} -f ./test/Spacefile.yaml /run/ -e SPACE_ENV="a=1 a=2" -d -C0 | grep -c "a\=")"
+if [ "${_duplicates_count}" -ne 1 ]; then
+    printf "\033[31m[ERROR] \n\tCommand: \"SPACE_ENV\"\n\tExpected output to contain: \"grep count of a\= equal to 1\"\033[0m\n"
+fi
 
 # -p: Valid preprocessing variables
 _RUN_CHECK_OK "Test -p switch: attribution" ""      $_SPACE_BIN -p var1=ready   / -h

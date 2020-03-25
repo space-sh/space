@@ -6452,7 +6452,7 @@ _cmd_export_vars()
             local __evaluate="0"
             local __varescape="0"
             _k1=${_fn_env_item%%=*}
-            if [[ "${duplicates[@]-}" =~ " ${_k1} " ]]; then
+            if [[ " ${duplicates[@]-} " =~ " ${_k1} " ]]; then
                 continue
             fi
             duplicates=("${duplicates[@]-}" "${_k1}")

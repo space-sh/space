@@ -35,8 +35,8 @@ fi
 
 #
 # Setup URL and file name
-_bsd_image_base_url="ftp://ftp.freebsd.org/pub/FreeBSD/releases/VM-IMAGES/11.0-RELEASE/amd64/Latest/"
-_bsd_image_name="FreeBSD-11.0-RELEASE-amd64.vhd"
+_bsd_image_base_url="ftp://ftp.freebsd.org/pub/FreeBSD/releases/VM-IMAGES/11.2-RELEASE/amd64/Latest/"
+_bsd_image_name="FreeBSD-11.2-RELEASE-amd64.vhd"
 _bsd_image_name_compressed="${_bsd_image_name}.xz"
 
 #

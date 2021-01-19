@@ -26,7 +26,7 @@ if ! command -v VBoxManage >/dev/null; then
     exit 1
 fi
 
-_bsd_image_name="FreeBSD-11.0-RELEASE-amd64.vhd"
+_bsd_image_name="FreeBSD-11.2-RELEASE-amd64.vhd"
 
 if [ ! -f "${_bsd_image_name}" ]; then
     printf "Missing %s. Please run \"sh 00_bsdvm_fetch.sh\" first.\n" "${_bsd_image_name}" 1>&2

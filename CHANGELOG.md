@@ -18,6 +18,8 @@
 
 + Add `SPACE_MUTE_EXIT_MESSAGE` flag to not show the exit status (node output)
 
++ Add overflow check to catch "Argument list too long" type of errors
+
 * Change `PRINT` to default to `info` mode when passing in empty string as second argument
 
 * Fix documentation typos
@@ -25,6 +27,10 @@
 * Update documentation
 
 * Change `SPACE_ENV` variables export to not include duplicated entries
+
+* Update copyright information
+
+* Improve man page description of `-B` switch
 
 - Remove unused procedures
 

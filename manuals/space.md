@@ -125,8 +125,8 @@ When running **Space**, the following steps occur:
         Set caching level: 0 = off, 1 = on, 2 = regenerate cache.  
         Default level: 1
 
-  * `-B` mode:
-        Set to mode=1 to force to run modules in Bash. Normally Bash dependency depends on module script files ending in .bash instead of .sh.
+  * `-B`:
+        Set to force to run modules using Bash. Normally Bash dependency depends on module script files ending in .bash instead of .sh.
 
   * `-Q`:
         Queries updates and general state of the Space.sh services.  

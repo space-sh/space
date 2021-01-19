@@ -169,7 +169,7 @@ _RUN_CHECK_FAIL "Test -m switch: Explicit protocol HTTPS, missing domain name ex
 _RUN_CHECK_FAIL "Test -m switch: Explicit protocol SSH, missing domain name extension" "Expected domain extension" $_SPACE_BIN -m ssh://host./user/repo / -h 
 
 # -h: Help
-_RUN_CHECK_OK   "Test -h switch: contains basic program info" "Space. (C) Blockie AB 2016-2020, blockie.org. GPL version 3 licensed." $_SPACE_BIN -h
+_RUN_CHECK_OK   "Test -h switch: contains basic program info" "Space. (C) Blockie AB 2016-2021, blockie.org. GPL version 3 licensed." $_SPACE_BIN -h
 _RUN_CHECK_OK   "Test -h switch: contains usage section" "Usage:" $_SPACE_BIN -h
 
 # -e: Regular environment variable

@@ -3,12 +3,19 @@
 
 ![Space.sh](https://space.sh/static/img/logo.png)
 
+Welcome to Space!
+
+This tool is not for the faint of heart, but here we go!
+
 The _Space.sh_ is a single file program, referred to as _Space_, that relies only on _Bash version 3.2 or later_ as dependency for loading and running configuration files and invoking programs in a structured manner.  
-_Space_ is aimed to be run in constrained environments, embedded systems and devices geared towards the _Internet of Things (IoT)_. It also serves as a general purpose automation tool for structuring, setting up, deploying and executing commands, complex programs or replicating complete environments in an easy way.  
+
+_Space_ assembles shell script applications built out of reusable modules and it also provides automation features.
+
+One could say "it's like Ansible but written in Bash".
+
 _Space_ provides the notion of _Modules_, which in essence are _Git_ repositories filled with user content defined as _Space_ descriptions and operations. _Modules_ can also point to other modules, so it is possible to create content on top of other users' work.  
 
 _Space_ is part of _Space.sh_ and can be found at [https://space.sh](https://space.sh).  
-_Space.sh_ is a suite of services for _IoT_ automation, aimed to provide small footprint automation for _IoT_ devices, servers and digital life in general.  
 
 
 ## Dependencies

@@ -78,22 +78,6 @@ bash50_base_tests:
 # Full tests
 #
 #=========================================
-alpine_26_test_all:
-  stage: test
-  image: alpine:2.6
-  script:
-    - apk add --update bash ca-certificates curl git
-    - mkdir ~/.ssh
-    - printf "Host *\n StrictHostKeyChecking no" > ~/.ssh/config
-    - which bash
-    - which busybox
-    - bash --version
-    - bash test/test_all_exit_status.sh
-    - bash test/test_install.sh
-    - bash test/test_core.sh
-    - bash test/test_function.sh
-    - bash test/test_yaml.sh
-
 alpine_test_all:
   stage: test
   image: alpine:latest

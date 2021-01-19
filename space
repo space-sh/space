@@ -79,7 +79,7 @@ set -o nounset
 #
 
 # Version
-readonly _VERSION="1.3.0"
+readonly _VERSION="1.4.0"
 # Find absolute path to bash binary
 if command -v bash >/dev/null; then
     readonly _BASHBIN=$(command -v bash)

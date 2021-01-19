@@ -1,6 +1,6 @@
 # Space - Change log
 
-## [current]
+## [1.4.0 - 2021-01-19]
 
 + Add the ability for `SPACE_DEP` variables to be variable escaped
 

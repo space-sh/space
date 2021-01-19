@@ -5815,6 +5815,14 @@ ${_export_cmd_su}"
             _sh="env bash"
         fi
 
+        # Check if the exported command is too large to be passed to `env`.
+        # Magic number taken from https://www.in-ulm.de/~mascheck/various/argmax/ (MAX_ARG_STRLEN) (minus 1000 bytes)
+        # Note: This is to avoid that the `env sh -c` command fails with: "/usr/bin/env: Argument list too long".
+        if [ "${#_export_cmd}" -gt "130072" ]; then
+            _error "The exported command (${#_export_cmd} bytes) is larger than 130072 bytes. This script must be exported (-d) and run as standalone"
+            return 126
+        fi
+
         # Make sure to kill process group on TERM.
         # TODO: removed for now, it must TERM it's childs and then KILL itself?
         #trap 'trap - TERM INT HUP PIPE; kill -SIGKILL -$$; exit;' TERM INT HUP PIPE

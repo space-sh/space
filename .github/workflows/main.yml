@@ -1,0 +1,263 @@
+name: CI
+
+# Controls when the action will run. 
+on:
+  # Triggers the workflow on push or pull request events but only for the master branch
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+  # Allows running manually from the Actions tab
+  workflow_dispatch:
+
+# Workflow description
+jobs:
+  
+  #=========================================
+  # BusyBox/Bash-only targets
+  #
+  # Tests performed on targets without git or
+  # HTTPS-enabled curl/wget. These are relevant
+  # tests for basic language checks against
+  # supported Bash versions.
+  #
+  # Tests:
+  # - YAML processing
+  # - Space install
+  #
+  #=========================================  
+  bash32_base_tests:
+    # The type of runner that the job will run on
+    runs-on: ubuntu-latest
+    container: bash:3.2
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+      # Checkout repository under $GITHUB_WORKSPACE so the job can access it
+      - uses: actions/checkout@v2
+
+      # Runs a set of commands using the runners shell
+      - name: Run tests
+        run: |
+          which bash
+          bash --version
+          bash test/test_install.sh
+          bash test/test_core.sh
+          bash test/test_function.sh
+          bash test/test_yaml.sh
+          
+  bash40_base_tests:
+    # The type of runner that the job will run on
+    runs-on: ubuntu-latest
+    container: bash:4.0
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+      # Checkout repository under $GITHUB_WORKSPACE so the job can access it
+      - uses: actions/checkout@v2
+
+      # Runs a set of commands using the runners shell
+      - name: Run tests
+        run: |
+          which bash
+          bash --version
+          bash test/test_install.sh
+          bash test/test_core.sh
+          bash test/test_function.sh
+          bash test/test_yaml.sh
+
+  bash50_base_tests:
+    # The type of runner that the job will run on
+    runs-on: ubuntu-latest
+    container: bash:5.0
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+      # Checkout repository under $GITHUB_WORKSPACE so the job can access it
+      - uses: actions/checkout@v2
+
+      # Runs a set of commands using the runners shell
+      - name: Run tests
+        run: |
+          which bash
+          bash --version
+          bash test/test_install.sh
+          bash test/test_core.sh
+          bash test/test_function.sh
+          bash test/test_yaml.sh
+
+  #=========================================
+  # Full tests
+  #
+  #=========================================
+  alpine_test_all:
+    # The type of runner that the job will run on
+    runs-on: ubuntu-latest
+    container: alpine:latest
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+      # Checkout repository under $GITHUB_WORKSPACE so the job can access it
+      - uses: actions/checkout@v2
+
+      # Runs a set of commands using the runners shell
+      - name: Run tests
+        run: |
+          apk add --update bash curl git
+          mkdir ~/.ssh
+          printf "Host *\n StrictHostKeyChecking no" > ~/.ssh/config
+          which bash
+          which busybox
+          bash --version
+          bash test/test_all_exit_status.sh
+          bash test/test_install.sh
+          bash test/test_core.sh
+          bash test/test_function.sh
+          bash test/test_yaml.sh
+          
+  arch_test_all:
+    # The type of runner that the job will run on
+    runs-on: ubuntu-latest
+    container: archlinux:latest
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+      # Checkout repository under $GITHUB_WORKSPACE so the job can access it
+      - uses: actions/checkout@v2
+
+      # Runs a set of commands using the runners shell
+      - name: Run tests
+        run: |
+          pacman -Sy --noconfirm diffutils glibc git which
+          mkdir ~/.ssh
+          printf "Host *\n StrictHostKeyChecking no" > ~/.ssh/config
+          which bash
+          bash --version
+          bash test/test_all_exit_status.sh
+          bash test/test_install.sh
+          bash test/test_core.sh
+          bash test/test_function.sh
+          bash test/test_yaml.sh
+       
+  centos_test_all:
+    # The type of runner that the job will run on
+    runs-on: ubuntu-latest
+    container: centos:latest
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+      # Checkout repository under $GITHUB_WORKSPACE so the job can access it
+      - uses: actions/checkout@v2
+
+      # Runs a set of commands using the runners shell
+      - name: Run tests
+        run: |
+          yum -y update
+          yum -y install curl git which
+          mkdir ~/.ssh
+          printf "Host *\n StrictHostKeyChecking no" > ~/.ssh/config
+          which bash
+          bash --version
+          bash test/test_all_exit_status.sh
+          bash test/test_install.sh
+          bash test/test_core.sh
+          bash test/test_function.sh
+          bash test/test_yaml.sh
+
+  debianjessie_test_all:
+    # The type of runner that the job will run on
+    runs-on: ubuntu-latest
+    container: debian:jessie
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+      # Checkout repository under $GITHUB_WORKSPACE so the job can access it
+      - uses: actions/checkout@v2
+
+      # Runs a set of commands using the runners shell
+      - name: Run tests
+        run: |
+          apt-get update -qq
+          apt-get install -y -qq curl git
+          mkdir ~/.ssh
+          printf "Host *\n StrictHostKeyChecking no" > ~/.ssh/config
+          which bash
+          bash test/test_all_exit_status.sh
+          bash test/test_install.sh
+          bash test/test_core.sh
+          bash test/test_function.sh
+          bash test/test_yaml.sh     
+
+
+  debianjessie_curl_test_all:
+    # The type of runner that the job will run on
+    runs-on: ubuntu-latest
+    container: debian:jessie
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+      # Checkout repository under $GITHUB_WORKSPACE so the job can access it
+      - uses: actions/checkout@v2
+
+      # Runs a set of commands using the runners shell
+      - name: Run tests
+        run: |
+          apt-get update -qq
+          apt-get install -y -qq curl
+          mkdir ~/.ssh
+          printf "Host *\n StrictHostKeyChecking no" > ~/.ssh/config
+          which bash
+          bash test/test_all_exit_status.sh
+          bash test/test_install.sh
+          bash test/test_core.sh
+          bash test/test_function.sh
+          bash test/test_yaml.sh
+          
+  debianjessie_wget_test_all:
+    # The type of runner that the job will run on
+    runs-on: ubuntu-latest
+    container: debian:jessie
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+      # Checkout repository under $GITHUB_WORKSPACE so the job can access it
+      - uses: actions/checkout@v2
+
+      # Runs a set of commands using the runners shell
+      - name: Run tests
+        run: |   
+          apt-get update -qq
+          apt-get install -y -qq wget
+          mkdir ~/.ssh
+          printf "Host *\n StrictHostKeyChecking no" > ~/.ssh/config
+          which bash
+          bash test/test_all_exit_status.sh
+          bash test/test_install.sh
+          bash test/test_core.sh
+          bash test/test_function.sh
+          bash test/test_yaml.sh
+            
+  debianlatest_test_all:
+    # The type of runner that the job will run on
+    runs-on: ubuntu-latest
+    container: debian:latest
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+      # Checkout repository under $GITHUB_WORKSPACE so the job can access it
+      - uses: actions/checkout@v2
+
+      # Runs a set of commands using the runners shell
+      - name: Run tests
+        run: |   
+          apt-get update -qq
+          apt-get install -y -qq curl git
+          mkdir ~/.ssh
+          printf "Host *\n StrictHostKeyChecking no" > ~/.ssh/config
+          which bash
+          bash test/test_all_exit_status.sh
+          bash test/test_install.sh
+          bash test/test_core.sh
+          bash test/test_function.sh
+          bash test/test_yaml.sh

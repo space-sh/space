@@ -271,22 +271,12 @@ _RUN_CHECK_FAIL "Test module: bad commit" "Expected username and reponame" $_SPA
 #
 # Modules
 #
-# -k: Security check TODO: FIXME: point to trusted module
-#_RUN_CHECK_OK $_SPACE_BIN -C0 -k2 -m os / -h
-_RUN_CHECK_OK   "Test -k0 switch" "" $_SPACE_BIN   / -h -k0
-_RUN_CHECK_OK   "Test -k1 switch" "" $_SPACE_BIN   / -h -k1
-_RUN_CHECK_OK   "Test -k2 switch" "" $_SPACE_BIN   / -h -k2
-_RUN_CHECK_FAIL "Test -k3 switch: unknown" "Unknown -k argument 3" $_SPACE_BIN   / -h -k3
-_RUN_CHECK_FAIL "Test -k6 switch: unknown" "Unknown -k argument 6" $_SPACE_BIN   / -h -k6
-
 # -K: Signature check
-_RUN_CHECK_OK   "Test -K0 switch" "" $_SPACE_BIN   / -h -K0
-_RUN_CHECK_OK   "Test -K1 switch" "" $_SPACE_BIN   / -h -K1
+_RUN_CHECK_OK   "Test -K switch" "" $_SPACE_BIN   / -h -K
 # TODO: FIXME: not available
 #_RUN_CHECK_OK   $_SPACE_BIN   / -h -K2
 #_RUN_CHECK_FAIL $_SPACE_BIN -C0 -K2 -S -m os / -h
-_RUN_CHECK_FAIL "Test -K3 switch: unknown" "Unknown -K argument 3" $_SPACE_BIN   / -h -K3
-_RUN_CHECK_FAIL "Test -K6 switch: unknown" "Unknown -K argument 6" $_SPACE_BIN   / -h -K6
+_RUN_CHECK_FAIL "Test -K3 switch: unknown" "Unknown option -K3" $_SPACE_BIN   / -h -K3
 
 # Completion returns 1
 _RUN_CHECK_FAIL "Test -3 switch: completion" "" $_SPACE_BIN -3 -m os / -h

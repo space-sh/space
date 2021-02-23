@@ -18,8 +18,8 @@
 #   Blockie AB 2016-2021 (blockie.org)
 #
 # Authors:
-#   Thomas Backlund (blund@blockie.org).
-#   Maicon Filippsen (filippsen@blockie.org).
+#   Thomas Backlund (blund@blockie.org) (https://github.com/bashlund).
+#   Maicon Filippsen (filippsen@blockie.org) (https://github.com/filippsen).
 #
 # Copying:
 #   This program is free software: you can redistribute it and/or modify
@@ -287,102 +287,142 @@ See man pages and https://space.sh for more info.
 
 $_USAGE
 
-          -f  YAML file to load, relative or absolute path, defaults to: ./Spacefile.yaml.
-              -f and -m options define namespaces in where to look for nodes, for a given dimension of nodes.
-              There can be maximum three namespaces and three dimensions. One namespace can have more than one dimension.
-              Dimension two and three could be found from namespace one below the node in dimension 1.
-              If only one dimension is given Space looks below "node/_dimensions/second" for a space separated set of lists that makes up the second dimension.
-              The second dimension then uses second namespace if defined else first namespace.
-              If two dimensions are given Space looks below "node/_dimensions/third" for a space separated list, each list object's "match" node is matched
-              against the node in the second dimension, if match then the list below "nodes" makes up the third dimension.
-              The third dimension then uses third namespace if defined else first namespace.
-          -m  [giturl/][username]/reponame module to run.
-              Direct access to run nodes in a module.
-              Only the Space specific user gitlab.com/space-sh could be denoted using
-              only reponame, then username is defaulted to space-sh and giturl is
-              defaulted to https://gitlab.com/.
-              All other users must specify domainname/username/reponame, for example
-              ssh://gitlab.com/filippsen/somemodule.
+          -f  filename
+              YAML file to load, relative or absolute path, defaults to: Spacefile.yaml.
+                space -f hello.yaml /node_to_run/
+
+          -m  [protocol://][user@][domain/][username]/reponame module to run.
+              Run nodes in given Space module. Clone module repo if necessary.
+                space -m github.com/space-sh/os /info/
+              Is the same as:
+                space -m os /info/
+              since the default organisation is github.com/space-sh
               The protocol defaults to https.
-          -M  [giturl/][username]/reponame module to load. (e.g. \"gitlab.com/blockie-org/amodule\")
+
+          -M  [protocol://][user@][domain/][username]/reponame module to load.
               Clone and load a modules shell file. Separate multiple by space within quotes,
               or use multiple -M switches, one for each module.
-              Use this to load a modules shell file but not it's yaml counterpart.
-              Example: space -m os /info/ -M ssh -e SPACE_WRAP=SSH_WRAP -e SSHHOST=1.2.3.4
+              Use this to only load a modules shell file but not it's yaml counterpart, example:
+                space -m os /info/ -M ssh -e SPACE_WRAP=SSH_WRAP -e SSHHOST=1.2.3.4
               Using the -M switch alone will not do anything since Space needs a target node to load.
-              -M modules shell scripts are loaded after -m module shell scripts and can override functions.
-              If a scripts functions loaded using -M has dependencies on other modules they must then also be provided using -M.
-          -e  environment variable to forcefully apply/overwrite before parsing the YAML.
-              -e var1="value1".
+              -M modules shell scripts are loaded after -m module shell scripts and can there fore override functions.
+              If a scripts functions loaded using -M has dependencies on other modules they must then also be explicitly provided using -M.
+
+          -e  arg
+              environment variable to forcefully apply/overwrite before parsing the YAML.
+                space -e var1="value1"
               Use one -e for each variable.
               To unset a variable use -evar1='!unset'
-          -E  file with variable definitions to apply before -e variables on command line are applied, on the format of a shell file:
-                Example:
-                    var1=value
-                    # Comments on single lines are ignored.
-                    # export keyword is ignored.
-                    export var2=value
+
+          -E  arg
+              file with variable definitions to apply before -e variables on command line are applied, on the format of a shell file, example:
+                var1=value
+                # Comments on single lines are ignored.
+                # export keywords are ignored.
+                export var2=value
               Use one -E for each file to load.
-          -p  preprocess variable to set before preprocessing.
-              -p inventory=staging.
+
+          -p  arg
+              preprocess variable to set before preprocessing.
+                space -p inventory=staging
               Use one -p for each variable.
-          -s  Set SUDO and/or su to run the command as.
-                -s sudo will wrap the command using sudo.
-                -s :root will issue "su root" to run the command.
-                -s sudo:root will issue "sudo su root" to run the command.
+
+          -s  arg
+              Set SUDO and/or su to run the script.
+              Wrap the command using sudo:
+                space -s sudo
+              Issue "su root" to run the command:
+                space -s :root
+              Issue "sudo su root" to run the command:
+                space -s sudo:root
               When working with wrapped commands and/or outer commands you could apply levels
               of sudo to run each wrapper as a specific user or sudo, as:
-                 -s sudo:admin,sudo,:sysadmin
-                This is a comma separated list. Empty values are allowed.
-              The rightmost sudo is for the innermost wrapped command (the actual command).
-              To "sudo" the wrapper but not the wrapped command do "-s sudo,".
-          -v  verbosity level, 0 = off, 1 = error, 2 = warning, 3 = info, 4 = debug.
-              Default is 2. Outputs to stderr.
-              This is the verbosity of Space build-time. See -L for run-time log level.
-          -d  dry run. Will echo the Bash command line computed instead of running it.
-          -l  list nodes. Do not run anything, only output the nodes matched.
-          -k  Check modules against the ban list. 0 = off, 1 = accept unknown modules
-              but not banned modules, 2 = require module to be known and not banned.
-              Default = 1.
-          -K  Verify module Git HEAD signature using GPG. 0 = off,
-              1 = accept moderate trust, 2 = only accept full trust signatures.
-              Default = 1.
+                 space -s sudo:admin,sudo,:sysadmin
+              This is a comma separated list. Empty values are allowed, no extra whitespaces allowed.
+              The rightmost sudo is for the innermost wrapped command (the "actual" command).
+              To "sudo" the wrapper but not the wrapped command do:
+                space -s sudo,
+
+          -v  level
+              Set the verbosity level. 0 = off, 1 = error, 2 = warning (default), 3 = info, 4 = debug.
+              This is the verbosity of the Space build-time. See -L for run-time log level.
+              All logging goes to stderr.
+
+          -L  level
+              Set the run-time log level: 0, 1, 2, 3, 4, 5. Shortcut to -e SPACE_LOG_LEVEL=x.
+              This setting is persisted in the composed script.
+              All logging goes to stderr.
+              This is not the same as the build-time verbosity level (-v).
+
+          -d
+              dump to stdout the composed script instead of running it.
+              Save the output as a standalone script which can be run using ash/dash/bash.
+              Note: most Space modules are POSIX compatible meaning the exported script most will
+              not need Bash to run, but ash/dash will do.
+
+          -l
+              list nodes. Do not run anything, only output the nodes matched.
+
+          -K
+              Set to run git verify-commit on HEAD when cloning.
+
           -S  Set HTTPS fallback for downloading modules using curl or wget.
-          -h  help, show Space usage or help on specific node.
-          node(s) Pattern of one or many nodes to run.
+
+          -h
+              help, show Space usage or help on specific node.
+
+          /node/
+              Pattern of one or many nodes to run.
               If no node path is given the root node "/" is implied.
-              If node path(s) are given but none matches then Space aborts.
+              If node path(s) are given but not all are found then Space aborts.
               A node pattern is defined after a namespace (-f/-m) and then belongs to that namespace.
-              Nodes support regular expressions to run multiple nodes in sequence.
-              Ex: "/west/.*" will match all nodes below /west/,
-                  "/we.*/ will match /west/ and /web/ nodes.
-                  When using asterisk make sure you use quotes so that
-                  Bash will not expand that before passing it to Space as arguments.
-                  /we{st,b}/ without quotes will get expanded by Bash as two arguments
-                  /west/ and /web/ that are passed to Space, which is cool of that is what you meant.
-          -V  show Space version information
-          -a  All. Adds a ".*" to the node it suffixes, to match all it's nodes below.
-          -C  caching level, 0 = off, 1 = on (default), 2 = regenerate cache.
-          -B  Set to force to run modules in Bash. Normally Bash dependency depends
+              Nodes support regular expressions to run multiple nodes in sequence, ex:
+                "/west/.*" will match all nodes below /west/,
+                "/we.*/ will match /west/ and /web/ nodes.
+                "/we(s|b).*/" will also match /west/ and /web/.
+                When using asterisk make sure you use quotes so that
+                Bash will not expand that before passing it to Space as arguments.
+                /we{st,b}/ without quotes will get expanded by Bash as two arguments
+                /west/ and /web/ that are passed to Space, which is cool (if that is what you meant).
+
+          -V
+              show Space version information
+
+          -a
+              Apply all nodes, by adding a ".*/" to the node it suffixes.
+
+          -C  level
+              Caching level, 0 = off, 1 = on (default), 2 = regenerate cache.
+
+          -B
+              Set to force to run modules using Bash. Normally Bash dependency depends
               on module script files ending in .bash instead of .sh.
-          -Q  Queries updates and general state of the Space.sh services.
-          -u  Update current Space install to the latest version.
-          -U  Update module(s). Performs a Git pull on matched module(s) then quit.
+
+          -Q
+              Queries updates and general state of the Space.sh services.
+
+          -u
+              Update current Space install to the latest version.
+
+          -U  [domain/][username]/reponame
+              Update module(s). Performs a Git pull on matched module(s) then quit.
               Space will update repositories in the shared space_modules directory.
               -U ""    means update all modules.
-              -U "ssh" means update gitlab.com/space-sh/ssh.
-              -U "gitlab.com/blockie-org/ssh" means update gitlab.com/blockie-org/ssh repository.
-              -U "space-sh/.*" means update every module for the space-sh user on gitlab.com.
-          -X  Outputs debug information.
+              -U "ssh" means update github.com/space-sh/ssh.
+              -U "github.com/blockie-org/ssh" means update github.com/blockie-org/ssh repository.
+              -U "space-sh/.*" means update every module for the space-sh user on github.com.
+
+          -X
+              Outputs debug information.
               1 = preprocessed YAML result, 2 = YAML parsed to Bash, 3 = YAML loaded from Bash (retransformed), 4 = eval code
-          -Z  Skips checking modules version compatibility against current Space version
-          -L  Set run-time log level: 0, 1, 2, 3, 4, 5. Shortcut to -e SPACE_LOG_LEVEL=x.
-              This is not the same as the build-time verbosity level (-v).
+
+          -Z
+              Skips checking modules version compatibility against current Space version
 
 Examples:
 
 # Load a module named "os" from the official Space repositories and run the node named "info"
-space -m "os" /info/
+space -m os /info/
 
 # Load and run a local module and show description for its root node
 space -f Spacefile.yaml / -h

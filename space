@@ -233,15 +233,15 @@ fi
 readonly _SECURITY_BAN_SERVER="https://get.space.sh/verify_module"
 
 # Check the Git url to clone or update against the banlist.
+# UPDATE: the banlist functionality has been disabled for now.
 #  0=do not check at all
 #  1=check and accept "unknown" and "non banned" modules.
 #  2=check and require "trusted" status for module.
-_SECURITY_CHECK_BANNED=1
+_SECURITY_CHECK_BANNED=0
 
 # Verify the modules Git commit signature against web-of-trust.
 #  0=do not very signature at all.
-#  1=accept marginal trust.
-#  2=only accept full trust.
+#  1=do verify
 _SECURITY_GPG_VERIFY_SIGNATURE=0
 
 # Stack name prefix
@@ -2519,9 +2519,7 @@ _security()
     IFS= read -d '' -r _msg << _EOF
     $@
                *****************************************************************
-               *  Do not take too lightly on this security error.              *
-               *  Before disabling any security checks, please head over       *
-               *  to the Space.sh site to see that everything else is OK.      *
+               *  There was a SECURITY error. Aborted.                         *
                *****************************************************************
 _EOF
     [ "$_LOG_ENABLE_COLORS" = "1" ] && printf "${_COLOR_FG_MAGENTA}" >&2
@@ -2755,7 +2753,7 @@ _main()
                 [ "${1}" != "-m" ] && [ "${1}" != "-M" ] &&
                 [ "${1}" != "-e" ] && [ "${1}" != "-p" ] &&
                 [ "${1}" != "-s" ] && [ "${1}" != "-v" ] &&
-                [ "${1}" != "-k" ] && [ "${1}" != "-K" ] &&
+                [ "${1}" != "-K" ] &&
                 [ "${1}" != "-C" ] && [ "${1}" != "-U" ] &&
                 [ "${1}" != "-g" ] && [ "${1}" != "-L" ]; then
                 _isshebang=1
@@ -2838,7 +2836,7 @@ _main()
         elif [[ ${1:0:1} == '-' ]]; then
             # A normal switch, let getopts handle it.
             OPTIND=1
-            getopts ":f:m:aM:e:dp:v:k:K:ShVlC:BQuU:X:13:4:5:6:gZE:s:L:" "_o"
+            getopts ":f:m:aM:e:dp:v:KShVlC:BQuU:X:13:4:5:6:gZE:s:L:" "_o"
             case "${_o}" in
                 f)
                     if (( ${#_namespaces[@]} == 3 )); then
@@ -2971,46 +2969,8 @@ _main()
                     fi
                     (return 1)
                     ;;
-                k)
-                    case "${OPTARG}" in
-                        0)
-                            _SECURITY_CHECK_BANNED=0
-                            (return 1)
-                            ;;
-                        1)
-                            _SECURITY_CHECK_BANNED=1
-                            (return 1)
-                            ;;
-                        2)
-                            _SECURITY_CHECK_BANNED=2
-                            (return 1)
-                            ;;
-                    esac
-                    if (($? == 0)); then
-                        _error "Unknown -k argument $OPTARG."
-                        return 1
-                    fi
-                    (return 1)
-                    ;;
                 K)
-                    case "${OPTARG}" in
-                        0)
-                            _SECURITY_GPG_VERIFY_SIGNATURE=0
-                            (return 1)
-                            ;;
-                        1)
-                            _SECURITY_GPG_VERIFY_SIGNATURE=1
-                            (return 1)
-                            ;;
-                        2)
-                            _SECURITY_GPG_VERIFY_SIGNATURE=2
-                            (return 1)
-                            ;;
-                    esac
-                    if (($? == 0)); then
-                        _error "Unknown -K argument $OPTARG."
-                        return 1
-                    fi
+                    _SECURITY_GPG_VERIFY_SIGNATURE=1
                     (return 1)
                     ;;
                 S)

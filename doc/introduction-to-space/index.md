@@ -3,7 +3,7 @@ title: Introduction to Space
 next: /why-space/
 next_title: "Why Space"
 weight: 100
-giturl: gitlab.com/space-sh/space
+giturl: github.com/space-sh/space
 editurl: /edit/master/doc/introduction-to-space/index.md
 icon: "<b>1. </b>"
 ---

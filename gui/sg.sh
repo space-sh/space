@@ -200,7 +200,7 @@ _DATA_FILE="./.sg_shared"
 _LATENCY_FORK_PID=-1
 
 # TODO: FIXME: Deprecated
-_GIT_HOST="gitlab.com"
+_GIT_HOST="github.com"
 _GIT_USER="git"
 _GIT_PROTOCOL="https"
 

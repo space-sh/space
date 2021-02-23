@@ -154,7 +154,7 @@ _RUN_CHECK_FAIL "Test -f switch: file does not exit" "YAML file UnknownFile.yaml
 #
 # -m
 # Implicit protocol name
-_RUN_CHECK_FAIL "Test -m switch: URL missing repo/user combo" "Expected username and reponame" $_SPACE_BIN -m gitlab.com/space-sh
+_RUN_CHECK_FAIL "Test -m switch: URL missing repo/user combo" "Expected username and reponame" $_SPACE_BIN -m github.com/space-sh
 _RUN_CHECK_FAIL "Test -m switch: IP missing repo/user combo" "Expected username and reponame" $_SPACE_BIN -m 192.168.0.1/username
 _RUN_CHECK_FAIL "Test -m switch: hostname missing repo/user combo" "Expected username and reponame" $_SPACE_BIN -m host/username
 _RUN_CHECK_FAIL "Test -m switch: hostname with slash missing repo/user combo" "Expected username and reponame" $_SPACE_BIN -m host/username/
@@ -259,11 +259,11 @@ _RUN_CHECK_FAIL "Test @assert" "Assertion failed: nonempty" $_SPACE_BIN -f ./tes
 #
 # Fail cloning module repository
 if command -v git >/dev/null; then
-    _RUN_CHECK_FAIL "Test @clone" "Could not clone" $_SPACE_BIN -m ssh://gitlab.com/space-sh/non-existent-repo/ / -h
-    _RUN_CHECK_FAIL "Test @clone" "Could not clone" $_SPACE_BIN -m ssh://username@gitlab.com/space-sh/non-existent-repo/ / -h
+    _RUN_CHECK_FAIL "Test @clone" "Could not clone" $_SPACE_BIN -m ssh://github.com/space-sh/non-existent-repo/ / -h
+    _RUN_CHECK_FAIL "Test @clone" "Could not clone" $_SPACE_BIN -m ssh://username@github.com/space-sh/non-existent-repo/ / -h
 else
-    _RUN_CHECK_FAIL "Test @clone" "Could not clone module repository" $_SPACE_BIN -m ssh://gitlab.com/space-sh/non-existent-repo/ / -h
-    _RUN_CHECK_FAIL "Test @clone" "Could not clone module repository" $_SPACE_BIN -m ssh://username@gitlab.com/space-sh/non-existent-repo/ / -h
+    _RUN_CHECK_FAIL "Test @clone" "Could not clone module repository" $_SPACE_BIN -m ssh://github.com/space-sh/non-existent-repo/ / -h
+    _RUN_CHECK_FAIL "Test @clone" "Could not clone module repository" $_SPACE_BIN -m ssh://username@github.com/space-sh/non-existent-repo/ / -h
 fi
 
 _RUN_CHECK_FAIL "Test module: bad commit" "Expected username and reponame" $_SPACE_BIN -m username/os:badversion3 / -h
@@ -292,8 +292,8 @@ _RUN_CHECK_FAIL "Test multi module files: too many namespaces" "Too many namespa
 
 # -U: Update one module
 if command -v git >/dev/null; then
-    _RUN_CHECK_OK "Test -U switch: updating" "Updating space modules to pattern: ./gitlab.com/space-sh/os" $_SPACE_BIN -U "os"
-    _RUN_CHECK_OK "Test -U switch: updating" "Updating space modules to pattern: ./gitlab.com/space-sh/os" $_SPACE_BIN -U "gitlab.com/space-sh/os"
+    _RUN_CHECK_OK "Test -U switch: updating" "Updating space modules to pattern: ./github.com/space-sh/os" $_SPACE_BIN -U "os"
+    _RUN_CHECK_OK "Test -U switch: updating" "Updating space modules to pattern: ./github.com/space-sh/os" $_SPACE_BIN -U "github.com/space-sh/os"
 fi
 
 # -a: No dimensions

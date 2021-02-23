@@ -4,7 +4,7 @@ prev_title: "What are Space Modules"
 next: ../how-space-modules-work/
 next_title: "How Space Modules work"
 title: Running a Space module
-giturl: gitlab.com/space-sh/space
+giturl: github.com/space-sh/space
 editurl: /edit/master/doc/space-modules/running-a-space-module.md
 weight: 503
 ---
@@ -40,11 +40,11 @@ Now run `space -f Spacefile.yaml`. This is the same as running `space` without s
 
 
 #### Where to look for existing Space Modules?
-Official core Modules are located at [https://gitlab.com/space-sh](https://gitlab.com/space-sh).
+Official core Modules are located at [https://github.com/space-sh](https://github.com/space-sh).
 
 
 #### Downloading and running a Space Module
-Let's run the core Module named `os`, located at [https://gitlab.com/space-sh/os](https://gitlab.com/space-sh/os). Its description says:  
+Let's run the core Module named `os`, located at [https://github.com/space-sh/os](https://github.com/space-sh/os). Its description says:  
 
 >Space.sh module to handle operating system tasks such as user processes, packages and services management
 

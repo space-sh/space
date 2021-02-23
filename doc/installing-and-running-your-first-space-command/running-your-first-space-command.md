@@ -4,7 +4,7 @@ prev_title: "Verifying installation"
 next: /space-modules/
 next_title: "Space Modules"
 title: Running your first Space command
-giturl: gitlab.com/space-sh/space
+giturl: github.com/space-sh/space
 editurl: /edit/master/doc/installing-and-running-your-first-space-command/running-your-first-space-command.md
 weight: 406
 ---

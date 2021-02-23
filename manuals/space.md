@@ -43,13 +43,13 @@ When running **Space**, the following steps occur:
   * `-m` [giturl/][username]/reponame:
         Module to run.  
         Direct access to run nodes in a module.  
-        Modules are referenced as protocol://user@domain/username/reponame:commit, for example https://gitlab.com/space-sh/os:master  
-        Only the Space specific user gitlab.com/space-sh could be denoted using only reponame, then username is set to `space-sh` and giturl is set to https://gitlab.com/.  
-        All other users must specify domainname/username/reponame, for example ssh://gitlab.com/username/somemodule.  
+        Modules are referenced as protocol://user@domain/username/reponame:commit, for example https://github.com/space-sh/os:master  
+        Only the Space specific user github.com/space-sh could be denoted using only reponame, then username is set to `space-sh` and giturl is set to https://github.com/.  
+        All other users must specify domainname/username/reponame, for example ssh://github.com/username/somemodule.  
         The protocol defaults to https.  
 
   * `-M` [giturl/][username]/reponame:
-        Module to load e.g. "gitlab.com/blockie-org/amodule"  
+        Module to load e.g. "github.com/blockie-org/amodule"  
         Clone and load modules. Separate multiple by space within quotes or use multiple -M switches, one for each module.  
         Usually used together with '-m' option to load a needed module for use with SPACE_WRAP environment variable. `-M` module shell scripts are loaded after `-m` module shell scripts and can override functions.  
         Example: space -m dropalot -M ssh -e SPACE_WRAP=SSH_WRAP -e sshhost=111.222.123.4  
@@ -82,22 +82,19 @@ When running **Space**, the following steps occur:
   * `-v` level:
         Set verbosity level: 0 = off, 1 = error, 2 = warning, 3 = info, 4 = debug.  
         Default level: 2. Outputs to stderr.
+        This is the verbosity of the Space build-time. See -L for run-time log level.
 
   * `-d`:
-        Dry run. Will echo the Bash command line computed instead of running it.  
+        Dump to stdout the composed script instead of running it.
+        Save the output as a standalone script which can be run using ash/dash/bash.
+        Note: most Space modules are POSIX compatible meaning the exported script most will
+        not need Bash to run, but ash/dash will do.
 
   * `-l`:
         List nodes. Do not run anything, only output the nodes matched.  
 
-  * `-k` mode:
-        Check modules against the ban list.  
-        Valid modes: 0 = off, 1 = accept unknown modules but not banned modules, 2 = require module to be known and not banned.  
-        Default mode: 1.
-
-  * `-K` mode:
-        Verify module Git HEAD signature using GPG. 
-        Valid modes: 0 = off, 1 = accept moderate trust, 2 = only accept full trust signatures.  
-        Default mode: 1.
+  * `-K`:
+        Set to verify module Git HEAD signature using GPG. 
 
   * `-S`:
         Set HTTPS fallback for downloading modules using curl or wget.  
@@ -119,7 +116,7 @@ When running **Space**, the following steps occur:
         Show **Space** version information
 
   * `-a`:
-        All. Adds a ".*" to the node it suffixes, to match all it's nodes below.
+        Apply all nodes, by adding a ".*/" to the node it suffixes.
 
   * `-C` level:
         Set caching level: 0 = off, 1 = on, 2 = regenerate cache.  
@@ -138,9 +135,9 @@ When running **Space**, the following steps occur:
         Update module(s). Performs a Git pull on matched module(s) then quit.  
         **Space** will update repositories both in local Space_Modules and also in shared Space_Modules directories.  
         -U ""    means update all modules.  
-        -U "ssh" means update gitlab.com/space-sh/ssh.  
-        -U "gitlab.com/blockie-org/ssh" means update gitlab.com/blockie-org/ssh repository.  
-        -U "space-sh/.*" means update every module for the space-sh user on gitlab.com.  
+        -U "ssh" means update github.com/space-sh/ssh.  
+        -U "github.com/blockie-org/ssh" means update github.com/blockie-org/ssh repository.  
+        -U "space-sh/.*" means update every module for the space-sh user on github.com.  
 
   * `-X` mode:
         Outputs debug information.
@@ -149,6 +146,7 @@ When running **Space**, the following steps occur:
 
   * `-g`:
         Enable graphical user interface. 
+        Experimental and non complete.
         Default mode: disabled
 
   * `-Z`:
@@ -237,7 +235,7 @@ Maicon Filippsen (filippsen@blockie.org).
 
 
 ## REPORTING BUGS
-Please refer to the official source code repository for filing issues: https://gitlab.com/space-sh/space/issues
+Please refer to the official source code repository for filing issues: https://github.com/space-sh/space/issues
 
 
 ## COPYRIGHT

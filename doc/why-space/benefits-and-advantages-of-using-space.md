@@ -4,7 +4,7 @@ prev_title: "Why Space"
 next: /how-space-works/
 next_title: "How Space works"
 title: Benefits and advantages of using Space
-giturl: gitlab.com/space-sh/space
+giturl: github.com/space-sh/space
 editurl: /edit/master/doc/why-space/benefits-and-advantages-of-using-space.md
 weight: 201
 ---

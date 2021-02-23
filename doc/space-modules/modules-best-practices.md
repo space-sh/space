@@ -4,7 +4,7 @@ prev_title: "Modules versioning"
 next: ../modules-advanced-topics/
 next_title: "Modules advanced topics"
 title: Modules best practices
-giturl: gitlab.com/space-sh/space
+giturl: github.com/space-sh/space
 editurl: /edit/master/doc/space-modules/modules-best-practices.md
 weight: 509
 ---

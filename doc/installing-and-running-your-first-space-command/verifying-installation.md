@@ -4,7 +4,7 @@ prev_title: "Customizing installation parameters"
 next: ../running-your-first-space-command/
 next_title: "Running your first Space command"
 title: Verifying installation
-giturl: gitlab.com/space-sh/space
+giturl: github.com/space-sh/space
 editurl: /edit/master/doc/installing-and-running-your-first-space-command/verifying-installation.md
 weight: 405
 ---

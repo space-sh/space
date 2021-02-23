@@ -53,12 +53,12 @@ Note: this exact method does not check for the integrity of the downloaded .tar.
 
 ### First steps
 _Space_ is now installed. Run `space -h` anywhere to read the help instructions.  
-For a simple module example, please refer to EXAMPLE section in the [user manual page](manuals/space.md). For more advanced modules, check out the [Spacefile.yaml](Spacefile.yaml) and [Spacefile.sh](Spacefile.sh) files and the core modules located at [https://gitlab.com/space-sh](https://gitlab.com/space-sh).  
+For a simple module example, please refer to EXAMPLE section in the [user manual page](manuals/space.md). For more advanced modules, check out the [Spacefile.yaml](Spacefile.yaml) and [Spacefile.sh](Spacefile.sh) files and the core modules located at [https://github.com/space-sh](https://github.com/space-sh).  
 
 For more information, please refer to the documentation files located in the `doc` directory or the man pages.  
 For the latest news and online reference, please visit [https://space.sh](https://space.sh).
 
-Further questions can be asked via the [GitLab Issues](https://gitlab.com/space-sh/space/issues) page.
+Further questions can be asked via the [GitHub Issues](https://github.com/space-sh/space/issues) page.
 
 
 ## Community
@@ -68,12 +68,12 @@ Further questions can be asked via the [GitLab Issues](https://gitlab.com/space-
 
 ## Contributing
 
-Code contributions are welcome via [GitLab merge requests](https://gitlab.com/space-sh/space/merge_requests). More information and details on how to do it can be found in the [CONTRIBUTING](CONTRIBUTING.md) document.
+Code contributions are welcome via [GitHub pull requests](https://github.com/space-sh/space/pulls). More information and details on how to do it can be found in the [CONTRIBUTING](CONTRIBUTING.md) document.
 
 
 ## Issues
 
-Bug reports and suggestions can be filed at the project [GitLab Issues](https://gitlab.com/space-sh/space/issues) page.
+Bug reports and suggestions can be filed at the project [GitHub Issues](https://github.com/space-sh/space/issues) page.
 
 
 ## Authors

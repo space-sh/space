@@ -355,7 +355,7 @@ $_USAGE
               This is not the same as the build-time verbosity level (-v).
 
           -d
-              dump to stdout the composed script instead of running it.
+              Dump to stdout the composed script instead of running it.
               Save the output as a standalone script which can be run using ash/dash/bash.
               Note: most Space modules are POSIX compatible meaning the exported script most will
               not need Bash to run, but ash/dash will do.
@@ -1873,7 +1873,7 @@ _clone()
 #
 # Parameters:
 #   $1: variable name to put the module name which is to be "_sourced".
-#   $2: modulename inclusive optional Git commit: [https://[gitlab.com/]][username/]repo[:v1.1]
+#   $2: modulename inclusive optional Git commit: [https://[github.com/]][username/]repo[:v1.1]
 #
 # Returns:
 #   0 on success, non-zero otherwise
@@ -2154,11 +2154,11 @@ _extract_repo_parts()
     _str_commit=
     _repofullname=
 
-    # We'll do a sneek peek here and see if to inject gitlab.com for Space n' friends.
+    # We'll do a sneek peek here and see if to inject github.com for Space n' friends.
     if [[ $_mod =~ ^([-A-Za-z0-9_]+)/([-A-Za-z0-9_:.]+)$ ]]; then
-        if [[ "${BASH_REMATCH[1]}" = "space-sh" || "${BASH_REMATCH[1]}" = "machines-sh" || "${BASH_REMATCH[1]}" = "things-ai" || "${BASH_REMATCH[1]}" = "web3-sh" ]]; then
-            _debug "Assuming domain gitlab.com for module ${_mod} when cloning."
-            _mod="gitlab.com/${_mod}"
+        if [[ "${BASH_REMATCH[1]}" = "space-sh" ]]; then
+            _debug "Assuming domain github.com for module ${_mod} when cloning."
+            _mod="github.com/${_mod}"
         fi
     fi
 
@@ -2177,11 +2177,11 @@ _extract_repo_parts()
         elif [[ $_domain_part =~ ^([-@:A-Za-z0-9]+)(\.)?([a-z]{2,3}(\.[a-z]{2,3})?)? ]]; then
             # Check if punctuation was provided then requires the extension
             if [[ -n ${BASH_REMATCH[2]} && -z ${BASH_REMATCH[3]} ]]; then
-                _error "Expected domain extension: $_mod. Format: (protocol)<domain>/<user_name>/<repo_name>. Examples: \"space -m gitlab.com/<user_name>/<repo_name>\" \"space -m https://gitlab.com/<user_name>/<repo_name>\""
+                _error "Expected domain extension: $_mod. Format: (protocol)<domain>/<user_name>/<repo_name>. Examples: \"space -m github.com/<user_name>/<repo_name>\" \"space -m https://github.com/<user_name>/<repo_name>\""
                 return 1
             fi
         else
-            _error "Malformed import name: $_mod. Format: (protocol)<domain>/<user_name>/<repo_name>. Examples: \"space -m gitlab.com/<user_name>/<repo_name>\" \"space -m https://gitlab.com/<user_name>/<repo_name>\""
+            _error "Malformed import name: $_mod. Format: (protocol)<domain>/<user_name>/<repo_name>. Examples: \"space -m github.com/<user_name>/<repo_name>\" \"space -m https://github.com/<user_name>/<repo_name>\""
             return 1
         fi
     fi
@@ -2197,7 +2197,7 @@ _extract_repo_parts()
            [[ $_domain =~ ^([-@:A-Za-z0-9]+)(\.)?([a-z]{2,3}(\.[a-z]{2,3})?)? ]]; then
 
             if [[ -n ${BASH_REMATCH[2]} && -z ${BASH_REMATCH[3]} ]]; then
-                _error "Expected domain extension: $_domain Format: (protocol)<domain>/<user_name>/<repo_name>. Examples: \"space -m gitlab.com/<user_name>/<repo_name>\" \"space -m https://gitlab.com/<user_name>/<repo_name>\""
+                _error "Expected domain extension: $_domain Format: (protocol)<domain>/<user_name>/<repo_name>. Examples: \"space -m github.com/<user_name>/<repo_name>\" \"space -m https://github.com/<user_name>/<repo_name>\""
                 return 1
             fi
         fi
@@ -2215,7 +2215,7 @@ _extract_repo_parts()
             # Remove .git extension if exists
             _reponame=${_reponame%.git}
         else
-            _error "Expected username and reponame: $_mod. Format: (protocol)<domain>/<user_name>/<repo_name>. Examples: \"space -m gitlab.com/$_mod\" \"space -m https://gitlab.com/$_mod\""
+            _error "Expected username and reponame: $_mod. Format: (protocol)<domain>/<user_name>/<repo_name>. Examples: \"space -m github.com/$_mod\" \"space -m https://github.com/$_mod\""
             return 1
         fi
     else
@@ -2231,9 +2231,9 @@ _extract_repo_parts()
         _reponame=${_reponame%.git}
 
         if [[ $_username == "space-sh" ]]; then
-            _domain="gitlab.com"
+            _domain="github.com"
         else
-            _error "Expected domain name for git url with explicit protocol set: $_mod. Format: (protocol)<domain>/<user_name>/<repo_name>. Examples: \"space -m gitlab.com/$_mod\" \"space -m https://gitlab.com/$_mod\""
+            _error "Expected domain name for git url with explicit protocol set: $_mod. Format: (protocol)<domain>/<user_name>/<repo_name>. Examples: \"space -m github.com/$_mod\" \"space -m https://github.com/$_mod\""
             return 1
         fi
     fi
@@ -2244,7 +2244,7 @@ _extract_repo_parts()
         _commit=${BASH_REMATCH[2]}
     fi
     if [[ $_protocol == "" || $_domain == "" || $_username == "" || $_reponame == "" ]]; then
-        _error "Malformed import name: $_mod. Format: (protocol)<domain>/<user_name>/<repo_name>. Examples: \"space -m gitlab.com/<user_name>/<repo_name>\" \"space -m https://gitlab.com/<user_name>/<repo_name>\""
+        _error "Malformed import name: $_mod. Format: (protocol)<domain>/<user_name>/<repo_name>. Examples: \"space -m github.com/<user_name>/<repo_name>\" \"space -m https://github.com/<user_name>/<repo_name>\""
         return 1
     fi
     if [ -z "$_commit" ]; then
@@ -2404,7 +2404,7 @@ _module_find_yaml()
 
     if [ "${_domainname}" = "" ]; then
         if [ "${_username}" = "space-sh" ]; then
-            _domainname="gitlab.com"
+            _domainname="github.com"
         fi
     fi
 
@@ -4511,11 +4511,11 @@ _completion_modules()
             fi
         else
             if [[ ! $_f =~ \/ ]]; then
-                _default="gitlab.com/space-sh/"
-                _f="gitlab.com/space-sh/$_f"
+                _default="github.com/space-sh/"
+                _f="github.com/space-sh/$_f"
             elif [[ ! $_f =~ space-sh\/([^\/]*) ]]; then
-                _default="gitlab.com/space-sh/"
-                _f="gitlab.com/space-sh/$_f"
+                _default="github.com/space-sh/"
+                _f="github.com/space-sh/$_f"
             else
                 return 1
             fi
@@ -4652,7 +4652,7 @@ _update_modules()
 
     local _pattern=".*"
     if [[ $_updatemodules != "*" ]]; then
-        local _domainname="gitlab.com"
+        local _domainname="github.com"
         local _username="space-sh"
         local _reponame=$_updatemodules
         if [[ $_updatemodules  =~ (.+)/(.+)/(.+) ]]; then

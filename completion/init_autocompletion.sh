@@ -125,7 +125,7 @@ _space_join_arr()
 } &&
 _space()
 {
-    local switches="-f -m -a -M -e -d -p -v -h -V -C -U -X -k -K -S -E -L --"
+    local switches="-f -m -a -M -e -d -p -s -v -h -V -Z -l -u -Q -B -C -U -X -K -S -E -L --"
     local timeout1="${SPACE_COMP_TIMEOUT1:-30}"
     local timeout2="${SPACE_COMP_TIMEOUT2:-30}"
     local args_tag=""
@@ -223,7 +223,8 @@ _space()
             COMPREPLY=("$current")
             return 0
         fi
-        for s in "-K 0 1 2" "-X 1 2 3 4" "-v 0 1 2 3 4" "-C 0 1 2" "-k 0 1 2" "-L 0 1 2 3 4 5" ""; do
+        # NTOE: the autocompletion on -s doesn't work 100%, but the options are just meant as hints.
+        for s in "-X 1 2 3 4" "-v 0 1 2 3 4" "-C 0 1 2" "-L 0 1 2 3 4 5" "-s sudo :root sudo:root sudo:admin,sudo,:sysadmin" ""; do
             local flag="${s%% *}"
             local options="${s#* }"
             for option in ${options}; do

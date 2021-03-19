@@ -1,5 +1,5 @@
 
-# Space | [![build status](https://gitlab.com/space-sh/space/badges/master/build.svg)](https://gitlab.com/space-sh/space/commits/master) [![latest stable version](https://img.shields.io/badge/latest%20stable-1.4.0-blue.svg?style=flat)](https://gitlab.com/space-sh/space/tags/1.4.0) [![Gitter](https://img.shields.io/gitter/room/nwjs/nw.js.svg)](https://gitter.im/blockie-org/space.sh)
+# Space | [![build status](https://github.com/space-sh/space/actions/workflows/main.yml/badge.svg)](https://github.com/space-sh/space/commits/master) [![latest stable version](https://img.shields.io/badge/latest%20stable-1.4.0-blue.svg?style=flat)](https://github.com/space-sh/space/releases/tag/1.4.0) [![Gitter](https://img.shields.io/gitter/room/nwjs/nw.js.svg)](https://gitter.im/blockie-org/space.sh)
 
 ![Space.sh](https://space.sh/static/img/logo.png)
 

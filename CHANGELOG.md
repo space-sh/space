@@ -1,5 +1,24 @@
 # Space - Change log
 
+## [current]
+
+* Improve readability of the help text
+
+* Change `-K` option to simple set
+
+* Simplify Git GPG signature check
+
+* Modify security message during check
+
+* Update auto completion script
+
+* Substitute references to gitlab with github
+
+- Remove `-k` option
+
+- Disable module banlist check
+
+
 ## [1.4.0 - 2021-01-19]
 
 + Add the ability for `SPACE_DEP` variables to be variable escaped

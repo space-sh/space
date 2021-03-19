@@ -223,7 +223,7 @@ _space()
             COMPREPLY=("$current")
             return 0
         fi
-        # NTOE: the autocompletion on -s doesn't work 100%, but the options are just meant as hints.
+        # NOTE: the autocompletion on -s doesn't work 100%, but the options are just meant as hints.
         for s in "-X 1 2 3 4" "-v 0 1 2 3 4" "-C 0 1 2" "-L 0 1 2 3 4 5" "-s sudo :root sudo:root sudo:admin,sudo,:sysadmin" ""; do
             local flag="${s%% *}"
             local options="${s#* }"

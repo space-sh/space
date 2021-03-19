@@ -35,7 +35,7 @@ else
     printf "\033[35mDocker command is available.\033[0m\n"
 fi
 
-CI_REGISTRY_IMAGE="registry.gitlab.com/space-sh/space"
+CI_REGISTRY_IMAGE="docker.pkg.github.com/space-sh/space"
 IMAGE_VERSION="latest"
 
 cat ./test/build/check_base_binaries.sh | docker run --rm -i $CI_REGISTRY_IMAGE:$IMAGE_VERSION /bin/bash

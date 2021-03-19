@@ -1,6 +1,6 @@
 #
 FROM alpine:3.6
-MAINTAINER http://gitlab.com/space-sh/space
+MAINTAINER https://github.com/space-sh/space/
 
 # Version
 ARG VERSION

@@ -68,7 +68,7 @@ SPACE_BUILD()
     done;
 
     # shellcheck disable=2086
-    docker build --build-arg VERSION=$IMAGE_VERSION -t registry.gitlab.com/space-sh/space -f ./build/Dockerfile .
+    docker build --build-arg VERSION=$IMAGE_VERSION -t docker.pkg.github.com/space-sh/space -f ./build/Dockerfile .
 }
 
 

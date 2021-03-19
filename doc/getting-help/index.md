@@ -7,7 +7,7 @@ title: Getting help
 giturl: github.com/space-sh/space
 editurl: /edit/master/doc/getting-help/index.md
 weight: 1100
-icon: "<b>11. </b>"
+icon: "<b>10. </b>"
 ---
 
 # Getting help

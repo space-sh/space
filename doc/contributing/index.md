@@ -7,7 +7,7 @@ title: Contributing
 giturl: github.com/space-sh/space
 editurl: /edit/master/doc/contributing/index.md
 weight: 1200
-icon: "<b>12. </b>"
+icon: "<b>11. </b>"
 ---
 
 # Contributing

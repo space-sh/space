@@ -1,13 +1,13 @@
 ---
-prev: /lua-coding-and-style-guidelines/
-prev_title: "Lua coding and style guidelines"
+prev: /shell-coding-and-style-guidelines/
+prev_title: "Shell coding and style guidelines"
 next: /references/
 next_title: "References"
 title: Glossary
 giturl: github.com/space-sh/space
 editurl: /edit/master/doc/glossary/index.md
 weight: 900
-icon: "<b>9. </b>"
+icon: "<b>8. </b>"
 ---
 
 # Glossary

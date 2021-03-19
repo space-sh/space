@@ -7,7 +7,7 @@ title: References
 weight: 1000
 giturl: github.com/space-sh/space
 editurl: /edit/master/doc/references/index.md
-icon: "<b>10. </b>"
+icon: "<b>9. </b>"
 ---
 
 # References

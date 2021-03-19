@@ -5,7 +5,7 @@ prev_title: "Contributing"
 weight: 1300
 giturl: github.com/space-sh/space
 editurl: /edit/master/doc/troubleshooting/index.md
-icon: "<b>13. </b>"
+icon: "<b>12. </b>"
 ---
 
 # Troubleshooting

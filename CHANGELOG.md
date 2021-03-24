@@ -1,6 +1,6 @@
 # Space - Change log
 
-## [current]
+## [1.5.0 - 2021-03-24]
 
 * Improve readability of the help text
 
